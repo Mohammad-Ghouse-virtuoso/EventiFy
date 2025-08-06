@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testEvents()">Test Events</button>
+    <div id="results"></div>
+
+    <script>
+        async function testLogin() {
+            try {
+                const formData = new FormData();
+                formData.append('username', 'admin@eventify.com');
+                formData.append('password', 'admin123');
+
+                const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                // Store token for events test
+                if (data.access_token) {
+                    localStorage.setItem('token', data.access_token);
+                }
+            } catch (error) {
+                document.getElementById('results').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testEvents() {
+            try {
+                const token = localStorage.getItem('token');
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch('http://localhost:8000/api/v1/events/', {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
