@@ -43,6 +43,7 @@ export default function Dashboard() {
     }
   }
 
+  // Create stats based on user role
   const stats = [
     {
       name: 'Events Created',
@@ -50,15 +51,16 @@ export default function Dashboard() {
       icon: CalendarIcon,
       color: 'bg-blue-500'
     },
-    {
+    // Only show "Events Attending" for non-admin users
+    ...(user?.role !== 'admin' ? [{
       name: 'Events Attending',
       value: rsvpEvents.length,
       icon: UsersIcon,
       color: 'bg-green-500'
-    },
+    }] : []),
     {
       name: 'Total Attendees',
-      value: myEvents.reduce((sum, event) => sum + event.attendees_count, 0),
+      value: myEvents.reduce((sum, event) => sum + (event.attendees_count || 0), 0),
       icon: QrCodeIcon,
       color: 'bg-purple-500'
     }
@@ -76,7 +78,7 @@ export default function Dashboard() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back, {user?.full_name}!
+          Welcome, {user?.full_name}!
         </h1>
         <p className="text-gray-600">
           {user?.role === 'admin' && 'Admin Dashboard - Manage platform and users'}
@@ -180,33 +182,53 @@ export default function Dashboard() {
                           {event.attendees_count} / {event.max_attendees} attendees
                         </div>
                       </div>
-                      <div className="flex space-x-2 ml-4">
-                        <Link
-                          to={`/events/${event.id}/edit`}
-                          className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDeleteEvent(event.id)}
-                          className="text-red-600 hover:text-red-700 text-sm font-medium"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      {/* Only show edit/delete for organizers and admins */}
+                      {(user?.role === 'organizer' || user?.role === 'admin') && (
+                        <div className="flex space-x-2 ml-4">
+                          <Link
+                            to={`/events/${event.id}/edit`}
+                            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => handleDeleteEvent(event.id)}
+                            className="text-red-600 hover:text-red-700 text-sm font-medium"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-center py-8">
                   <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">You haven't created any events yet.</p>
-                  <Link
-                    to="/create-event"
-                    className="text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    Create your first event
-                  </Link>
+                  {user?.role === 'attendee' ? (
+                    <>
+                      <p className="text-gray-600">You haven't created any events yet.</p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        As an attendee, you can discover and join amazing events created by others!
+                      </p>
+                      <Link
+                        to="/events"
+                        className="text-primary-600 hover:text-primary-700 font-medium"
+                      >
+                        Browse Events
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-600">You haven't created any events yet.</p>
+                      <Link
+                        to="/create-event"
+                        className="text-primary-600 hover:text-primary-700 font-medium"
+                      >
+                        Create your first event
+                      </Link>
+                    </>
+                  )}
                 </div>
               )}
             </div>

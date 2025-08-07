@@ -22,7 +22,7 @@ class RSVP(RSVPBase, table=True):
     checked_in_at: Optional[datetime] = None
 
 class RSVPCreate(RSVPBase):
-    event_id: int
+    pass  # event_id comes from URL path parameter
 
 class RSVPUpdate(SQLModel):
     status: Optional[RSVPStatus] = None

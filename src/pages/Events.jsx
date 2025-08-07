@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import { eventsAPI } from '../services/api'
 import EventCard from '../components/EventCard'
+import { useAuth } from '../contexts/AuthContext'
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline'
 
 export default function Events() {
+  const { user } = useAuth()
   const [events, setEvents] = useState([])
+  const [userRSVPs, setUserRSVPs] = useState({}) // Store user's RSVP status for each event
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({
@@ -22,10 +25,27 @@ export default function Events() {
       setLoading(true)
       const data = await eventsAPI.getAll({ ...filters, search: searchTerm })
       setEvents(data)
+
+      // Load user RSVPs if logged in
+      if (user) {
+        await loadUserRSVPs(data)
+      }
     } catch (error) {
       console.error('Failed to load events:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadUserRSVPs = async (eventsList) => {
+    try {
+      // For now, we'll simulate RSVP status tracking
+      // In a real app, you'd have a getUserRSVPs API endpoint
+      const rsvpMap = {}
+      // We'll update this when user makes an RSVP
+      setUserRSVPs(rsvpMap)
+    } catch (error) {
+      console.error('Failed to load user RSVPs:', error)
     }
   }
 
@@ -37,17 +57,25 @@ export default function Events() {
   const handleRSVP = async (eventId, status) => {
     try {
       await eventsAPI.rsvp(eventId, status)
+
+      // Update local RSVP state immediately for better UX
+      setUserRSVPs(prev => ({
+        ...prev,
+        [eventId]: { status }
+      }))
+
       // Refresh events to update attendee count
       loadEvents()
     } catch (error) {
       console.error('RSVP failed:', error)
+      // Remove the optimistic update on error
+      setUserRSVPs(prev => {
+        const updated = { ...prev }
+        delete updated[eventId]
+        return updated
+      })
     }
   }
-
-  const filteredEvents = events.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.description.toLowerCase().includes(searchTerm.toLowerCase())
-  )
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -81,6 +109,11 @@ export default function Events() {
               <option value="sports">Sports</option>
               <option value="food">Food & Drink</option>
               <option value="art">Art & Culture</option>
+              <option value="business">Business</option>
+              <option value="education">Education</option>
+              <option value="health">Health & Wellness</option>
+              <option value="networking">Networking</option>
+              <option value="entertainment">Entertainment</option>
             </select>
 
             <input
@@ -107,13 +140,14 @@ export default function Events() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading events...</p>
         </div>
-      ) : filteredEvents.length > 0 ? (
+      ) : events.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map((event) => (
+          {events.map((event) => (
             <EventCard
               key={event.id}
               event={event}
               onRSVP={handleRSVP}
+              userRSVP={userRSVPs[event.id]}
             />
           ))}
         </div>

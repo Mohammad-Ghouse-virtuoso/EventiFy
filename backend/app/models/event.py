@@ -5,6 +5,7 @@ from datetime import datetime
 class EventBase(SQLModel):
     title: str
     description: str
+    category: str
     date: datetime
     location: str
     max_attendees: int
@@ -22,6 +23,7 @@ class EventCreate(EventBase):
 class EventUpdate(SQLModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    category: Optional[str] = None
     date: Optional[datetime] = None
     location: Optional[str] = None
     max_attendees: Optional[int] = None
