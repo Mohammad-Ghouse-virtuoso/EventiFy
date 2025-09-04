@@ -93,6 +93,39 @@ export const eventsAPI = {
   rsvp: async (eventId, status) => {
     const { data } = await api.post(`/events/${eventId}/rsvp`, { status })
     return data
+  },
+  getRSVPs: async (eventId) => {
+    const { data } = await api.get(`/events/${eventId}/rsvps`)
+    return data
+  }
+}
+
+// Admin API
+export const adminAPI = {
+  getEventRSVPs: async (eventId) => {
+    const { data } = await api.get(`/events/${eventId}/rsvps`)
+    return data
+  },
+  getAllEventsWithRSVPs: async () => {
+    const events = await eventsAPI.getAll()
+    const eventsWithRSVPs = await Promise.all(
+      events.map(async (event) => {
+        try {
+          const rsvps = await api.get(`/events/${event.id}/rsvps`)
+          return {
+            ...event,
+            rsvps: rsvps.data
+          }
+        } catch (error) {
+          // If user doesn't have access to this event's RSVPs, return event without RSVPs
+          return {
+            ...event,
+            rsvps: []
+          }
+        }
+      })
+    )
+    return eventsWithRSVPs
   }
 }
 

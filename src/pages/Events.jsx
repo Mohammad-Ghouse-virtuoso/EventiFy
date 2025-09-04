@@ -20,6 +20,15 @@ export default function Events() {
     loadEvents()
   }, [filters])
 
+  useEffect(() => {
+    // Reload events when user logs in/out to get fresh RSVP data
+    if (user) {
+      loadEvents()
+    } else {
+      setUserRSVPs({}) // Clear RSVPs when user logs out
+    }
+  }, [user])
+
   const loadEvents = async () => {
     try {
       setLoading(true)
@@ -38,11 +47,25 @@ export default function Events() {
   }
 
   const loadUserRSVPs = async (eventsList) => {
+    if (!user) return
+    
     try {
-      // For now, we'll simulate RSVP status tracking
-      // In a real app, you'd have a getUserRSVPs API endpoint
       const rsvpMap = {}
-      // We'll update this when user makes an RSVP
+      // Get user's RSVP status for each event
+      await Promise.all(
+        eventsList.map(async (event) => {
+          try {
+            const rsvps = await eventsAPI.getRSVPs(event.id)
+            const userRSVP = rsvps.find(rsvp => rsvp.user_id === user.id)
+            if (userRSVP) {
+              rsvpMap[event.id] = userRSVP
+            }
+          } catch (error) {
+            // If no RSVP found, continue
+            console.log(`No RSVP found for event ${event.id}`)
+          }
+        })
+      )
       setUserRSVPs(rsvpMap)
     } catch (error) {
       console.error('Failed to load user RSVPs:', error)
@@ -56,13 +79,16 @@ export default function Events() {
 
   const handleRSVP = async (eventId, status) => {
     try {
-      await eventsAPI.rsvp(eventId, status)
+      const result = await eventsAPI.rsvp(eventId, status)
 
       // Update local RSVP state immediately for better UX
-      setUserRSVPs(prev => ({
-        ...prev,
-        [eventId]: { status }
-      }))
+      setUserRSVPs(prev => {
+        const updated = {
+          ...prev,
+          [eventId]: { status, user_id: user.id }
+        }
+        return updated
+      })
 
       // Refresh events to update attendee count
       loadEvents()
