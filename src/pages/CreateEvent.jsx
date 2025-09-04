@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { eventsAPI } from '../services/api'
 import { CalendarIcon, MapPinIcon, UsersIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import SuccessDialog from '../components/SuccessDialog'
 
 export default function CreateEvent() {
   const [formData, setFormData] = useState({
@@ -19,6 +20,8 @@ export default function CreateEvent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [imagePreview, setImagePreview] = useState(null)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [createdEvent, setCreatedEvent] = useState(null)
   
   const navigate = useNavigate()
 
@@ -64,12 +67,37 @@ export default function CreateEvent() {
       })
 
       const event = await eventsAPI.create(eventData)
-      navigate(`/events/${event.id}`)
+      setCreatedEvent(event)
+      setShowSuccessDialog(true)
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        location: '',
+        category: '',
+        max_attendees: '',
+        image: null,
+        is_public: true,
+        requires_approval: false
+      })
+      setImagePreview(null)
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create event')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleViewEvent = () => {
+    navigate('/events')
+  }
+
+  const handleCreateAnother = () => {
+    setShowSuccessDialog(false)
+    setCreatedEvent(null)
   }
 
   return (
@@ -305,6 +333,16 @@ export default function CreateEvent() {
           </button>
         </div>
       </form>
+
+      {/* Success Dialog */}
+      <SuccessDialog
+        isOpen={showSuccessDialog}
+        onClose={handleCreateAnother}
+        title="Event Created Successfully!"
+        message={`Your event "${createdEvent?.title}" has been created and is now live. People can start discovering and joining your event.`}
+        actionText="View Events"
+        onAction={handleViewEvent}
+      />
     </div>
   )
 }

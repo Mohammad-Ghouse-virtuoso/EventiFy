@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
-import { eventsAPI } from '../services/api'
+import { eventsAPI, adminAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
+import { useProfile } from '../contexts/ProfileContext'
+import AvatarSelector from '../components/AvatarSelector'
 import { 
   CalendarDaysIcon, 
   UsersIcon, 
@@ -8,15 +10,18 @@ import {
   EyeIcon,
   CheckCircleIcon,
   XCircleIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  CameraIcon
 } from '@heroicons/react/24/outline'
 
 export default function AdminPanel() {
   const { user } = useAuth()
+  const { currentAvatar, updateAvatar } = useProfile()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [rsvpData, setRsvpData] = useState({})
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false)
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -27,26 +32,31 @@ export default function AdminPanel() {
   const loadAdminData = async () => {
     try {
       setLoading(true)
-      const eventsData = await eventsAPI.getAll()
-      setEvents(eventsData)
+      const eventsWithRSVPs = await adminAPI.getAllEventsWithRSVPs()
+      setEvents(eventsWithRSVPs)
       
-      // Simulate RSVP data - In real app, you'd have an admin API endpoint
-      const mockRsvpData = {}
-      eventsData.forEach(event => {
-        mockRsvpData[event.id] = {
-          going: Math.floor(Math.random() * 20) + 5,
-          maybe: Math.floor(Math.random() * 10) + 2,
-          not_going: Math.floor(Math.random() * 5) + 1,
-          attendees: [
-            { id: 1, name: 'John Doe', email: 'john@example.com', status: 'going' },
-            { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'maybe' },
-            { id: 3, name: 'Bob Johnson', email: 'bob@example.com', status: 'going' },
-            { id: 4, name: 'Alice Brown', email: 'alice@example.com', status: 'not_going' },
-            { id: 5, name: 'Charlie Wilson', email: 'charlie@example.com', status: 'going' },
-          ]
+      // Process RSVP data for dashboard
+      const processedRsvpData = {}
+      eventsWithRSVPs.forEach(event => {
+        const rsvps = event.rsvps || []
+        const going = rsvps.filter(rsvp => rsvp.status === 'going')
+        const maybe = rsvps.filter(rsvp => rsvp.status === 'maybe')
+        const notGoing = rsvps.filter(rsvp => rsvp.status === 'not_going')
+        
+        processedRsvpData[event.id] = {
+          going: going.length,
+          maybe: maybe.length,
+          not_going: notGoing.length,
+          attendees: rsvps.map(rsvp => ({
+            id: rsvp.user_id,
+            name: rsvp.user?.full_name || rsvp.user?.email || 'Unknown User',
+            email: rsvp.user?.email || 'N/A',
+            status: rsvp.status,
+            notes: rsvp.notes
+          }))
         }
       })
-      setRsvpData(mockRsvpData)
+      setRsvpData(processedRsvpData)
     } catch (error) {
       console.error('Failed to load admin data:', error)
     } finally {
@@ -80,6 +90,10 @@ export default function AdminPanel() {
     }
   }
 
+  const handleAvatarSelect = (avatar) => {
+    updateAvatar(avatar)
+  }
+
   if (user?.role !== 'admin') {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -109,9 +123,48 @@ export default function AdminPanel() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-display-md text-gray-900 mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600">Monitor events and user engagement across the platform</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-display-md text-gray-900 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600">Monitor events and user engagement across the platform</p>
+        </div>
+        
+        {/* Admin Avatar Section */}
+        <div className="flex items-center space-x-4">
+          <div className="text-right">
+            <p className="text-sm font-medium text-gray-900">Welcome, {user?.full_name || user?.email}</p>
+            <p className="text-xs text-gray-500">Administrator</p>
+          </div>
+          <button
+            onClick={() => setShowAvatarSelector(true)}
+            className="relative group"
+          >
+            {currentAvatar ? (
+              <img
+                src={currentAvatar.image}
+                alt={currentAvatar.name}
+                className="w-12 h-12 rounded-full object-cover border-2 border-primary-200 group-hover:border-primary-400 transition-colors"
+                onError={(e) => {
+                  e.target.src = `data:image/svg+xml,${encodeURIComponent(`
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                      <rect width="48" height="48" fill="#e5e7eb"/>
+                      <path d="M24 24a8 8 0 1 0-8-8 8 8 0 0 0 8 8zm0 4c-5.33 0-16 2.67-16 8v4h32v-4c0-5.33-10.67-8-16-8z" fill="#9ca3af"/>
+                    </svg>
+                  `)}`
+                }}
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center group-hover:from-primary-600 group-hover:to-primary-700 transition-all">
+                <span className="text-white font-semibold text-lg">
+                  {user?.full_name?.[0] || user?.email?.[0] || 'A'}
+                </span>
+              </div>
+            )}
+            <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md group-hover:bg-gray-50 transition-colors">
+              <CameraIcon className="w-3 h-3 text-gray-600" />
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -237,6 +290,15 @@ export default function AdminPanel() {
           </div>
         )}
       </div>
+
+      {/* Avatar Selector Modal */}
+      <AvatarSelector
+        userRole="admin"
+        currentAvatar={currentAvatar}
+        onAvatarSelect={handleAvatarSelect}
+        isOpen={showAvatarSelector}
+        onClose={() => setShowAvatarSelector(false)}
+      />
     </div>
   )
 }

@@ -1,5 +1,33 @@
 import { SparklesIcon } from '@heroicons/react/24/outline'
 
+// Custom sparkles star icon component (same as Navbar and Home)
+const CustomSparklesIcon = ({ className }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12 2L14.09 8.26L20 10L14.09 11.74L12 18L9.91 11.74L4 10L9.91 8.26L12 2Z"
+      fill="url(#sparkleGradientFooter)"
+      stroke="url(#sparkleStrokeFooter)"
+      strokeWidth="0.5"
+    />
+    <defs>
+      <linearGradient id="sparkleGradientFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FF6B9D" />
+        <stop offset="50%" stopColor="#FF8FB3" />
+        <stop offset="100%" stopColor="#FFB3D1" />
+      </linearGradient>
+      <linearGradient id="sparkleStrokeFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FF1493" />
+        <stop offset="100%" stopColor="#FF69B4" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
@@ -10,7 +38,7 @@ export default function Footer() {
           {/* Brand Section */}
           <div className="md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <SparklesIcon className="h-8 w-8 text-secondary-300" />
+              <CustomSparklesIcon className="h-8 w-8 drop-shadow-md" />
               <h3 className="text-2xl font-bold">EventiFy</h3>
             </div>
             <p className="text-white/80 mb-6 max-w-md">

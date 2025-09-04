@@ -34,12 +34,15 @@ async def get_events(
     if category:
         statement = statement.where(Event.category.ilike(f"%{category}%"))
 
-    # Date filter (events on or after the specified date)
+    # Date filter (events on the specified date only)
     if date:
         try:
-            from datetime import datetime
+            from datetime import datetime, timedelta
             filter_date = datetime.fromisoformat(date)
-            statement = statement.where(Event.date >= filter_date)
+            next_day = filter_date + timedelta(days=1)
+            statement = statement.where(
+                (Event.date >= filter_date) & (Event.date < next_day)
+            )
         except ValueError:
             pass  # Invalid date format, ignore filter
 
@@ -194,7 +197,7 @@ async def get_event_rsvps(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_active_user)
 ):
-    # Check if event exists and user is organizer or admin
+    # Check if event exists
     event = session.get(Event, event_id)
     if not event:
         raise HTTPException(
@@ -202,12 +205,54 @@ async def get_event_rsvps(
             detail="Event not found"
         )
 
-    if event.organizer_id != current_user.id and current_user.role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to view RSVPs for this event"
+    # If user is organizer or admin, return all RSVPs
+    if event.organizer_id == current_user.id or current_user.role == "admin":
+        # Get RSVPs with user information for organizer/admin
+        statement = select(RSVP, User).join(User).where(RSVP.event_id == event_id)
+        results = session.exec(statement).all()
+        
+        rsvps_with_users = []
+        for rsvp, user in results:
+            rsvp_dict = {
+                "id": rsvp.id,
+                "user_id": rsvp.user_id,
+                "event_id": rsvp.event_id,
+                "status": rsvp.status,
+                "notes": rsvp.notes,
+                "created_at": rsvp.created_at,
+                "updated_at": rsvp.updated_at,
+                "checked_in": rsvp.checked_in,
+                "checked_in_at": rsvp.checked_in_at,
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "full_name": user.full_name,
+                    "role": user.role
+                }
+            }
+            rsvps_with_users.append(rsvp_dict)
+        
+        return rsvps_with_users
+    
+    else:
+        # For regular users, only return their own RSVP
+        statement = select(RSVP).where(
+            RSVP.event_id == event_id,
+            RSVP.user_id == current_user.id
         )
-
-    statement = select(RSVP).where(RSVP.event_id == event_id)
-    rsvps = session.exec(statement).all()
-    return rsvps
+        user_rsvp = session.exec(statement).first()
+        
+        if user_rsvp:
+            return [{
+                "id": user_rsvp.id,
+                "user_id": user_rsvp.user_id,
+                "event_id": user_rsvp.event_id,
+                "status": user_rsvp.status,
+                "notes": user_rsvp.notes,
+                "created_at": user_rsvp.created_at,
+                "updated_at": user_rsvp.updated_at,
+                "checked_in": user_rsvp.checked_in,
+                "checked_in_at": user_rsvp.checked_in_at
+            }]
+        else:
+            return []

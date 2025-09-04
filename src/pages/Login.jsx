@@ -3,6 +3,34 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { EyeIcon, EyeSlashIcon, SparklesIcon, CalendarDaysIcon, UsersIcon } from '@heroicons/react/24/outline'
 
+// Custom sparkles star icon component (same as Navbar, Home, and Footer)
+const CustomSparklesIcon = ({ className }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12 2L14.09 8.26L20 10L14.09 11.74L12 18L9.91 11.74L4 10L9.91 8.26L12 2Z"
+      fill="url(#sparkleGradientLogin)"
+      stroke="url(#sparkleStrokeLogin)"
+      strokeWidth="0.5"
+    />
+    <defs>
+      <linearGradient id="sparkleGradientLogin" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FF6B9D" />
+        <stop offset="50%" stopColor="#FF8FB3" />
+        <stop offset="100%" stopColor="#FFB3D1" />
+      </linearGradient>
+      <linearGradient id="sparkleStrokeLogin" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FF1493" />
+        <stop offset="100%" stopColor="#FF69B4" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
 export default function Login() {
   const [formData, setFormData] = useState({
     email: '',
@@ -51,7 +79,7 @@ export default function Login() {
         <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 text-white">
           <div className="animate-slide-up">
             <div className="flex items-center mb-8">
-              <SparklesIcon className="h-12 w-12 text-secondary-300 mr-4" />
+              <CustomSparklesIcon className="h-12 w-12 drop-shadow-md mr-4" />
               <h1 className="text-display-lg font-bold">EventiFy</h1>
             </div>
 
@@ -74,7 +102,7 @@ export default function Login() {
                 <span>Connect with amazing people in your community</span>
               </div>
               <div className="flex items-center text-white/90">
-                <SparklesIcon className="h-6 w-6 text-secondary-300 mr-3" />
+                <CustomSparklesIcon className="h-6 w-6 mr-3" />
                 <span>Create and manage your own events</span>
               </div>
             </div>
@@ -87,7 +115,7 @@ export default function Login() {
             <div className="glass-effect rounded-2xl p-8 shadow-2xl animate-bounce-in">
               <div className="text-center mb-8">
                 <div className="lg:hidden flex items-center justify-center mb-6">
-                  <SparklesIcon className="h-10 w-10 text-secondary-400 mr-3" />
+                  <CustomSparklesIcon className="h-10 w-10 drop-shadow-md mr-3" />
                   <h1 className="text-3xl font-bold text-white">EventiFy</h1>
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">
