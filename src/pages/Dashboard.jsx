@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfile } from '../contexts/ProfileContext'
-import { eventsAPI } from '../services/api'
-import { PlusIcon, CalendarIcon, UsersIcon, QrCodeIcon, PhotoIcon, PencilIcon, CameraIcon } from '@heroicons/react/24/outline'
+import { useNotification } from '../contexts/NotificationContext'
+import { eventsAPI, adminAPI } from '../services/api'
+import { PlusIcon, CalendarIcon, UsersIcon, QrCodeIcon, PhotoIcon, PencilIcon, CameraIcon, CheckCircleIcon, XCircleIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import BannerSelector from '../components/BannerSelector'
 import AvatarSelector from '../components/AvatarSelector'
@@ -21,12 +22,15 @@ const formatTime = (time) => {
 export default function Dashboard() {
   const { user } = useAuth()
   const { currentAvatar, userBanner, updateAvatar, updateBanner } = useProfile()
+  const { showSuccess, showError } = useNotification()
   const [myEvents, setMyEvents] = useState([])
   const [rsvpEvents, setRsvpEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('created')
   const [bannerSelectorOpen, setBannerSelectorOpen] = useState(false)
   const [showAvatarSelector, setShowAvatarSelector] = useState(false)
+  const [pendingRSVPs, setPendingRSVPs] = useState({})
+  const [showRSVPManagement, setShowRSVPManagement] = useState({})
 
   useEffect(() => {
     loadDashboardData()
@@ -41,7 +45,8 @@ export default function Dashboard() {
       setLoading(true)
       const [created, rsvps] = await Promise.all([
         eventsAPI.getAll({ created_by: user.id }),
-        eventsAPI.getAll({ rsvp_status: 'going' })
+        // Fetch attending events for the current user only (confirmed attendees)
+        eventsAPI.getAll({ rsvp_status: 'going,approved', rsvp_user_id: user.id })
       ])
       setMyEvents(created)
       setRsvpEvents(rsvps)
@@ -49,6 +54,48 @@ export default function Dashboard() {
       console.error('Failed to load dashboard data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadPendingRSVPs = async (eventId) => {
+    try {
+      const pending = await adminAPI.getPendingRSVPs(eventId)
+      setPendingRSVPs(prev => ({ ...prev, [eventId]: pending }))
+    } catch (error) {
+      console.error('Failed to load pending RSVPs:', error)
+    }
+  }
+
+  const handleApproveRSVP = async (eventId, rsvpId) => {
+    try {
+      await adminAPI.approveRSVP(eventId, rsvpId)
+      // Reload data to update UI
+      await loadPendingRSVPs(eventId)
+      await loadDashboardData()
+      showSuccess('RSVP approved successfully!')
+    } catch (error) {
+      console.error('Failed to approve RSVP:', error)
+      showError('Failed to approve RSVP')
+    }
+  }
+
+  const handleRejectRSVP = async (eventId, rsvpId) => {
+    try {
+      await adminAPI.rejectRSVP(eventId, rsvpId)
+      // Reload data to update UI
+      await loadPendingRSVPs(eventId)
+      await loadDashboardData()
+      showSuccess('RSVP rejected successfully')
+    } catch (error) {
+      console.error('Failed to reject RSVP:', error)
+      showError('Failed to reject RSVP')
+    }
+  }
+
+  const toggleRSVPManagement = (eventId) => {
+    setShowRSVPManagement(prev => ({ ...prev, [eventId]: !prev[eventId] }))
+    if (!pendingRSVPs[eventId]) {
+      loadPendingRSVPs(eventId)
     }
   }
 
@@ -91,7 +138,7 @@ export default function Dashboard() {
     ...(user?.role !== 'attendee' ? [{
       name: 'Total Attendees',
       value: myEvents.reduce((sum, event) => sum + (event.attendees_count || 0), 0),
-      icon: QrCodeIcon,
+      icon: UserGroupIcon,
       color: 'bg-purple-500'
     }] : [])
   ]
@@ -264,6 +311,15 @@ export default function Dashboard() {
             <CalendarIcon className="h-5 w-5 mr-2" />
             Browse Events
           </Link>
+          {(user?.role === 'organizer' || user?.role === 'admin') && (
+            <Link
+              to="/event-analytics"
+              className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 flex items-center"
+            >
+              <UsersIcon className="h-5 w-5 mr-2" />
+              Event Analytics
+            </Link>
+          )}
           {user?.role === 'admin' && (
             <Link
               to="/admin"
@@ -292,16 +348,18 @@ export default function Dashboard() {
                 My Events ({myEvents.length})
               </button>
             )}
-            <button
-              onClick={() => setActiveTab('attending')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'attending'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Attending ({rsvpEvents.length})
-            </button>
+            {user?.role !== 'admin' && (
+              <button
+                onClick={() => setActiveTab('attending')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'attending'
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Attending ({rsvpEvents.length})
+              </button>
+            )}
           </nav>
         </div>
 
@@ -317,12 +375,61 @@ export default function Dashboard() {
                         <p className="text-gray-600 mt-1">{event.description}</p>
                         <div className="flex items-center mt-2 text-sm text-gray-500">
                           <CalendarIcon className="h-4 w-4 mr-1" />
-                          {format(new Date(event.date), 'PPP')} at {formatTime(event.time)}
+                          {format(new Date(event.event_start), 'PPP')} at {formatTime(new Date(event.event_start).toISOString().split('T')[1]?.slice(0,5))}
                         </div>
                         <div className="flex items-center mt-1 text-sm text-gray-500">
                           <UsersIcon className="h-4 w-4 mr-1" />
                           {event.attendees_count} / {event.max_attendees} attendees
                         </div>
+                        {/* RSVP Management for events that require approval */}
+                        {event.requires_approval && (
+                          <div className="mt-3">
+                            <button
+                              onClick={() => toggleRSVPManagement(event.id)}
+                              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                            >
+                              {showRSVPManagement[event.id] ? 'Hide' : 'Manage'} RSVP Approvals
+                            </button>
+                            {showRSVPManagement[event.id] && (
+                              <div className="mt-3 border-t pt-3">
+                                <div className="space-y-2">
+                                  {pendingRSVPs[event.id]?.length > 0 ? (
+                                    pendingRSVPs[event.id].map((rsvp) => (
+                                      <div key={rsvp.rsvp_id} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                                        <div>
+                                          <p className="text-sm font-medium text-gray-900">
+                                            {rsvp.first_name} {rsvp.last_name}
+                                          </p>
+                                          <p className="text-xs text-gray-500">
+                                            Status: {rsvp.status} • RSVP ID: {rsvp.rsvp_id}
+                                          </p>
+                                        </div>
+                                        <div className="flex space-x-2">
+                                          <button
+                                            onClick={() => handleApproveRSVP(event.id, rsvp.rsvp_id)}
+                                            className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1"
+                                          >
+                                            <CheckCircleIcon className="h-4 w-4" />
+                                            <span>Approve</span>
+                                          </button>
+                                          <button
+                                            onClick={() => handleRejectRSVP(event.id, rsvp.rsvp_id)}
+                                            className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-1"
+                                          >
+                                            <XCircleIcon className="h-4 w-4" />
+                                            <span>Reject</span>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-sm text-gray-500 italic">No pending RSVPs</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                       {/* Only show edit/delete for organizers and admins */}
                       {(user?.role === 'organizer' || user?.role === 'admin') && (
@@ -366,7 +473,7 @@ export default function Dashboard() {
                     <p className="text-gray-600 mt-1">{event.description}</p>
                     <div className="flex items-center mt-2 text-sm text-gray-500">
                       <CalendarIcon className="h-4 w-4 mr-1" />
-                      {format(new Date(event.date), 'PPP')} at {formatTime(event.time)}
+                      {format(new Date(event.event_start), 'PPP')} at {formatTime(new Date(event.event_start).toISOString().split('T')[1]?.slice(0,5))}
                     </div>
                   </div>
                 ))

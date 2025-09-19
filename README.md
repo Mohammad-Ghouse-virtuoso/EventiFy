@@ -51,5 +51,3 @@ Organizers can create events, attendees can RSVP, and everyone gets a QR code fo
 ```bash
 git clone https://github.com/your-username/eventify.git
 cd eventify
-
-

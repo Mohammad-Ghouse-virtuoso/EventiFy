@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { eventsAPI, adminAPI } from '../services/api'
+import { computeRsvpStats } from '../utils/rsvpCounts'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfile } from '../contexts/ProfileContext'
+import { useNotification } from '../contexts/NotificationContext'
 import AvatarSelector from '../components/AvatarSelector'
 import { 
   CalendarDaysIcon, 
@@ -11,17 +13,23 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   QuestionMarkCircleIcon,
-  CameraIcon
+  CameraIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline'
 
 export default function AdminPanel() {
   const { user } = useAuth()
   const { currentAvatar, updateAvatar } = useProfile()
+  const { showSuccess, showError } = useNotification()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [rsvpData, setRsvpData] = useState({})
   const [showAvatarSelector, setShowAvatarSelector] = useState(false)
+  const [pendingRSVPs, setPendingRSVPs] = useState({})
+  const [showPendingRSVPs, setShowPendingRSVPs] = useState(false)
+  const [showWhoIsGoing, setShowWhoIsGoing] = useState(true)
+  const [revealEmailsByEvent, setRevealEmailsByEvent] = useState({})
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -36,27 +44,11 @@ export default function AdminPanel() {
       setEvents(eventsWithRSVPs)
       
       // Process RSVP data for dashboard
-      const processedRsvpData = {}
+      const processed = {}
       eventsWithRSVPs.forEach(event => {
-        const rsvps = event.rsvps || []
-        const going = rsvps.filter(rsvp => rsvp.status === 'going')
-        const maybe = rsvps.filter(rsvp => rsvp.status === 'maybe')
-        const notGoing = rsvps.filter(rsvp => rsvp.status === 'not_going')
-        
-        processedRsvpData[event.id] = {
-          going: going.length,
-          maybe: maybe.length,
-          not_going: notGoing.length,
-          attendees: rsvps.map(rsvp => ({
-            id: rsvp.user_id,
-            name: rsvp.user?.full_name || rsvp.user?.email || 'Unknown User',
-            email: rsvp.user?.email || 'N/A',
-            status: rsvp.status,
-            notes: rsvp.notes
-          }))
-        }
+        processed[event.id] = computeRsvpStats(event.rsvps || [])
       })
-      setRsvpData(processedRsvpData)
+      setRsvpData(processed)
     } catch (error) {
       console.error('Failed to load admin data:', error)
     } finally {
@@ -64,14 +56,21 @@ export default function AdminPanel() {
     }
   }
 
+  // Status icon/color helpers (used in pending RSVPs list badges if needed later)
   const getStatusIcon = (status) => {
     switch (status) {
       case 'going':
         return <CheckCircleIcon className="h-5 w-5 text-success-500" />
+      case 'approved':
+        return <CheckCircleIcon className="h-5 w-5 text-success-600" />
       case 'maybe':
         return <QuestionMarkCircleIcon className="h-5 w-5 text-warning-500" />
       case 'not_going':
         return <XCircleIcon className="h-5 w-5 text-error-500" />
+      case 'waiting_for_approval':
+        return <QuestionMarkCircleIcon className="h-5 w-5 text-warning-500" />
+      case 'rejected':
+        return <XCircleIcon className="h-5 w-5 text-red-500" />
       default:
         return null
     }
@@ -81,10 +80,16 @@ export default function AdminPanel() {
     switch (status) {
       case 'going':
         return 'bg-success-100 text-success-800'
+      case 'approved':
+        return 'bg-success-100 text-success-900'
       case 'maybe':
         return 'bg-warning-100 text-warning-800'
       case 'not_going':
         return 'bg-error-100 text-error-800'
+      case 'waiting_for_approval':
+        return 'bg-warning-100 text-warning-800'
+      case 'rejected':
+        return 'bg-red-100 text-red-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -94,6 +99,40 @@ export default function AdminPanel() {
     updateAvatar(avatar)
   }
 
+  const loadPendingRSVPs = async (eventId) => {
+    try {
+      const pending = await adminAPI.getPendingRSVPs(eventId)
+      setPendingRSVPs(prev => ({ ...prev, [eventId]: pending }))
+    } catch (error) {
+      console.error('Failed to load pending RSVPs:', error)
+    }
+  }
+
+  const handleApproveRSVP = async (eventId, rsvpId) => {
+    try {
+      await adminAPI.approveRSVP(eventId, rsvpId)
+      await loadPendingRSVPs(eventId)
+      await loadAdminData()
+      showSuccess('RSVP approved successfully!')
+    } catch (error) {
+      console.error('Failed to approve RSVP:', error)
+      showError('Failed to approve RSVP')
+    }
+  }
+
+  const handleRejectRSVP = async (eventId, rsvpId) => {
+    try {
+      await adminAPI.rejectRSVP(eventId, rsvpId)
+      await loadPendingRSVPs(eventId)
+      await loadAdminData()
+      showSuccess('RSVP rejected successfully')
+    } catch (error) {
+      console.error('Failed to reject RSVP:', error)
+      showError('Failed to reject RSVP')
+    }
+  }
+
+  // Guard non-admins
   if (user?.role !== 'admin') {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -116,10 +155,11 @@ export default function AdminPanel() {
   }
 
   const totalEvents = events.length
-  const totalRSVPs = Object.values(rsvpData).reduce((sum, event) => 
-    sum + event.going + event.maybe + event.not_going, 0
-  )
-  const totalGoing = Object.values(rsvpData).reduce((sum, event) => sum + event.going, 0)
+  const totalRSVPs = Object.values(rsvpData).reduce((sum, s) => 
+    sum + s.confirmed + s.maybe + s.notGoing + s.pending + s.rejected, 0
+  , 0)
+  const totalGoing = Object.values(rsvpData).reduce((sum, s) => sum + s.confirmed, 0)
+  const totalPending = Object.values(rsvpData).reduce((sum, s) => sum + s.pending, 0)
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in">
@@ -196,7 +236,7 @@ export default function AdminPanel() {
         <div className="card p-6 hover-lift">
           <div className="flex items-center">
             <div className="bg-gradient-secondary p-3 rounded-lg">
-              <ChartBarIcon className="h-6 w-6 text-white" />
+              <UserGroupIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Confirmed Attendees</p>
@@ -204,92 +244,177 @@ export default function AdminPanel() {
             </div>
           </div>
         </div>
+        <div className="card p-6 hover-lift">
+          <div className="flex items-center">
+            <div className="bg-yellow-500 p-3 rounded-lg">
+              <QuestionMarkCircleIcon className="h-6 w-6 text-white" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
+              <p className="text-2xl font-bold text-gray-900">{totalPending}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Events List */}
-      <div className="card p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Event Analytics</h2>
-        
-        <div className="space-y-4">
-          {events.map((event) => {
-            const eventRsvp = rsvpData[event.id] || { going: 0, maybe: 0, not_going: 0, attendees: [] }
-            const totalEventRsvps = eventRsvp.going + eventRsvp.maybe + eventRsvp.not_going
-            
-            return (
-              <div key={event.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
-                    <p className="text-gray-600 text-sm">{event.location} • {new Date(event.date).toLocaleDateString()}</p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}
-                    className="btn btn-secondary text-sm"
-                  >
-                    <EyeIcon className="h-4 w-4 mr-1" />
-                    {selectedEvent === event.id ? 'Hide Details' : 'View Details'}
-                  </button>
-                </div>
-
-                {/* RSVP Summary */}
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-1">
-                      <CheckCircleIcon className="h-5 w-5 text-success-500 mr-1" />
-                      <span className="font-semibold text-success-600">{eventRsvp.going}</span>
-                    </div>
-                    <p className="text-xs text-gray-600">Going</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-1">
-                      <QuestionMarkCircleIcon className="h-5 w-5 text-warning-500 mr-1" />
-                      <span className="font-semibold text-warning-600">{eventRsvp.maybe}</span>
-                    </div>
-                    <p className="text-xs text-gray-600">Maybe</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-1">
-                      <XCircleIcon className="h-5 w-5 text-error-500 mr-1" />
-                      <span className="font-semibold text-error-600">{eventRsvp.not_going}</span>
-                    </div>
-                    <p className="text-xs text-gray-600">Can't Go</p>
-                  </div>
-                </div>
-
-                {/* Detailed Attendee List */}
-                {selectedEvent === event.id && (
-                  <div className="border-t pt-4 animate-slide-up">
-                    <h4 className="font-medium text-gray-900 mb-3">Attendee Responses ({totalEventRsvps})</h4>
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {eventRsvp.attendees.map((attendee) => (
-                        <div key={attendee.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900">{attendee.name}</p>
-                            <p className="text-sm text-gray-600">{attendee.email}</p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {getStatusIcon(attendee.status)}
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(attendee.status)}`}>
-                              {attendee.status.replace('_', ' ')}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+      {/* Pending RSVPs Section */}
+      <div className="card p-6 mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Pending RSVP Approvals</h2>
+          <button
+            onClick={() => setShowPendingRSVPs(!showPendingRSVPs)}
+            className="text-primary-600 hover:text-primary-700 font-medium"
+          >
+            {showPendingRSVPs ? 'Hide' : 'Show'} Pending RSVPs
+          </button>
         </div>
-
-        {events.length === 0 && (
-          <div className="text-center py-12">
-            <CalendarDaysIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No events found</p>
+        
+        {showPendingRSVPs && (
+          <div className="space-y-4">
+            {events.filter(event => event.requires_approval).length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No events require RSVP approval</p>
+            ) : (
+              events.filter(event => event.requires_approval).map((event) => (
+                <div key={event.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-medium text-gray-900">
+                      {event.title}
+                      {event.organizer_name && (
+                        <span className="ml-2 text-gray-500 text-sm">(made by {event.organizer_name})</span>
+                      )}
+                    </h3>
+                    <button
+                      onClick={() => loadPendingRSVPs(event.id)}
+                      className="text-sm text-primary-600 hover:text-primary-700"
+                    >
+                      Load Pending RSVPs
+                    </button>
+                  </div>
+                  
+                  {pendingRSVPs[event.id] && (
+                    <div className="space-y-2">
+                      {pendingRSVPs[event.id].length === 0 ? (
+                        <p className="text-sm text-gray-500">No pending RSVPs</p>
+                      ) : (
+                        pendingRSVPs[event.id].map((rsvp) => (
+                          <div key={rsvp.rsvp_id} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                            <div>
+                              <p className="font-medium text-gray-900">{rsvp.first_name} {rsvp.last_name}</p>
+                              <p className="text-sm text-gray-600">{rsvp.user_email}</p>
+                              {event.organizer_name && (
+                                <p className="text-xs text-gray-500 mt-0.5">Organizer: {event.organizer_name}</p>
+                              )}
+                              {rsvp.notes && (
+                                <p className="text-sm text-gray-500 mt-1">Note: {rsvp.notes}</p>
+                              )}
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleApproveRSVP(event.id, rsvp.rsvp_id)}
+                                className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1"
+                              >
+                                <CheckCircleIcon className="h-4 w-4" />
+                                <span>Approve</span>
+                              </button>
+                              <button
+                                onClick={() => handleRejectRSVP(event.id, rsvp.rsvp_id)}
+                                className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-1"
+                              >
+                                <XCircleIcon className="h-4 w-4" />
+                                <span>Reject</span>
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>
+
+  {/* Who's Going: upcoming events */}
+      <div className="card p-6 mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Who's going (upcoming)</h2>
+          <button
+            onClick={() => setShowWhoIsGoing(!showWhoIsGoing)}
+            className="text-primary-600 hover:text-primary-700 font-medium"
+          >
+            {showWhoIsGoing ? 'Hide' : 'Show'} Going Lists
+          </button>
+        </div>
+
+        {showWhoIsGoing && (
+          <div className="space-y-4">
+            {events
+              .filter(e => {
+                // Upcoming: event_start in future or today
+                try {
+                  const now = new Date()
+                  const start = new Date(e.event_start)
+                  return start >= now
+                } catch {
+                  return false
+                }
+              })
+              .map((event) => {
+                const stats = rsvpData[event.id] || { attendees: [], confirmed: 0 }
+                const confirmed = (stats.attendees || []).filter(a => a.status === 'going' || a.status === 'approved')
+                return (
+                  <div key={event.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="font-medium text-gray-900">{event.title}</h3>
+                        {event.organizer_name && (
+                          <p className="text-xs text-gray-500 mt-0.5">Organizer: {event.organizer_name}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <span className="inline-flex items-center px-2 py-1 rounded-md text-sm bg-success-50 text-success-700">
+                          Confirmed: {confirmed.length}
+                        </span>
+                        <button
+                          onClick={() => setRevealEmailsByEvent(prev => ({ ...prev, [event.id]: !prev[event.id] }))}
+                          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800"
+                        >
+                          <EyeIcon className="h-4 w-4 mr-1" />
+                          {revealEmailsByEvent[event.id] ? 'Hide emails' : 'Show emails'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {confirmed.length === 0 ? (
+                      <p className="text-sm text-gray-500">No confirmed attendees yet.</p>
+                    ) : (
+                      <ul className="divide-y divide-gray-100">
+                        {confirmed.map((a, idx) => (
+                          <li key={idx} className="py-2 flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs ${getStatusColor(a.status)}`}>
+                                {getStatusIcon(a.status)}
+                                <span className="ml-1 capitalize">{a.status}</span>
+                              </span>
+                              <span className="text-gray-900 font-medium">{a.name}</span>
+                            </div>
+                            {revealEmailsByEvent[event.id] && (
+                              <span className="text-sm text-gray-600">{a.email}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })}
+          </div>
+        )}
+      </div>
+
+      {/* Event Analytics removed; use /dashboard ➜ Event Analytics page instead */}
 
       {/* Avatar Selector Modal */}
       <AvatarSelector

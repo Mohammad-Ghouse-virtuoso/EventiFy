@@ -1,33 +1,44 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { eventsAPI } from '../services/api'
 import { CalendarIcon, MapPinIcon, UsersIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import SuccessDialog from '../components/SuccessDialog'
+import BannerSelector from '../components/BannerSelector'
+import { useAuth } from '../contexts/AuthContext'
+import DateTimeField from '../components/DateTimeField'
+import CategorySelect from '../components/CategorySelect'
 
 export default function CreateEvent() {
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    date: '',
-    time: '',
+    event_start: '',
+    event_end: '',
     location: '',
     category: '',
     max_attendees: '',
     image: null,
+    imageUrl: null,  // For predefined banners
     is_public: true,
     requires_approval: false
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [dateErrors, setDateErrors] = useState({ start: '', end: '' })
   const [imagePreview, setImagePreview] = useState(null)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [createdEvent, setCreatedEvent] = useState(null)
+  const [showBannerSelector, setShowBannerSelector] = useState(false)
+  const [selectedBanner, setSelectedBanner] = useState(null)
+  const [imageSource, setImageSource] = useState('upload') // 'upload' or 'banner'
   
   const navigate = useNavigate()
 
   const categories = [
     'music', 'tech', 'sports', 'food', 'art', 'business', 
-    'education', 'health', 'networking', 'entertainment'
+    'education', 'health', 'networking', 'entertainment',
+    'recreation', 'wedding', 'anniversary'
   ]
 
   const handleChange = (e) => {
@@ -41,7 +52,9 @@ export default function CreateEvent() {
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (file) {
-      setFormData({ ...formData, image: file })
+      setFormData({ ...formData, image: file, imageUrl: null })
+      setSelectedBanner(null)
+      setImageSource('upload')
       
       // Create preview
       const reader = new FileReader()
@@ -52,21 +65,93 @@ export default function CreateEvent() {
     }
   }
 
+  const handleBannerSelect = (banner) => {
+    setSelectedBanner(banner)
+    setFormData({ ...formData, imageUrl: banner.url, image: null })
+    setImagePreview(banner.url)
+    setImageSource('banner')
+    setShowBannerSelector(false)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setDateErrors({ start: '', end: '' })
+
+    // Validate dates
+    try {
+      if (!formData.event_start) {
+        setDateErrors((prev) => ({ ...prev, start: 'Event start is required' }))
+        setLoading(false)
+        return
+      }
+      const start = new Date(formData.event_start)
+      if (isNaN(start.getTime())) {
+        setDateErrors((prev) => ({ ...prev, start: 'Invalid start date' }))
+        setLoading(false)
+        return
+      }
+      if (formData.event_end) {
+        const end = new Date(formData.event_end)
+        if (isNaN(end.getTime())) {
+          setDateErrors((prev) => ({ ...prev, end: 'Invalid end date' }))
+          setLoading(false)
+          return
+        }
+        if (end < start) {
+          setDateErrors((prev) => ({ ...prev, end: 'End must be after start' }))
+          setLoading(false)
+          return
+        }
+      }
+    } catch (_) {
+      // fallback error
+    }
 
     try {
-      // Create FormData for file upload
-      const eventData = new FormData()
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== null && formData[key] !== '') {
-          eventData.append(key, formData[key])
+      let event
+      
+      if (imageSource === 'banner' && formData.imageUrl) {
+        // Use JSON for predefined banners
+        const eventData = {
+          title: formData.title,
+          description: formData.description,
+          event_start: formData.event_start,
+          event_end: formData.event_end || null,
+          location: formData.location,
+          category: formData.category,
+          max_attendees: parseInt(formData.max_attendees),
+          price: parseFloat(formData.price || 0),
+          image: formData.imageUrl,
+          requires_approval: formData.requires_approval
         }
-      })
+        event = await eventsAPI.create(eventData)
+      } else if (imageSource === 'upload' && formData.image) {
+        // Use FormData for file uploads (not implemented in backend yet)
+        const eventData = new FormData()
+        Object.keys(formData).forEach(key => {
+          if (key !== 'imageUrl' && formData[key] !== null && formData[key] !== '') {
+            eventData.append(key, formData[key])
+          }
+        })
+        event = await eventsAPI.create(eventData)
+      } else {
+        // No image
+        const eventData = {
+          title: formData.title,
+          description: formData.description,
+          event_start: formData.event_start,
+          event_end: formData.event_end || null,
+          location: formData.location,
+          category: formData.category,
+          max_attendees: parseInt(formData.max_attendees),
+          price: parseFloat(formData.price || 0),
+          requires_approval: formData.requires_approval
+        }
+        event = await eventsAPI.create(eventData)
+      }
 
-      const event = await eventsAPI.create(eventData)
       setCreatedEvent(event)
       setShowSuccessDialog(true)
       
@@ -74,16 +159,19 @@ export default function CreateEvent() {
       setFormData({
         title: '',
         description: '',
-        date: '',
-        time: '',
+        event_start: '',
+        event_end: '',
         location: '',
         category: '',
         max_attendees: '',
         image: null,
+        imageUrl: null,
         is_public: true,
         requires_approval: false
       })
       setImagePreview(null)
+      setSelectedBanner(null)
+      setImageSource('upload')
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create event')
     } finally {
@@ -152,24 +240,13 @@ export default function CreateEvent() {
             </div>
 
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <select
-                id="category"
-                name="category"
+              <CategorySelect
+                label="Category"
                 required
                 value={formData.category}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="">Select a category</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData((p) => ({ ...p, category: val }))}
+                options={categories}
+              />
             </div>
 
             <div>
@@ -198,34 +275,23 @@ export default function CreateEvent() {
           
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                <CalendarIcon className="h-4 w-4 inline mr-1" />
-                Event Date *
-              </label>
-              <input
-                type="date"
-                id="date"
-                name="date"
+              <DateTimeField
+                label={<span><CalendarIcon className="h-4 w-4 inline mr-1" />Event Start</span>}
                 required
-                value={formData.date}
-                onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                value={formData.event_start}
+                onChange={(iso) => setFormData((p) => ({ ...p, event_start: iso || '' }))}
+                minDate={new Date()}
+                error={dateErrors.start}
               />
             </div>
 
             <div>
-              <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
-                Event Time *
-              </label>
-              <input
-                type="time"
-                id="time"
-                name="time"
-                required
-                value={formData.time}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              <DateTimeField
+                label="Event End (optional)"
+                value={formData.event_end}
+                onChange={(iso) => setFormData((p) => ({ ...p, event_end: iso || '' }))}
+                minDate={formData.event_start || undefined}
+                error={dateErrors.end}
               />
             </div>
 
@@ -252,21 +318,65 @@ export default function CreateEvent() {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Event Image</h2>
           
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                <PhotoIcon className="h-4 w-4 inline mr-1" />
+          {/* Image Source Selection */}
+          <div className="mb-6">
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={() => setImageSource('upload')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  imageSource === 'upload'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
                 Upload Image
-              </label>
-              <input
-                type="file"
-                id="image"
-                name="image"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
+              </button>
+              <button
+                type="button"
+                onClick={() => setImageSource('banner')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  imageSource === 'banner'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Choose Banner
+              </button>
             </div>
+          </div>
+
+          <div className="space-y-4">
+            {imageSource === 'upload' ? (
+              <div>
+                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+                  <PhotoIcon className="h-4 w-4 inline mr-1" />
+                  Upload Image
+                </label>
+                <input
+                  type="file"
+                  id="image"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <PhotoIcon className="h-4 w-4 inline mr-1" />
+                  Predefined Banners
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowBannerSelector(true)}
+                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-primary-500 hover:text-primary-600 transition-colors"
+                >
+                  {selectedBanner ? `Selected: ${selectedBanner.name}` : 'Click to choose a banner'}
+                </button>
+              </div>
+            )}
 
             {imagePreview && (
               <div className="mt-4">
@@ -275,6 +385,9 @@ export default function CreateEvent() {
                   alt="Event preview"
                   className="w-full max-w-md h-48 object-cover rounded-lg"
                 />
+                {selectedBanner && (
+                  <p className="text-sm text-gray-600 mt-2">{selectedBanner.description}</p>
+                )}
               </div>
             )}
           </div>
@@ -342,6 +455,15 @@ export default function CreateEvent() {
         message={`Your event "${createdEvent?.title}" has been created and is now live. People can start discovering and joining your event.`}
         actionText="View Events"
         onAction={handleViewEvent}
+      />
+
+      {/* Banner Selector Modal */}
+      <BannerSelector
+        userRole={user?.role}
+        currentBanner={selectedBanner}
+        onBannerSelect={handleBannerSelect}
+        isOpen={showBannerSelector}
+        onClose={() => setShowBannerSelector(false)}
       />
     </div>
   )

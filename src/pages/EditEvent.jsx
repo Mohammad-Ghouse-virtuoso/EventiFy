@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { eventsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
-import { CalendarIcon, MapPinIcon, UsersIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import { CalendarIcon, MapPinIcon, UsersIcon } from '@heroicons/react/24/outline'
+import DateTimeField from '../components/DateTimeField'
 
 export default function EditEvent() {
   const { id } = useParams()
@@ -12,8 +13,8 @@ export default function EditEvent() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    date: '',
-    time: '',
+    event_start: '',
+    event_end: '',
     location: '',
     category: '',
     max_attendees: '',
@@ -25,10 +26,12 @@ export default function EditEvent() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [imagePreview, setImagePreview] = useState(null)
+  const [dateErrors, setDateErrors] = useState({ start: '', end: '' })
   
   const categories = [
     'music', 'tech', 'sports', 'food', 'art', 'business', 
-    'education', 'health', 'networking', 'entertainment'
+    'education', 'health', 'networking', 'entertainment',
+    'recreation', 'wedding', 'anniversary'
   ]
 
   useEffect(() => {
@@ -46,16 +49,15 @@ export default function EditEvent() {
         return
       }
 
-      // Parse date and time from the event date
-      const eventDate = new Date(event.date)
-      const dateStr = eventDate.toISOString().split('T')[0]
-      const timeStr = eventDate.toTimeString().slice(0, 5)
+      // Map event_start and optional event_end to datetime-local values
+  const startStr = event.event_start ? new Date(event.event_start).toISOString() : ''
+  const endStr = event.event_end ? new Date(event.event_end).toISOString() : ''
 
       setFormData({
         title: event.title || '',
         description: event.description || '',
-        date: dateStr,
-        time: timeStr,
+        event_start: startStr,
+        event_end: endStr,
         location: event.location || '',
         category: event.category || '',
         max_attendees: event.max_attendees || '',
@@ -97,13 +99,43 @@ export default function EditEvent() {
     e.preventDefault()
     setSaving(true)
     setError('')
+    setDateErrors({ start: '', end: '' })
+
+    // Validate start/end
+    try {
+      if (!formData.event_start) {
+        setDateErrors((p) => ({ ...p, start: 'Event start is required' }))
+        setSaving(false)
+        return
+      }
+      const start = new Date(formData.event_start)
+      if (isNaN(start.getTime())) {
+        setDateErrors((p) => ({ ...p, start: 'Invalid start date' }))
+        setSaving(false)
+        return
+      }
+      if (formData.event_end) {
+        const end = new Date(formData.event_end)
+        if (isNaN(end.getTime())) {
+          setDateErrors((p) => ({ ...p, end: 'Invalid end date' }))
+          setSaving(false)
+          return
+        }
+        if (end < start) {
+          setDateErrors((p) => ({ ...p, end: 'End must be after start' }))
+          setSaving(false)
+          return
+        }
+      }
+    } catch (_) {}
 
     try {
       // Prepare update data (exclude image for now as backend doesn't handle it)
       const updateData = {
         title: formData.title,
         description: formData.description,
-        date: `${formData.date}T${formData.time}:00`,
+        event_start: formData.event_start,
+        event_end: formData.event_end || null,
         location: formData.location,
         category: formData.category,
         max_attendees: parseInt(formData.max_attendees) || 0,
@@ -239,33 +271,22 @@ export default function EditEvent() {
           
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                <CalendarIcon className="h-4 w-4 inline mr-1" />
-                Date *
-              </label>
-              <input
-                type="date"
-                id="date"
-                name="date"
+              <DateTimeField
+                label={<span><CalendarIcon className="h-4 w-4 inline mr-1" />Event Start</span>}
                 required
-                value={formData.date}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                value={formData.event_start}
+                onChange={(iso) => setFormData((p) => ({ ...p, event_start: iso || '' }))}
+                error={dateErrors.start}
               />
             </div>
 
             <div>
-              <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
-                Time *
-              </label>
-              <input
-                type="time"
-                id="time"
-                name="time"
-                required
-                value={formData.time}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              <DateTimeField
+                label="Event End (optional)"
+                value={formData.event_end}
+                onChange={(iso) => setFormData((p) => ({ ...p, event_end: iso || '' }))}
+                minDate={formData.event_start || undefined}
+                error={dateErrors.end}
               />
             </div>
 

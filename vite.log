@@ -1,0 +1,34 @@
+
+> eventify@0.0.0 dev
+> vite
+
+
+  VITE v4.5.14  ready in 829 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: use --host to expose
+(node:4030) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+6:50:56 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+7:01:36 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+7:15:46 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
+7:15:56 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+7:16:07 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+7:18:28 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
+7:26:02 PM [vite] hmr update /src/contexts/AuthContext.jsx, /src/index.css, /src/pages/Events.jsx, /src/pages/CreateEvent.jsx, /src/pages/EditEvent.jsx, /src/pages/EventAnalytics.jsx, /src/pages/TestAuth.jsx, /src/pages/Dashboard.jsx, /src/pages/AdminPanel.jsx
+7:26:04 PM [vite] hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+7:26:04 PM [vite] page reload src/contexts/AuthContext.jsx
+7:26:16 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
+7:27:48 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+7:27:48 PM [vite] hmr update /src/contexts/AuthContext.jsx, /src/index.css, /src/pages/Events.jsx, /src/pages/CreateEvent.jsx, /src/pages/EditEvent.jsx, /src/pages/EventAnalytics.jsx, /src/pages/TestAuth.jsx, /src/pages/Dashboard.jsx, /src/pages/AdminPanel.jsx
+7:27:48 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
+7:27:49 PM [vite] hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+7:27:49 PM [vite] page reload src/contexts/AuthContext.jsx
+7:30:35 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
+7:30:50 PM [vite] hmr update /src/contexts/AuthContext.jsx, /src/index.css, /src/pages/Events.jsx, /src/pages/CreateEvent.jsx, /src/pages/EditEvent.jsx, /src/pages/EventAnalytics.jsx, /src/pages/TestAuth.jsx, /src/pages/Dashboard.jsx, /src/pages/AdminPanel.jsx
+7:30:51 PM [vite] hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+7:30:51 PM [vite] page reload src/contexts/AuthContext.jsx
+7:37:21 PM [vite] hmr update /src/contexts/AuthContext.jsx, /src/index.css, /src/pages/Events.jsx, /src/pages/CreateEvent.jsx, /src/pages/EditEvent.jsx, /src/pages/EventAnalytics.jsx, /src/pages/TestAuth.jsx, /src/pages/Dashboard.jsx, /src/pages/AdminPanel.jsx
+7:37:21 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
+7:37:22 PM [vite] hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+7:37:22 PM [vite] page reload src/contexts/AuthContext.jsx

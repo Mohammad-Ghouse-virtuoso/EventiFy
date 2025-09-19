@@ -76,7 +76,7 @@ const BANNER_IMAGES = {
     {
       id: 'admin-6',
       name: 'Festival Fiesta',
-      url: 'https://images.unsplash.com/photo-1482575832494-771f74bf6aed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      url: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
       description: 'Large-scale festivals, holiday celebrations, and traditional events'
     }
   ],

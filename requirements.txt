@@ -4,6 +4,7 @@ sqlmodel>=0.0.16
 psycopg2-binary>=2.9.9
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
+argon2-cffi>=23.1.0
 python-multipart>=0.0.9
 pillow>=10.4.0
 python-decouple>=3.8

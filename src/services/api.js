@@ -1,12 +1,15 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+// Default to relative '/api/v1' so Vite dev proxy can forward to backend (127.0.0.1:8001)
+// You can override with an absolute URL via VITE_API_URL
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api/v1'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 })
 
 // Add auth token to requests
@@ -22,17 +25,16 @@ api.interceptors.request.use((config) => {
 export const authAPI = {
   login: async (email, password) => {
     try {
-      const formData = new FormData()
-      formData.append('username', email)  // FastAPI OAuth2 expects 'username'
-      formData.append('password', password)
-
-      console.log('Attempting login for:', email)
-      const { data } = await api.post('/auth/login', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const t0 = performance?.now?.() || 0
+      if (import.meta.env?.DEV) console.debug('[DBG] login:start', email)
+      // Use x-www-form-urlencoded (faster/smaller than multipart)
+      const body = new URLSearchParams({ username: email, password })
+      const { data } = await api.post('/auth/login', body, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
-      console.log('Login response:', data)
+      const t1 = performance?.now?.() || 0
+      if (import.meta.env?.DEV) console.debug('[DBG] login:done in', (t1 - t0).toFixed(1), 'ms')
+      if (import.meta.env?.DEV) console.log('Login response user:', data?.user?.email || 'unknown')
       return data
     } catch (error) {
       console.error('Login error:', error.response?.data || error.message)
@@ -66,9 +68,9 @@ export const authAPI = {
 export const eventsAPI = {
   getAll: async (filters = {}) => {
     try {
-      console.log('Fetching events with filters:', filters)
+      if (import.meta.env?.DEV) console.log('Fetching events with filters:', filters)
       const { data } = await api.get('/events', { params: filters })
-      console.log('Events response:', data)
+      if (import.meta.env?.DEV) console.log('Events response count:', Array.isArray(data) ? data.length : 'n/a')
       return data
     } catch (error) {
       console.error('Events fetch error:', error.response?.data || error.message)
@@ -80,22 +82,53 @@ export const eventsAPI = {
     return data
   },
   create: async (eventData) => {
-    const { data } = await api.post('/events', eventData)
-    return data
+    const token = localStorage.getItem('token')
+    const authHeader = token ? { Authorization: `Bearer ${token}` } : {}
+    // Check if eventData is FormData (for file uploads)
+    if (eventData instanceof FormData) {
+      // Use upload endpoint for file uploads
+      const { data } = await api.post('/events/upload', eventData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...authHeader,
+        },
+      })
+      return data
+    } else {
+      // Use regular endpoint for JSON data
+      const { data } = await api.post('/events', eventData, {
+        headers: {
+          ...authHeader,
+        },
+      })
+      return data
+    }
   },
   update: async (id, eventData) => {
-    const { data } = await api.put(`/events/${id}`, eventData)
+    const token = localStorage.getItem('token')
+    const { data } = await api.put(`/events/${id}`, eventData, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
     return data
   },
   delete: async (id) => {
-    await api.delete(`/events/${id}`)
+    const token = localStorage.getItem('token')
+    await api.delete(`/events/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
   },
   rsvp: async (eventId, status) => {
-    const { data } = await api.post(`/events/${eventId}/rsvp`, { status })
+    const token = localStorage.getItem('token')
+    const { data } = await api.post(`/events/${eventId}/rsvp`, { status }, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
     return data
   },
   getRSVPs: async (eventId) => {
-    const { data } = await api.get(`/events/${eventId}/rsvps`)
+    const token = localStorage.getItem('token')
+    const { data } = await api.get(`/events/${eventId}/rsvps`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
     return data
   }
 }
@@ -107,7 +140,8 @@ export const adminAPI = {
     return data
   },
   getAllEventsWithRSVPs: async () => {
-    const events = await eventsAPI.getAll()
+    // Backend enforces limit <= 100; include past + inactive for admin views
+    const events = await eventsAPI.getAll({ include_past: true, include_inactive: true, limit: 100 })
     const eventsWithRSVPs = await Promise.all(
       events.map(async (event) => {
         try {
@@ -126,6 +160,18 @@ export const adminAPI = {
       })
     )
     return eventsWithRSVPs
+  },
+  getPendingRSVPs: async (eventId) => {
+    const { data } = await api.get(`/events/${eventId}/pending-rsvps`)
+    return data
+  },
+  approveRSVP: async (eventId, rsvpId) => {
+    const { data } = await api.post(`/events/${eventId}/rsvp/${rsvpId}/approve`)
+    return data
+  },
+  rejectRSVP: async (eventId, rsvpId) => {
+    const { data } = await api.post(`/events/${eventId}/rsvp/${rsvpId}/reject`)
+    return data
   }
 }
 

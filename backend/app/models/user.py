@@ -2,6 +2,7 @@ from sqlmodel import SQLModel, Field
 from typing import Optional
 from datetime import datetime
 from enum import Enum
+import sqlalchemy as sa
 
 class UserRole(str, Enum):
     ATTENDEE = "attendee"
@@ -11,7 +12,11 @@ class UserRole(str, Enum):
 class UserBase(SQLModel):
     email: str = Field(unique=True, index=True)
     full_name: str
-    role: UserRole = Field(default=UserRole.ATTENDEE)
+    # Persist as VARCHAR to avoid DB-native ENUM requirements; keep Python Enum for app logic
+    role: UserRole = Field(
+        default=UserRole.ATTENDEE,
+        sa_column=sa.Column(sa.String(20), nullable=False),
+    )
     is_active: bool = True
 
 class User(UserBase, table=True):

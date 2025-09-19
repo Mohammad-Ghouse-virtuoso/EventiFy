@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { eventsAPI } from '../services/api'
 import EventCard from '../components/EventCard'
+import VirtualizedEventsGrid from '../components/VirtualizedEventsGrid'
 import { useAuth } from '../contexts/AuthContext'
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline'
+import useDebounce from '../hooks/useDebounce'
 
 export default function Events() {
   const { user } = useAuth()
@@ -15,10 +17,27 @@ export default function Events() {
     date: '',
     location: ''
   })
+  const [page, setPage] = useState(1)
+  const limit = 12
+  const skip = useMemo(() => (page - 1) * limit, [page])
+  const [lastPageCount, setLastPageCount] = useState(0)
+  const categories = useMemo(() => ([
+    'music','tech','sports','food','art','business','education','health','networking','entertainment','recreation','wedding','anniversary'
+  ]), [])
 
+  // Debounced search + filters
+  const debouncedSearch = useDebounce(searchTerm, 350)
+  const debouncedFilters = useDebounce(filters, 350)
+
+  // Load on mount
   useEffect(() => {
-    loadEvents()
-  }, [filters])
+    const t0 = performance?.now?.() || 0
+    import.meta.env.DEV && console.debug('[DBG] events:load:start')
+    loadEvents().finally(() => {
+      const t1 = performance?.now?.() || 0
+      import.meta.env.DEV && console.debug('[DBG] events:load:done in', (t1 - t0).toFixed(1), 'ms')
+    })
+  }, [])
 
   useEffect(() => {
     // Reload events when user logs in/out to get fresh RSVP data
@@ -29,11 +48,25 @@ export default function Events() {
     }
   }, [user])
 
+  // Reload when page changes (pagination)
+  useEffect(() => {
+    loadEvents()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
+
+  // Reload when debounced search/filters change
+  useEffect(() => {
+    setPage(1)
+    loadEvents()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, debouncedFilters])
+
   const loadEvents = async () => {
     try {
       setLoading(true)
-      const data = await eventsAPI.getAll({ ...filters, search: searchTerm })
+  const data = await eventsAPI.getAll({ ...debouncedFilters, search: debouncedSearch, skip, limit })
       setEvents(data)
+      setLastPageCount(data.length)
 
       // Load user RSVPs if logged in
       if (user) {
@@ -74,26 +107,55 @@ export default function Events() {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    loadEvents()
+    const t0 = performance?.now?.() || 0
+    console.debug('[DBG] events:search:start', { searchTerm, filters })
+    // Reset to first page on new search
+    setPage(1)
+    loadEvents().finally(() => {
+      const t1 = performance?.now?.() || 0
+      console.debug('[DBG] events:search:done in', (t1 - t0).toFixed(1), 'ms')
+    })
   }
 
-  const handleRSVP = async (eventId, status) => {
+  const handleRSVP = useCallback(async (eventId, status) => {
     try {
       const result = await eventsAPI.rsvp(eventId, status)
+      import.meta.env.DEV && console.debug('[DBG] rsvp:ok', { eventId, status, result })
 
-      // Update local RSVP state immediately for better UX
-      setUserRSVPs(prev => {
-        const updated = {
-          ...prev,
-          [eventId]: { status, user_id: user.id }
-        }
-        return updated
-      })
+      // Determine new status:
+      // - If event requires approval and user marked going/maybe, reflect waiting_for_approval immediately
+      // - Otherwise, prefer server-returned status (string); fallback to requested status
+      const ev = events.find(e => e.id === eventId)
+      let newStatus
+      if (ev?.requires_approval && (status === 'going' || status === 'maybe')) {
+        newStatus = 'waiting_for_approval'
+      } else if (typeof result?.status === 'string') {
+        newStatus = result.status
+      } else {
+        newStatus = status
+      }
+      const prevStatus = userRSVPs[eventId]?.status
+      const countsAsAttendee = (s) => s === 'going' || s === 'approved'
+      const prevCount = prevStatus ? (countsAsAttendee(prevStatus) ? 1 : 0) : 0
+      const nextCount = countsAsAttendee(newStatus) ? 1 : 0
+      const delta = nextCount - prevCount
 
-      // Refresh events to update attendee count
-      loadEvents()
+      // Update local RSVP map with full object if available
+      setUserRSVPs(prev => ({
+        ...prev,
+        [eventId]: { ...(prev[eventId] || {}), status: newStatus, user_id: user.id }
+      }))
+
+      // Apply attendees_count delta
+      if (delta !== 0) {
+        setEvents(prev => prev.map(ev => {
+          if (ev.id !== eventId) return ev
+          return { ...ev, attendees_count: Math.max(0, (ev.attendees_count || 0) + delta) }
+        }))
+      }
     } catch (error) {
       console.error('RSVP failed:', error)
+      import.meta.env.DEV && console.debug('[DBG] rsvp:fail', { eventId, status, error: error?.message })
       // Remove the optimistic update on error
       setUserRSVPs(prev => {
         const updated = { ...prev }
@@ -101,7 +163,7 @@ export default function Events() {
         return updated
       })
     }
-  }
+  }, [events, user, userRSVPs])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -122,40 +184,37 @@ export default function Events() {
               />
             </div>
           </form>
+          <div className="space-y-3">
+            {/* Modern category chips */}
+            <div className="flex flex-wrap gap-2">
+              {[{key:'',label:'All'}, ...categories.map(c=>({key:c,label:c.charAt(0).toUpperCase()+c.slice(1)}))].map(cat => (
+                <button
+                  key={cat.key || 'all'}
+                  type="button"
+                  onClick={() => setFilters({ ...filters, category: cat.key })}
+                  className={`${filters.category===cat.key ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'} px-3 py-1 rounded-full text-sm transition-colors`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            <select
-              value={filters.category}
-              onChange={(e) => setFilters({...filters, category: e.target.value})}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="">All Categories</option>
-              <option value="music">Music</option>
-              <option value="tech">Technology</option>
-              <option value="sports">Sports</option>
-              <option value="food">Food & Drink</option>
-              <option value="art">Art & Culture</option>
-              <option value="business">Business</option>
-              <option value="education">Education</option>
-              <option value="health">Health & Wellness</option>
-              <option value="networking">Networking</option>
-              <option value="entertainment">Entertainment</option>
-            </select>
-
-            <input
-              type="date"
-              value={filters.date}
-              onChange={(e) => setFilters({...filters, date: e.target.value})}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500"
-            />
-
-            <input
-              type="text"
-              placeholder="Location"
-              value={filters.location}
-              onChange={(e) => setFilters({...filters, location: e.target.value})}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500"
-            />
+            {/* Date + Location */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <input
+                type="date"
+                value={filters.date}
+                onChange={(e) => setFilters({...filters, date: e.target.value})}
+                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500"
+              />
+              <input
+                type="text"
+                placeholder="Location"
+                value={filters.location}
+                onChange={(e) => setFilters({...filters, location: e.target.value})}
+                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 md:col-span-2"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -167,19 +226,46 @@ export default function Events() {
           <p className="mt-4 text-gray-600">Loading events...</p>
         </div>
       ) : events.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              onRSVP={handleRSVP}
-              userRSVP={userRSVPs[event.id]}
-            />
-          ))}
-        </div>
+        events.length > 24 ? (
+          <VirtualizedEventsGrid events={events} userRSVPs={userRSVPs} onRSVP={handleRSVP} />
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 will-change-transform" style={{
+            contain: 'paint layout style',
+          }}>
+            {events.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onRSVP={handleRSVP}
+                userRSVP={userRSVPs[event.id]}
+              />
+            ))}
+          </div>
+        )
       ) : (
         <div className="text-center py-12">
           <p className="text-gray-600 text-lg">No events found matching your criteria.</p>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {!loading && (
+        <div className="flex items-center justify-center gap-4 mt-8">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className={`px-4 py-2 rounded-md border ${page === 1 ? 'text-gray-400 border-gray-200 bg-gray-50' : 'text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">Page {page}</span>
+          <button
+            onClick={() => setPage(p => p + 1)}
+            disabled={lastPageCount < limit}
+            className={`px-4 py-2 rounded-md border ${lastPageCount < limit ? 'text-gray-400 border-gray-200 bg-gray-50' : 'text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

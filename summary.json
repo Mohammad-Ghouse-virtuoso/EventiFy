@@ -1,0 +1,8 @@
+{
+  "metrics": {
+    "p95": 3232.584689,
+    "fail_rate": 0,
+    "iterations": 284,
+    "vus": 50
+  }
+}

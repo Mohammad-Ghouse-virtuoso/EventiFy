@@ -1,0 +1,100 @@
+[DBG] Purge starting. Cutoff: 2025-09-10T00:00:00
+2025-09-17 19:40:23,882 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-17 19:40:23,893 INFO sqlalchemy.engine.Engine SELECT event.title, event.description, event.category, event.event_start, event.event_end, event.location, event.max_attendees, event.price, event.image, event.requires_approval, event.id, event.organizer_id, event.created_at, event.is_active 
+FROM event 
+WHERE event.event_start < ?
+2025-09-17 19:40:23,893 INFO sqlalchemy.engine.Engine [generated in 0.00029s] ('2025-09-10 00:00:00.000000',)
+2025-09-17 19:40:23,898 INFO sqlalchemy.engine.Engine SELECT rsvp.status, rsvp.notes, rsvp.id, rsvp.user_id, rsvp.event_id, rsvp.created_at, rsvp.updated_at, rsvp.checked_in, rsvp.checked_in_at, rsvp.approved_by, rsvp.approved_at 
+FROM rsvp 
+WHERE rsvp.event_id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-09-17 19:40:23,898 INFO sqlalchemy.engine.Engine [generated in 0.00049s] (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
+2025-09-17 19:40:23,914 INFO sqlalchemy.engine.Engine DELETE FROM event WHERE event.id = ?
+2025-09-17 19:40:23,914 INFO sqlalchemy.engine.Engine [generated in 0.00044s] [(1,), (2,), (3,), (4,), (5,), (6,), (7,), (8,)  ... displaying 10 of 24 total bound parameter sets ...  (23,), (24,)]
+2025-09-17 19:40:23,915 INFO sqlalchemy.engine.Engine ROLLBACK
+Traceback (most recent call last):
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1936, in _exec_single_context
+    self.dialect.do_executemany(
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 948, in do_executemany
+    cursor.executemany(statement, parameters)
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/mohx-nova/EventiFy/backend/scripts/purge_old_events.py", line 42, in <module>
+    purge_before(cutoff_dt)
+  File "/home/mohx-nova/EventiFy/backend/scripts/purge_old_events.py", line 34, in purge_before
+    session.commit()
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1313, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1288, in _prepare_impl
+    self.session.flush()
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 4345, in flush
+    self._flush(objects)
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 4480, in _flush
+    with util.safe_reraise():
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 4441, in _flush
+    flush_context.execute()
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/unitofwork.py", line 679, in execute
+    util.preloaded.orm_persistence.delete_obj(
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/persistence.py", line 193, in delete_obj
+    _emit_delete_statements(
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/orm/persistence.py", line 1471, in _emit_delete_statements
+    c = connection.execute(
+        ^^^^^^^^^^^^^^^^^^^
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1936, in _exec_single_context
+    self.dialect.do_executemany(
+  File "/home/mohx-nova/EventiFy/backend/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 948, in do_executemany
+    cursor.executemany(statement, parameters)
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) FOREIGN KEY constraint failed
+[SQL: DELETE FROM event WHERE event.id = ?]
+[parameters: [(1,), (2,), (3,), (4,), (5,), (6,), (7,), (8,)  ... displaying 10 of 24 total bound parameter sets ...  (23,), (24,)]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+[DBG] Purge starting. Cutoff: 2025-09-10T00:00:00
+2025-09-17 19:41:00,382 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-09-17 19:41:00,393 INFO sqlalchemy.engine.Engine SELECT event.title, event.description, event.category, event.event_start, event.event_end, event.location, event.max_attendees, event.price, event.image, event.requires_approval, event.id, event.organizer_id, event.created_at, event.is_active 
+FROM event 
+WHERE event.event_start < ?
+2025-09-17 19:41:00,393 INFO sqlalchemy.engine.Engine [generated in 0.00029s] ('2025-09-10 00:00:00.000000',)
+2025-09-17 19:41:00,397 INFO sqlalchemy.engine.Engine SELECT rsvp.status, rsvp.notes, rsvp.id, rsvp.user_id, rsvp.event_id, rsvp.created_at, rsvp.updated_at, rsvp.checked_in, rsvp.checked_in_at, rsvp.approved_by, rsvp.approved_at 
+FROM rsvp 
+WHERE rsvp.event_id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-09-17 19:41:00,398 INFO sqlalchemy.engine.Engine [generated in 0.00045s] (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
+[DBG] Deleting 83 RSVPs for 24 events...
+2025-09-17 19:41:00,408 INFO sqlalchemy.engine.Engine DELETE FROM rsvp WHERE rsvp.id = ?
+2025-09-17 19:41:00,408 INFO sqlalchemy.engine.Engine [generated in 0.00076s] [(1,), (2,), (3,), (4,), (5,), (6,), (7,), (8,)  ... displaying 10 of 83 total bound parameter sets ...  (86,), (87,)]
+[DBG] RSVPs deleted, deleting events...
+2025-09-17 19:41:00,412 INFO sqlalchemy.engine.Engine DELETE FROM event WHERE event.id = ?
+2025-09-17 19:41:00,412 INFO sqlalchemy.engine.Engine [generated in 0.00038s] [(1,), (2,), (3,), (4,), (5,), (6,), (7,), (8,)  ... displaying 10 of 24 total bound parameter sets ...  (23,), (24,)]
+2025-09-17 19:41:00,413 INFO sqlalchemy.engine.Engine COMMIT
+[DBG] Purge complete. RSVPs: 83, Events: 24

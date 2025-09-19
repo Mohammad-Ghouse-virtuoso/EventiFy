@@ -32,14 +32,19 @@ try:
     print("\n" + "="*60)
     print("🎉 EVENTS TABLE:")
     print("-" * 60)
-    cursor.execute("SELECT id, title, date, location, organizer_id, price FROM event")
+    # Use current schema fields (event_start instead of legacy 'date')
+    cursor.execute("SELECT id, title, event_start, organizer_id, price FROM event")
     events = cursor.fetchall()
     
-    print(f"{'ID':<3} {'Title':<30} {'Date':<12} {'Organizer':<10} {'Price'}")
+    print(f"{'ID':<3} {'Title':<30} {'Start':<19} {'Organizer':<10} {'Price'}")
     print("-" * 60)
     for event in events:
-        date_str = event[2][:10] if event[2] else 'N/A'  # Extract date part
-        print(f"{event[0]:<3} {event[1][:29]:<30} {date_str:<12} {event[4]:<10} ${event[5]}")
+        start_str = (event[2] or 'N/A')
+        # Ensure string and trim for display
+        if isinstance(start_str, bytes):
+            start_str = start_str.decode('utf-8', errors='ignore')
+        start_str = str(start_str)[:19]
+        print(f"{event[0]:<3} {event[1][:29]:<30} {start_str:<19} {event[3]:<10} ${event[4]}")
     
     print(f"\nTotal Events: {len(events)}")
     

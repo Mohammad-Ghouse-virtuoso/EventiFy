@@ -19,7 +19,10 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token')
     if (token) {
       authAPI.getProfile()
-        .then(setUser)
+        .then((u) => {
+          const normalized = u ? { ...u, role: String(u.role).toLowerCase().replace('userrole.', '') } : null
+          setUser(normalized)
+        })
         .catch(() => localStorage.removeItem('token'))
         .finally(() => setLoading(false))
     } else {
@@ -30,15 +33,18 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const { user, access_token } = await authAPI.login(email, password)
     localStorage.setItem('token', access_token)
-    setUser(user)
-    return user
+    // Normalize role to lowercase string in case backend returns Enum-like values
+    const normalized = user ? { ...user, role: String(user.role).toLowerCase().replace('userrole.', '') } : null
+    setUser(normalized)
+    return normalized
   }
 
   const register = async (userData) => {
     const { user, access_token } = await authAPI.register(userData)
     localStorage.setItem('token', access_token)
-    setUser(user)
-    return user
+    const normalized = user ? { ...user, role: String(user.role).toLowerCase().replace('userrole.', '') } : null
+    setUser(normalized)
+    return normalized
   }
 
   const logout = () => {
