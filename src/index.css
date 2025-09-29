@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide horizontal scrollbar for aesthetic carousel appearance */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 @layer utilities {
   .line-clamp-2 {
     overflow: hidden;

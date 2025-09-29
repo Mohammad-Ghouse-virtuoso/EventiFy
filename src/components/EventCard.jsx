@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from 'react'
+import placeholderImg from '../../assets/doodle.png'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { CalendarIcon, MapPinIcon, UserGroupIcon } from '@heroicons/react/24/outline'
@@ -19,7 +20,8 @@ function EventCard({ event, onRSVP, userRSVP }) {
   // Use relative base so Vite proxy handles API origin in dev
   const apiBase = import.meta.env.VITE_API_URL ?? '/api/v1'
   // Prefer thumbnail on list for performance; fall back to image
-  const cardImage = event?.thumbnail || event?.image
+  const [imgError, setImgError] = useState(false)
+  const cardImage = (!imgError && (event?.thumbnail || event?.image)) || event?.image || event?.thumbnail || placeholderImg
   const imageSrc = useMemo(() => {
     if (!cardImage) return null
     // If it's already absolute (http/https), use as-is
@@ -173,6 +175,7 @@ function EventCard({ event, onRSVP, userRSVP }) {
             loading="lazy"
             decoding="async"
             fetchpriority="low"
+            referrerPolicy="no-referrer"
             sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
             width={300}
             height={200}
@@ -181,6 +184,16 @@ function EventCard({ event, onRSVP, userRSVP }) {
               const wrapper = e.currentTarget.parentElement
               const skel = wrapper?.querySelector('.animate-pulse')
               if (skel) skel.classList.add('hidden')
+            }}
+            onError={(e) => {
+              setImgError(true)
+              // Hide skeleton to avoid gray block, and swap to placeholder
+              const wrapper = e.currentTarget.parentElement
+              const skel = wrapper?.querySelector('.animate-pulse')
+              if (skel) skel.classList.add('hidden')
+              try {
+                e.currentTarget.src = placeholderImg
+              } catch {}
             }}
           />
         )}

@@ -1,6 +1,11 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { CalendarDaysIcon, UserGroupIcon, QrCodeIcon, SparklesIcon, ArrowRightIcon, PlayIcon } from '@heroicons/react/24/outline'
+import EventifyHeroCard from '../components/EventifyHeroCard'
+import heroArtwork from '../../assets/EventiFy Hero Card.jpg'
+import EventifyAudienceGrid from '../components/EventifyAudienceGrid'
+import ActiveEventsCarousel from '../components/ActiveEventsCarousel'
+import HowItWorks from '../components/HowItWorks'
 
 // Custom sparkles star icon component (same as Navbar)
 const CustomSparklesIcon = ({ className }) => (
@@ -32,6 +37,12 @@ const CustomSparklesIcon = ({ className }) => (
 
 export default function Home() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  // Rollback switch: set to false to restore the previous hero instantly
+  const USE_NEW_HERO = true
+  const USE_AUDIENCE_GRID = true
+  const USE_ACTIVE_EVENTS = true
+  const USE_HOW_IT_WORKS = true
 
   const features = [
     {
@@ -54,93 +65,114 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative bg-gradient-hero text-white overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-secondary-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-400/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+      {USE_NEW_HERO ? (
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
+          <EventifyHeroCard
+            onGetStarted={() => navigate(user ? '/events' : '/register')}
+            illustrationSrc={heroArtwork}
+            illustrationAlt="EventiFy hero artwork: happy attendee with laptop and flower"
+          />
         </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-24">
-          <div className="text-center animate-fade-in">
-            <div className="flex items-center justify-center mb-8">
-              <div className="relative">
-                <CustomSparklesIcon className="h-16 w-16 drop-shadow-md animate-bounce-in" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
+      ) : (
+        // Legacy hero (kept for easy rollback)
+        <div className="relative bg-gradient-hero text-white overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0">
+            <div className="absolute top-20 left-20 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-80 h-80 bg-secondary-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-400/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+          </div>
+          <div className="relative z-10 max-w-7xl mx-auto px-4 py-24">
+            <div className="text-center animate-fade-in">
+              <div className="flex items-center justify-center mb-8">
+                <div className="relative">
+                  <CustomSparklesIcon className="h-16 w-16 drop-shadow-md animate-bounce-in" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
+                </div>
+                <h1 className="text-display-xl font-bold ml-4">
+                  Event<span className="text-secondary-300">iFy</span>
+                </h1>
               </div>
-              <h1 className="text-display-xl font-bold ml-4">
-                Event<span className="text-secondary-300">iFy</span>
-              </h1>
-            </div>
-
-            <h2 className="text-display-md mb-8 leading-tight animate-slide-up">
-              The modern way to create, manage,
-              <br />
-              <span className="text-secondary-300">and attend events</span>
-            </h2>
-
-            <p className="text-xl mb-12 max-w-3xl mx-auto text-white/90 leading-relaxed animate-slide-up">
-              Built for Gen-Z with clean design, lightning-fast performance, and intuitive features.
-              Connect with your community and create unforgettable memories.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-slide-up">
-              {user ? (
-                <>
-                  <Link
-                    to="/events"
-                    className="btn bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
-                  >
-                    <CalendarDaysIcon className="h-5 w-5 mr-2" />
-                    Browse Events
-                  </Link>
-                  <Link
-                    to="/create-event"
-                    className="btn border-2 border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/10 hover:border-white transition-all duration-200 flex items-center justify-center"
-                  >
-                    <SparklesIcon className="h-5 w-5 mr-2" />
-                    Create Event
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/register"
-                    className="btn bg-gradient-secondary text-white px-8 py-4 rounded-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
-                  >
-                    <PlayIcon className="h-5 w-5 mr-2" />
-                    Get Started
-                  </Link>
-                  <Link
-                    to="/events"
-                    className="btn border-2 border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/10 hover:border-white transition-all duration-200 flex items-center justify-center"
-                  >
-                    Browse Events
-                    <ArrowRightIcon className="h-5 w-5 ml-2" />
-                  </Link>
-                </>
-              )}
-            </div>
-
-            {/* Stats Section */}
-            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-slide-up">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-secondary-300 mb-2">1000+</div>
-                <div className="text-white/80">Events Created</div>
+              <h2 className="text-display-md mb-8 leading-tight animate-slide-up">
+                The modern way to create, manage,
+                <br />
+                <span className="text-secondary-300">and attend events</span>
+              </h2>
+              <p className="text-xl mb-12 max-w-3xl mx-auto text-white/90 leading-relaxed animate-slide-up">
+                Built for Gen-Z with clean design, lightning-fast performance, and intuitive features.
+                Connect with your community and create unforgettable memories.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-slide-up">
+                {user ? (
+                  <>
+                    <Link
+                      to="/events"
+                      className="btn bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+                    >
+                      <CalendarDaysIcon className="h-5 w-5 mr-2" />
+                      Browse Events
+                    </Link>
+                    <Link
+                      to="/create-event"
+                      className="btn border-2 border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/10 hover:border-white transition-all duration-200 flex items-center justify-center"
+                    >
+                      <SparklesIcon className="h-5 w-5 mr-2" />
+                      Create Event
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/register"
+                      className="btn bg-gradient-secondary text-white px-8 py-4 rounded-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+                    >
+                      <PlayIcon className="h-5 w-5 mr-2" />
+                      Get Started
+                    </Link>
+                    <Link
+                      to="/events"
+                      className="btn border-2 border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/10 hover:border-white transition-all duration-200 flex items-center justify-center"
+                    >
+                      Browse Events
+                      <ArrowRightIcon className="h-5 w-5 ml-2" />
+                    </Link>
+                  </>
+                )}
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-secondary-300 mb-2">5000+</div>
-                <div className="text-white/80">Happy Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-secondary-300 mb-2">50+</div>
-                <div className="text-white/80">Cities Covered</div>
+              {/* Stats Section */}
+              <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-slide-up">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-secondary-300 mb-2">1000+</div>
+                  <div className="text-white/80">Events Created</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-secondary-300 mb-2">5000+</div>
+                  <div className="text-white/80">Happy Users</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-secondary-300 mb-2">50+</div>
+                  <div className="text-white/80">Cities Covered</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Audience Grid Section */}
+      {USE_AUDIENCE_GRID && (
+        <EventifyAudienceGrid />
+      )}
+
+      {USE_ACTIVE_EVENTS && (
+        <div className="py-8">
+          <ActiveEventsCarousel />
+        </div>
+      )}
+
+      {USE_HOW_IT_WORKS && (
+        <HowItWorks />
+      )}
 
       {/* Features Section */}
       <div className="py-24 bg-gradient-to-b from-gray-50 to-white">

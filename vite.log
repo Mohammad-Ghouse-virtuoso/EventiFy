@@ -3,32 +3,39 @@
 > vite
 
 
-  VITE v4.5.14  ready in 829 ms
+  VITE v4.5.14  ready in 1098 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: use --host to expose
-(node:4030) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(node:13092) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-6:50:56 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
-7:01:36 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
-7:15:46 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
-7:15:56 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
-7:16:07 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
-7:18:28 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
-7:26:02 PM [vite] hmr update /src/contexts/AuthContext.jsx, /src/index.css, /src/pages/Events.jsx, /src/pages/CreateEvent.jsx, /src/pages/EditEvent.jsx, /src/pages/EventAnalytics.jsx, /src/pages/TestAuth.jsx, /src/pages/Dashboard.jsx, /src/pages/AdminPanel.jsx
-7:26:04 PM [vite] hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-7:26:04 PM [vite] page reload src/contexts/AuthContext.jsx
-7:26:16 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
-7:27:48 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
-7:27:48 PM [vite] hmr update /src/contexts/AuthContext.jsx, /src/index.css, /src/pages/Events.jsx, /src/pages/CreateEvent.jsx, /src/pages/EditEvent.jsx, /src/pages/EventAnalytics.jsx, /src/pages/TestAuth.jsx, /src/pages/Dashboard.jsx, /src/pages/AdminPanel.jsx
-7:27:48 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
-7:27:49 PM [vite] hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-7:27:49 PM [vite] page reload src/contexts/AuthContext.jsx
-7:30:35 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
-7:30:50 PM [vite] hmr update /src/contexts/AuthContext.jsx, /src/index.css, /src/pages/Events.jsx, /src/pages/CreateEvent.jsx, /src/pages/EditEvent.jsx, /src/pages/EventAnalytics.jsx, /src/pages/TestAuth.jsx, /src/pages/Dashboard.jsx, /src/pages/AdminPanel.jsx
-7:30:51 PM [vite] hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-7:30:51 PM [vite] page reload src/contexts/AuthContext.jsx
-7:37:21 PM [vite] hmr update /src/contexts/AuthContext.jsx, /src/index.css, /src/pages/Events.jsx, /src/pages/CreateEvent.jsx, /src/pages/EditEvent.jsx, /src/pages/EventAnalytics.jsx, /src/pages/TestAuth.jsx, /src/pages/Dashboard.jsx, /src/pages/AdminPanel.jsx
-7:37:21 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
-7:37:22 PM [vite] hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-7:37:22 PM [vite] page reload src/contexts/AuthContext.jsx
+9:03:38 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:04:46 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:07:36 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+9:07:49 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:09:22 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:09:22 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+9:11:42 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+9:12:42 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+9:20:56 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:21:51 PM [vite] hmr update /src/components/EventifyAudienceGrid.jsx, /src/index.css
+9:37:56 PM [vite] hmr update /src/components/EventifyAudienceGrid.jsx, /src/index.css
+9:37:56 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:41:12 PM [vite] hmr update /src/components/EventifyAudienceGrid.jsx, /src/index.css
+9:43:08 PM [vite] hmr update /src/components/EventifyAudienceGrid.jsx, /src/index.css
+9:47:32 PM [vite] hmr update /src/index.css
+9:47:47 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:49:37 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:49:37 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
+9:49:37 PM [vite] hmr update /src/index.css
+9:57:13 PM [vite] hmr update /src/components/EventCard.jsx, /src/index.css
+9:57:59 PM [vite] hmr update /src/components/EventCard.jsx, /src/index.css
+10:01:12 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
+10:01:55 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
+10:01:55 PM [vite] hmr update /src/components/EventCard.jsx, /src/index.css
+10:26:04 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+10:27:11 PM [vite] page reload dist/index.html
+10:33:48 PM [vite] hmr update /src/components/HowItWorks.jsx, /src/index.css
+10:33:49 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+10:56:12 PM [vite] hmr update /src/components/HowItWorks.jsx, /src/index.css
+10:59:07 PM [vite] hmr update /src/components/HowItWorks.jsx, /src/index.css
