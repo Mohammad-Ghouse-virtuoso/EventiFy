@@ -3,39 +3,126 @@
 > vite
 
 
-  VITE v4.5.14  ready in 1098 ms
+  VITE v4.5.14  ready in 1038 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: use --host to expose
-(node:13092) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(node:14144) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-9:03:38 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-9:04:46 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-9:07:36 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
-9:07:49 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-9:09:22 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-9:09:22 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
-9:11:42 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
-9:12:42 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
-9:20:56 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-9:21:51 PM [vite] hmr update /src/components/EventifyAudienceGrid.jsx, /src/index.css
-9:37:56 PM [vite] hmr update /src/components/EventifyAudienceGrid.jsx, /src/index.css
-9:37:56 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-9:41:12 PM [vite] hmr update /src/components/EventifyAudienceGrid.jsx, /src/index.css
-9:43:08 PM [vite] hmr update /src/components/EventifyAudienceGrid.jsx, /src/index.css
-9:47:32 PM [vite] hmr update /src/index.css
-9:47:47 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-9:49:37 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-9:49:37 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
-9:49:37 PM [vite] hmr update /src/index.css
-9:57:13 PM [vite] hmr update /src/components/EventCard.jsx, /src/index.css
-9:57:59 PM [vite] hmr update /src/components/EventCard.jsx, /src/index.css
-10:01:12 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
-10:01:55 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
-10:01:55 PM [vite] hmr update /src/components/EventCard.jsx, /src/index.css
-10:26:04 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-10:27:11 PM [vite] page reload dist/index.html
-10:33:48 PM [vite] hmr update /src/components/HowItWorks.jsx, /src/index.css
-10:33:49 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-10:56:12 PM [vite] hmr update /src/components/HowItWorks.jsx, /src/index.css
-10:59:07 PM [vite] hmr update /src/components/HowItWorks.jsx, /src/index.css
+1:28:49 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
+1:29:02 PM [vite] hmr update /src/components/HowItWorks.jsx, /src/index.css
+1:30:59 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+1:31:00 PM [vite] Internal server error: Failed to resolve import "../components/TestimonialsSection" from "src/pages/Home.jsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/mohx-nova/EventiFy/src/pages/Home.jsx:9:32
+  23 |  import ActiveEventsCarousel from "../components/ActiveEventsCarousel";
+  24 |  import HowItWorks from "../components/HowItWorks";
+  25 |  import TestimonialsSection from "../components/TestimonialsSection";
+     |                                   ^
+  26 |  const CustomSparklesIcon = ({
+  27 |    className
+      at formatError (file:///home/mohx-nova/EventiFy/node_modules/vite/dist/node/chunks/dep-827b23df.js:44066:46)
+      at TransformContext.error (file:///home/mohx-nova/EventiFy/node_modules/vite/dist/node/chunks/dep-827b23df.js:44062:19)
+      at normalizeUrl (file:///home/mohx-nova/EventiFy/node_modules/vite/dist/node/chunks/dep-827b23df.js:41845:33)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///home/mohx-nova/EventiFy/node_modules/vite/dist/node/chunks/dep-827b23df.js:41999:47
+      at async Promise.all (index 11)
+      at async TransformContext.transform (file:///home/mohx-nova/EventiFy/node_modules/vite/dist/node/chunks/dep-827b23df.js:41915:13)
+      at async Object.transform (file:///home/mohx-nova/EventiFy/node_modules/vite/dist/node/chunks/dep-827b23df.js:44356:30)
+      at async loadAndTransform (file:///home/mohx-nova/EventiFy/node_modules/vite/dist/node/chunks/dep-827b23df.js:55088:29)
+      at async viteTransformMiddleware (file:///home/mohx-nova/EventiFy/node_modules/vite/dist/node/chunks/dep-827b23df.js:64699:32)
+1:32:53 PM [vite] page reload dist/index.html
+1:34:34 PM [vite] hmr update /src/App.jsx, /src/index.css
+1:34:34 PM [vite] hmr update /src/components/HowItWorks.jsx, /src/index.css
+1:34:34 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
+1:45:57 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+1:47:31 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+2:10:29 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
+2:10:54 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
+2:11:22 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+2:14:29 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+2:14:29 PM [vite] hmr update /src/components/ActiveEventsCarousel.jsx, /src/index.css
+2:17:10 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+6:46:38 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+6:54:26 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+6:54:27 PM [vite] warning: Duplicate "onMouseLeave" attribute in JSX element
+152|          pausedRef.current = true;
+153|          clearTimer();
+154|        }} onMouseLeave={() => {
+   |           ^
+155|          pausedRef.current = false;
+156|          startTimer();
+
+  Plugin: vite:esbuild
+  File: /home/mohx-nova/EventiFy/src/components/TestimonialsSection.jsx
+6:55:45 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+7:04:20 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+7:08:57 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+7:09:46 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+7:11:00 PM [vite] hmr update /src/components/ClosingCTA.jsx, /src/index.css
+7:11:00 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+7:11:00 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+7:15:34 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+7:15:57 PM [vite] hmr update /src/components/ClosingCTA.jsx, /src/index.css
+7:16:38 PM [vite] page reload dist/index.html
+7:18:17 PM [vite] hmr update /src/components/ClosingCTA.jsx, /src/index.css
+7:18:17 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+7:19:26 PM [vite] hmr update /src/index.css
+7:19:39 PM [vite] hmr update /src/components/ClosingCTA.jsx, /src/index.css
+7:20:13 PM [vite] page reload dist/index.html
+7:22:32 PM [vite] hmr update /src/index.css
+7:22:32 PM [vite] hmr update /src/components/ClosingCTA.jsx, /src/index.css
+7:51:56 PM [vite] hmr update /src/pages/Register.jsx, /src/index.css
+7:54:22 PM [vite] hmr update /src/pages/Register.jsx, /src/index.css
+8:04:39 PM [vite] hmr update /src/App.jsx, /src/index.css
+8:04:54 PM [vite] hmr update /src/pages/Register.jsx, /src/index.css
+8:06:20 PM [vite] hmr update /src/pages/Register.jsx, /src/index.css
+8:08:50 PM [vite] hmr update /src/pages/Register.jsx, /src/index.css
+8:08:50 PM [vite] hmr update /src/App.jsx, /src/index.css
+8:13:04 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+8:17:30 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+8:17:30 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+8:34:48 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+8:35:03 PM [vite] hmr update /src/App.jsx, /src/index.css
+8:37:18 PM [vite] page reload dist/index.html
+8:40:40 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+8:40:40 PM [vite] hmr update /src/App.jsx, /src/index.css
+9:16:47 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:17:03 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:18:23 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:18:43 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:21:52 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+9:21:52 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:24:34 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:25:44 PM [vite] hmr update /src/components/Footer.jsx, /src/index.css
+9:28:04 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:28:04 PM [vite] hmr update /src/components/Footer.jsx, /src/index.css
+9:32:54 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:34:39 PM [vite] hmr update /src/App.jsx, /src/index.css
+9:35:03 PM [vite] hmr update /src/components/Footer.jsx, /src/index.css
+9:35:29 PM [vite] page reload dist/index.html
+9:37:17 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:37:17 PM [vite] hmr update /src/App.jsx, /src/index.css
+9:37:17 PM [vite] hmr update /src/pages/ContactUs.jsx, /src/index.css
+9:37:17 PM [vite] hmr update /src/pages/HelpCenter.jsx, /src/index.css
+9:37:17 PM [vite] hmr update /src/components/Footer.jsx, /src/index.css
+9:37:17 PM [vite] hmr update /src/pages/PrivacyPolicy.jsx, /src/index.css
+9:37:17 PM [vite] hmr update /src/pages/TermsOfService.jsx, /src/index.css
+9:42:24 PM [vite] hmr update /src/components/Footer.jsx, /src/index.css
+9:42:46 PM [vite] hmr update /src/pages/HelpCenter.jsx, /src/index.css
+9:43:09 PM [vite] hmr update /src/pages/ContactUs.jsx, /src/index.css
+9:43:32 PM [vite] hmr update /src/pages/PrivacyPolicy.jsx, /src/index.css
+9:43:52 PM [vite] hmr update /src/pages/TermsOfService.jsx, /src/index.css
+9:44:22 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:46:57 PM [vite] hmr update /src/components/Footer.jsx, /src/index.css
+9:46:58 PM [vite] hmr update /src/pages/ContactUs.jsx, /src/index.css
+9:46:58 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+9:46:58 PM [vite] hmr update /src/pages/HelpCenter.jsx, /src/index.css
+9:46:58 PM [vite] hmr update /src/pages/PrivacyPolicy.jsx, /src/index.css
+9:46:58 PM [vite] hmr update /src/pages/TermsOfService.jsx, /src/index.css
+9:59:29 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+10:00:46 PM [vite] hmr update /src/components/Footer.jsx, /src/index.css
+10:06:27 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+10:06:27 PM [vite] hmr update /src/components/Footer.jsx, /src/index.css
+10:10:41 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css
+10:15:42 PM [vite] hmr update /src/components/TrustedPartnersSection.jsx, /src/index.css

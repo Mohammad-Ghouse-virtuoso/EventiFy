@@ -13,4 +13,20 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
+
+  /* Subtle floating animation for decorative doodles */
+  @keyframes float-soft {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+  }
+  .animate-float-soft {
+    animation: float-soft 6s ease-in-out infinite;
+    will-change: transform;
+  }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-soft { animation: none !important; }
 }

@@ -6,6 +6,9 @@ import heroArtwork from '../../assets/EventiFy Hero Card.jpg'
 import EventifyAudienceGrid from '../components/EventifyAudienceGrid'
 import ActiveEventsCarousel from '../components/ActiveEventsCarousel'
 import HowItWorks from '../components/HowItWorks'
+import TestimonialsSection from '../components/TestimonialsSection'
+import ClosingCTA from '../components/ClosingCTA'
+import TrustedPartnersSection from '../components/TrustedPartnersSection'
 
 // Custom sparkles star icon component (same as Navbar)
 const CustomSparklesIcon = ({ className }) => (
@@ -44,23 +47,7 @@ export default function Home() {
   const USE_ACTIVE_EVENTS = true
   const USE_HOW_IT_WORKS = true
 
-  const features = [
-    {
-      icon: CalendarDaysIcon,
-      title: 'Easy Event Creation',
-      description: 'Create and manage events with our intuitive interface'
-    },
-    {
-      icon: UserGroupIcon,
-      title: 'Smart RSVP System',
-      description: 'Track attendees and manage capacity effortlessly'
-    },
-    {
-      icon: QrCodeIcon,
-      title: 'QR Code Check-ins',
-      description: 'Seamless event check-ins with QR code generation'
-    }
-  ]
+  // Features removed per request
 
   return (
     <div className="min-h-screen">
@@ -159,6 +146,9 @@ export default function Home() {
         </div>
       )}
 
+      {/* Trusted Partners / Organizers section */}
+      <TrustedPartnersSection className="bg-white" titleVariant="organizers" />
+
       {/* Audience Grid Section */}
       {USE_AUDIENCE_GRID && (
         <EventifyAudienceGrid />
@@ -174,31 +164,11 @@ export default function Home() {
         <HowItWorks />
       )}
 
-      {/* Features Section */}
-      <div className="py-24 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-20 animate-fade-in">
-            <h2 className="text-display-md text-gray-900 mb-6">
-              Why Choose EventiFy?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Everything you need to create memorable events and connect with your community
-            </p>
-          </div>
+      {/* Testimonials Section */}
+      <TestimonialsSection />
 
-          <div className="grid md:grid-cols-3 gap-12">
-            {features.map((feature, index) => (
-              <div key={index} className="text-center p-8 card hover-lift animate-slide-up" style={{animationDelay: `${index * 200}ms`}}>
-                <div className="bg-gradient-primary w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <feature.icon className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-4 text-gray-900">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Closing CTA */}
+      <ClosingCTA className="mt-8" onSignUp={() => navigate('/register')} />
     </div>
   )
 }

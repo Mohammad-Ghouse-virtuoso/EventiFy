@@ -18,6 +18,7 @@ export default function Register() {
   
   const { register } = useAuth()
   const navigate = useNavigate()
+  const currentYear = new Date().getFullYear()
 
   const handleChange = (e) => {
     setFormData({
@@ -254,6 +255,13 @@ export default function Register() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Minimal bottom line (no footer sections) */}
+      <div className="absolute bottom-3 left-0 right-0 z-10">
+        <p className="text-center text-white/80 text-xs sm:text-sm">
+          © {currentYear}, Copyright EventiFy. All Rights Reserved.
+        </p>
       </div>
     </div>
   )

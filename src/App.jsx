@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -14,6 +14,10 @@ import AdminPanel from './pages/AdminPanel'
 import EventAnalytics from './pages/EventAnalytics'
 import TestAuth from './pages/TestAuth'
 import './styles/modern.css'
+import HelpCenter from './pages/HelpCenter'
+import ContactUs from './pages/ContactUs'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 
 // Simple role-based route guard
 function RequireRole({ allowed, children }) {
@@ -71,9 +75,15 @@ function App() {
             />
             <Route path="/test-auth" element={<TestAuth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            {/* Support pages */}
+            <Route path="/help" element={<HelpCenter />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
           </Routes>
         </main>
-        <Footer />
+        {/* Hide footer on register page */}
+        <ConditionalFooter />
         <NotificationContainer />
       </div>
     </Router>
@@ -81,3 +91,11 @@ function App() {
 }
 
 export default App
+
+// Helper component to conditionally render Footer based on route
+function ConditionalFooter() {
+  const location = useLocation()
+  const hideFooter = location.pathname.startsWith('/register') || location.pathname.startsWith('/login')
+  if (hideFooter) return null
+  return <Footer />
+}

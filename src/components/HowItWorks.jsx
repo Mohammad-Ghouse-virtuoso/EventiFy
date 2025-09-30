@@ -46,7 +46,7 @@ export default function HowItWorks({ className = '' }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-12">
           <h2 id="hiw-title" className="text-2xl sm:text-3xl font-bold text-gray-900">
-            How it works
+            How it works?
           </h2>
           <p className="mt-2 text-gray-600 text-sm sm:text-base">Fast to learn, even faster to use</p>
         </div>

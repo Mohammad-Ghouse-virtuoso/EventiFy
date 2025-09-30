@@ -70,6 +70,9 @@ export default function ActiveEventsCarousel({ className = '' }) {
   const scrollerRef = useRef(null)
   const [canPrev, setCanPrev] = useState(false)
   const [canNext, setCanNext] = useState(false)
+  // Drag/Swipe state
+  const dragState = useRef({ isDown: false, startX: 0, startLeft: 0, velocity: 0, lastX: 0, lastTime: 0 })
+  const [isDragging, setIsDragging] = useState(false)
 
   const assessScroll = useCallback(() => {
     const el = scrollerRef.current
@@ -119,13 +122,56 @@ export default function ActiveEventsCarousel({ className = '' }) {
     el.scrollBy({ left: delta, behavior: 'smooth' })
   }
 
+  // Pointer/Touch handlers for swipe
+  const onPointerDown = (e) => {
+    const el = scrollerRef.current
+    if (!el) return
+    dragState.current.isDown = true
+    setIsDragging(true)
+    dragState.current.startX = e.clientX ?? (e.touches ? e.touches[0].clientX : 0)
+    dragState.current.startLeft = el.scrollLeft
+    dragState.current.lastX = dragState.current.startX
+    dragState.current.lastTime = performance.now()
+    dragState.current.velocity = 0
+  }
+
+  const onPointerMove = (e) => {
+    const el = scrollerRef.current
+    if (!el || !dragState.current.isDown) return
+    const x = e.clientX ?? (e.touches ? e.touches[0].clientX : 0)
+    const dx = x - dragState.current.startX
+    el.scrollLeft = dragState.current.startLeft - dx
+    // velocity tracking
+    const now = performance.now()
+    const dt = now - dragState.current.lastTime
+    if (dt > 0) {
+      dragState.current.velocity = (x - dragState.current.lastX) / dt
+      dragState.current.lastX = x
+      dragState.current.lastTime = now
+    }
+    assessScroll()
+  }
+
+  const onPointerUp = () => {
+    const el = scrollerRef.current
+    if (!el) return
+    dragState.current.isDown = false
+    setIsDragging(false)
+    // Snap to next/prev card if swipe was quick enough
+    const v = dragState.current.velocity
+    if (Math.abs(v) > 0.5) {
+      scrollByAmount(v < 0 ? 'next' : 'prev')
+    }
+    assessScroll()
+  }
+
   return (
     <section className={`w-full ${className}`} aria-label="Active events carousel">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title with playful vibe */}
         <div className="mb-4 sm:mb-6">
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 -rotate-1 inline-block">
-            What’s Happening <span className="text-primary-600 underline decoration-wavy">Noww</span>
+            What’s Happening <span className="text-primary-600 underline decoration-wavy">Noww</span>?
           </h2>
         </div>
 
@@ -153,7 +199,14 @@ export default function ActiveEventsCarousel({ className = '' }) {
 
           <div
             ref={scrollerRef}
-            className="overflow-x-auto hide-scrollbar scroll-smooth snap-x snap-mandatory pr-2 pl-10 sm:pl-12 lg:pl-12"
+            className={`overflow-x-auto hide-scrollbar scroll-smooth snap-x snap-mandatory pr-2 pl-10 sm:pl-12 lg:pl-12 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            onMouseDown={onPointerDown}
+            onMouseMove={onPointerMove}
+            onMouseLeave={onPointerUp}
+            onMouseUp={onPointerUp}
+            onTouchStart={onPointerDown}
+            onTouchMove={onPointerMove}
+            onTouchEnd={onPointerUp}
           >
             <div className="flex gap-4 sm:gap-5 lg:gap-6 py-2">
               {loading && (
