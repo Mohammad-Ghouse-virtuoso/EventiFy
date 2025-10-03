@@ -35,8 +35,8 @@ function SmallEventCard({ event }) {
   }, [event.event_start])
 
   return (
-    <div className="snap-start shrink-0 w-72 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-      <div className="relative h-40 bg-gray-100 overflow-hidden">
+    <div className="snap-start shrink-0 w-72 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <div className="relative h-40 bg-gray-100 dark:bg-gray-700 overflow-hidden">
         {imageSrc ? (
           <img
             src={imageSrc}
@@ -51,13 +51,13 @@ function SmallEventCard({ event }) {
             }}
           />
         ) : (
-          <div className="w-full h-full bg-gray-200" aria-hidden="true" />
+          <div className="w-full h-full bg-gray-200 dark:bg-gray-700" aria-hidden="true" />
         )}
       </div>
       <div className="p-4">
-        <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{event.title}</h3>
-        <div className="mt-2 text-sm text-gray-600">{dateLabel}</div>
-        <div className="mt-1 text-sm text-gray-500 line-clamp-1">{event.location}</div>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white line-clamp-2">{event.title}</h3>
+        <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">{dateLabel}</div>
+        <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{event.location}</div>
       </div>
     </div>
   )
@@ -170,8 +170,8 @@ export default function ActiveEventsCarousel({ className = '' }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title with playful vibe */}
         <div className="mb-4 sm:mb-6">
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 -rotate-1 inline-block">
-            What’s Happening <span className="text-primary-600 underline decoration-wavy">Noww</span>?
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white -rotate-1 inline-block">
+            What's Happening <span className="text-primary-600 dark:text-primary-400 underline decoration-wavy">Noww</span>?
           </h2>
         </div>
 
@@ -183,18 +183,18 @@ export default function ActiveEventsCarousel({ className = '' }) {
             aria-label="Previous"
             onClick={() => scrollByAmount('prev')}
             disabled={!canPrev}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full border bg-white shadow-md p-2 transition-opacity ${canPrev ? 'opacity-100' : 'opacity-40 cursor-not-allowed'}`}
+            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full border dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md p-2 transition-opacity ${canPrev ? 'opacity-100' : 'opacity-40 cursor-not-allowed'}`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-gray-700"><path fillRule="evenodd" d="M12.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L8.414 10l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-gray-700 dark:text-gray-300"><path fillRule="evenodd" d="M12.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L8.414 10l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd"/></svg>
           </button>
           <button
             type="button"
             aria-label="Next"
             onClick={() => scrollByAmount('next')}
             disabled={!canNext}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full border bg-white shadow-md p-2 transition-opacity ${canNext ? 'opacity-100' : 'opacity-40 cursor-not-allowed'}`}
+            className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full border dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md p-2 transition-opacity ${canNext ? 'opacity-100' : 'opacity-40 cursor-not-allowed'}`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-gray-700"><path fillRule="evenodd" d="M7.293 4.293a1 1 0 011.414 0L14 9.586a1 1 0 010 1.414l-5.293 5.293a1 1 0 01-1.414-1.414L11.586 10 7.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-gray-700 dark:text-gray-300"><path fillRule="evenodd" d="M7.293 4.293a1 1 0 011.414 0L14 9.586a1 1 0 010 1.414l-5.293 5.293a1 1 0 01-1.414-1.414L11.586 10 7.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
           </button>
 
           <div
@@ -210,13 +210,13 @@ export default function ActiveEventsCarousel({ className = '' }) {
           >
             <div className="flex gap-4 sm:gap-5 lg:gap-6 py-2">
               {loading && (
-                <div className="text-gray-500 text-sm py-6">Loading events…</div>
+                <div className="text-gray-500 dark:text-gray-400 text-sm py-6">Loading events…</div>
               )}
               {error && !loading && (
-                <div className="text-red-600 text-sm py-6">{error}</div>
+                <div className="text-red-600 dark:text-red-400 text-sm py-6">{error}</div>
               )}
               {!loading && !error && events.length === 0 && (
-                <div className="text-gray-600 text-sm py-6">No upcoming events</div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm py-6">No upcoming events</div>
               )}
               {!loading && !error && events.map(ev => (
                 <SmallEventCard key={ev.id} event={ev} />

@@ -82,10 +82,10 @@ export default function EventifyAudienceGrid({
     <section className={`w-full py-14 sm:py-16 ${className}`} aria-labelledby="audience-title">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-12">
-          <h2 id="audience-title" className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h2 id="audience-title" className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             {title}
           </h2>
-          <p className="mt-2 text-gray-600 text-sm sm:text-base">A little slice of who shows up and has fun</p>
+          <p className="mt-2 text-gray-600 dark:text-gray-300 text-sm sm:text-base">A little slice of who shows up and has fun</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
@@ -94,14 +94,14 @@ export default function EventifyAudienceGrid({
             return (
               <div
                 key={idx}
-                className={`relative rounded-xl border ${c.wrapper} p-5 sm:p-6 hover:shadow-md transition-shadow bg-white`}
+                className={`relative rounded-xl border ${c.wrapper} dark:bg-gray-800 dark:border-gray-700 p-5 sm:p-6 hover:shadow-md transition-shadow bg-white`}
               >
                 {/* playful corner dot */}
                 <div className={`absolute -top-2 -right-2 h-5 w-5 rounded-full ${c.dot} opacity-60`} aria-hidden="true" />
 
                 <div className="flex flex-col items-start text-left">
                   {/* Icon */}
-                  <div className={`h-12 w-12 rounded-2xl border ${c.icon} flex items-center justify-center mb-4 overflow-hidden`}
+                  <div className={`h-12 w-12 rounded-2xl border ${c.icon} dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 flex items-center justify-center mb-4 overflow-hidden`}
                        role="img" aria-label={`${item.label} icon`}>
                     {item.icon ? (
                       <img
@@ -115,8 +115,8 @@ export default function EventifyAudienceGrid({
                       <span className="text-xs font-semibold opacity-70">ICON</span>
                     )}
                   </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">{item.label}</h3>
-                  <p className="mt-1 text-sm sm:text-base text-gray-600">{item.desc}</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{item.label}</h3>
+                  <p className="mt-1 text-sm sm:text-base text-gray-600 dark:text-gray-300">{item.desc}</p>
                 </div>
               </div>
             )

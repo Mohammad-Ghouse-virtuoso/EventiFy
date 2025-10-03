@@ -21,20 +21,20 @@ export default function EventifyHeroCard({
 }) {
   return (
     <section
-      className={`w-full bg-gradient-to-br from-primary-50 to-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden ${className}`}
+      className={`w-full bg-gradient-to-br from-primary-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden ${className}`}
       aria-label="EventiFy hero banner"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-12 sm:py-16">
           {/* Left: Headline + CTA */}
           <div className="order-2 lg:order-1 text-center lg:text-left">
-            <span className="inline-flex items-center rounded-full bg-white/70 ring-1 ring-primary-100 px-3 py-1 text-xs font-medium text-primary-700 mb-4">
+            <span className="inline-flex items-center rounded-full bg-white/70 dark:bg-gray-800/70 ring-1 ring-primary-100 dark:ring-primary-800 px-3 py-1 text-xs font-medium text-primary-700 dark:text-primary-400 mb-4">
               EventiFy
             </span>
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900">
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
               {headline}
             </h1>
-            <p className="mt-4 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto lg:mx-0">
+            <p className="mt-4 text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0">
               {subtext}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 justify-center lg:justify-start">
@@ -51,7 +51,7 @@ export default function EventifyHeroCard({
           {/* Right: Illustration placeholder */}
           <div className="order-1 lg:order-2">
             {illustrationSrc ? (
-              <div className="relative w-full aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/10] xl:aspect-[16/9] max-h-[420px] rounded-xl overflow-hidden border border-primary-200 bg-white shadow-sm">
+              <div className="relative w-full aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/10] xl:aspect-[16/9] max-h-[420px] rounded-xl overflow-hidden border border-primary-200 dark:border-primary-800 bg-white dark:bg-gray-800 shadow-sm">
                 <img
                   src={illustrationSrc}
                   alt={illustrationAlt}
@@ -60,13 +60,13 @@ export default function EventifyHeroCard({
                   decoding="async"
                 />
                 {/* subtle accent */}
-                <div className="pointer-events-none absolute -z-0 -right-6 -top-6 h-24 w-24 rounded-full bg-primary-200/40 blur-2xl" aria-hidden="true" />
+                <div className="pointer-events-none absolute -z-0 -right-6 -top-6 h-24 w-24 rounded-full bg-primary-200/40 dark:bg-primary-800/40 blur-2xl" aria-hidden="true" />
               </div>
             ) : (
               <div
                 role="img"
                 aria-label={illustrationAlt}
-                className="relative w-full aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/10] xl:aspect-[16/9] max-h-[420px] bg-primary-100/70 rounded-xl border border-primary-200 flex items-center justify-center text-primary-700"
+                className="relative w-full aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/10] xl:aspect-[16/9] max-h-[420px] bg-primary-100/70 dark:bg-gray-800/70 rounded-xl border border-primary-200 dark:border-primary-800 flex items-center justify-center text-primary-700 dark:text-primary-400"
               >
                 <div className="pointer-events-none select-none text-sm sm:text-base font-medium opacity-80">
                   Illustration Placeholder

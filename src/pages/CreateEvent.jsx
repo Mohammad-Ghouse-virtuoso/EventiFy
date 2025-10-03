@@ -191,24 +191,24 @@ export default function CreateEvent() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Event</h1>
-        <p className="text-gray-600">Fill in the details to create your event</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white mb-2">Create New Event</h1>
+        <p className="text-gray-600 dark:text-gray-300 dark:text-gray-300">Fill in the details to create your event</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-md">
             {error}
           </div>
         )}
 
         {/* Basic Information */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+        <div className="bg-white dark:bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md border dark:border-gray-700">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white dark:text-white">Basic Information</h2>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-2">
                 Event Title *
               </label>
               <input
@@ -218,13 +218,13 @@ export default function CreateEvent() {
                 required
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Enter event title"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Description *
               </label>
               <textarea
@@ -234,7 +234,7 @@ export default function CreateEvent() {
                 rows={4}
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Describe your event..."
               />
             </div>
@@ -250,7 +250,7 @@ export default function CreateEvent() {
             </div>
 
             <div>
-              <label htmlFor="max_attendees" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="max_attendees" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <UsersIcon className="h-4 w-4 inline mr-1" />
                 Max Attendees *
               </label>
@@ -262,7 +262,7 @@ export default function CreateEvent() {
                 min="1"
                 value={formData.max_attendees}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="e.g. 100"
               />
             </div>
@@ -270,7 +270,7 @@ export default function CreateEvent() {
         </div>
 
         {/* Date & Location */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Date & Location</h2>
           
           <div className="grid md:grid-cols-2 gap-6">
@@ -296,7 +296,7 @@ export default function CreateEvent() {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <MapPinIcon className="h-4 w-4 inline mr-1" />
                 Location *
               </label>
@@ -307,7 +307,7 @@ export default function CreateEvent() {
                 required
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Enter event location"
               />
             </div>
@@ -315,7 +315,7 @@ export default function CreateEvent() {
         </div>
 
         {/* Event Image */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Event Image</h2>
           
           {/* Image Source Selection */}
@@ -327,7 +327,7 @@ export default function CreateEvent() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   imageSource === 'upload'
                     ? 'bg-primary-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-gray-200 text-gray-700 dark:text-gray-300 hover:bg-gray-300'
                 }`}
               >
                 Upload Image
@@ -338,7 +338,7 @@ export default function CreateEvent() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   imageSource === 'banner'
                     ? 'bg-primary-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-gray-200 text-gray-700 dark:text-gray-300 hover:bg-gray-300'
                 }`}
               >
                 Choose Banner
@@ -349,7 +349,7 @@ export default function CreateEvent() {
           <div className="space-y-4">
             {imageSource === 'upload' ? (
               <div>
-                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <PhotoIcon className="h-4 w-4 inline mr-1" />
                   Upload Image
                 </label>
@@ -359,19 +359,19 @@ export default function CreateEvent() {
                   name="image"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <PhotoIcon className="h-4 w-4 inline mr-1" />
                   Predefined Banners
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowBannerSelector(true)}
-                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-primary-500 hover:text-primary-600 transition-colors"
+                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-300 hover:border-primary-500 hover:text-primary-600 transition-colors"
                 >
                   {selectedBanner ? `Selected: ${selectedBanner.name}` : 'Click to choose a banner'}
                 </button>
@@ -386,7 +386,7 @@ export default function CreateEvent() {
                   className="w-full max-w-md h-48 object-cover rounded-lg"
                 />
                 {selectedBanner && (
-                  <p className="text-sm text-gray-600 mt-2">{selectedBanner.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{selectedBanner.description}</p>
                 )}
               </div>
             )}
@@ -394,7 +394,7 @@ export default function CreateEvent() {
         </div>
 
         {/* Settings */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Event Settings</h2>
           
           <div className="space-y-4">
@@ -405,9 +405,9 @@ export default function CreateEvent() {
                 name="is_public"
                 checked={formData.is_public}
                 onChange={handleChange}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
               />
-              <label htmlFor="is_public" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="is_public" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                 Make this event public (visible to everyone)
               </label>
             </div>
@@ -419,9 +419,9 @@ export default function CreateEvent() {
                 name="requires_approval"
                 checked={formData.requires_approval}
                 onChange={handleChange}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
               />
-              <label htmlFor="requires_approval" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="requires_approval" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                 Require approval for RSVPs
               </label>
             </div>
@@ -433,7 +433,7 @@ export default function CreateEvent() {
           <button
             type="button"
             onClick={() => navigate('/dashboard')}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-900"
           >
             Cancel
           </button>

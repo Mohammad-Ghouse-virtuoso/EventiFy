@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfile } from '../contexts/ProfileContext'
 import { Bars3Icon, XMarkIcon, CalendarDaysIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/outline'
+import ThemeSwitch from './ThemeSwitch'
 
 // Custom sparkles star icon component
 const CustomSparklesIcon = ({ className }) => (
@@ -44,13 +45,13 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200/50 shadow-sm">
+    <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link
               to="/"
-              className="flex items-center space-x-2 text-2xl font-bold text-gray-800 hover:text-primary-600 transition-all duration-300 hover:scale-105"
+              className="flex items-center space-x-2 text-2xl font-bold text-gray-800 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 hover:scale-105"
             >
               <div className="relative">
                 <CustomSparklesIcon className="h-8 w-8 drop-shadow-md" />
@@ -64,7 +65,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-1">
             <Link
               to="/events"
-              className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 hover:scale-105"
+              className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-105"
             >
               <CalendarDaysIcon className="h-5 w-5" />
               <span>Events</span>
@@ -74,7 +75,7 @@ export default function Navbar() {
                 {(user.role === 'organizer' || user.role === 'admin') && (
                   <Link
                     to="/create-event"
-                    className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 hover:scale-105"
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-105"
                   >
                     <PlusIcon className="h-5 w-5" />
                     <span>Create Event</span>
@@ -82,18 +83,24 @@ export default function Navbar() {
                 )}
                 <Link
                   to="/dashboard"
-                  className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 hover:scale-105"
+                  className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-105"
                 >
                   <span>Dashboard</span>
                 </Link>
                 {user.role === 'admin' && (
                   <Link
                     to="/admin"
-                    className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 hover:scale-105"
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-105"
                   >
                     <span>Admin</span>
                   </Link>
                 )}
+                
+                {/* Theme Switch */}
+                <div className="mx-2">
+                  <ThemeSwitch defaultDark={false} onChange={(isDark) => console.log('Theme:', isDark ? 'dark' : 'light')} />
+                </div>
+
                 <div className="flex items-center space-x-3 ml-4">
                   {currentAvatar ? (
                     <img
@@ -116,10 +123,10 @@ export default function Navbar() {
                       </span>
                     </div>
                   )}
-                  <div className="text-gray-600 text-sm">
-                    <span className="text-primary-600">Welcome,</span>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm">
+                    <span className="text-primary-600 dark:text-primary-400">Welcome,</span>
                     <br />
-                    <span className="font-medium text-gray-800">{user.full_name}</span>
+                    <span className="font-medium text-gray-800 dark:text-white">{user.full_name}</span>
                   </div>
                   <button
                     onClick={handleLogout}
@@ -131,9 +138,14 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                {/* Theme Switch for non-logged in users */}
+                <div className="mx-2">
+                  <ThemeSwitch defaultDark={false} onChange={(isDark) => console.log('Theme:', isDark ? 'dark' : 'light')} />
+                </div>
+
                 <Link
                   to="/login"
-                  className="text-gray-700 hover:text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition-all duration-200"
+                  className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 px-4 py-2 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200"
                 >
                   Login
                 </Link>
@@ -149,7 +161,7 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <button onClick={() => setIsOpen(!isOpen)}>
+            <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 dark:text-gray-200">
               {isOpen ? (
                 <XMarkIcon className="h-6 w-6" />
               ) : (
@@ -161,42 +173,42 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden">
+          <div className="md:hidden bg-white dark:bg-gray-900 border-t dark:border-gray-700">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <Link to="/events" className="block px-3 py-2 text-gray-700">
+              <Link to="/events" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                 Events
               </Link>
               {user ? (
                 <>
                   {(user.role === 'organizer' || user.role === 'admin') && (
-                    <Link to="/create-event" className="block px-3 py-2 text-gray-700">
+                    <Link to="/create-event" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                       Create Event
                     </Link>
                   )}
-                  <Link to="/dashboard" className="block px-3 py-2 text-gray-700">
+                  <Link to="/dashboard" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                     Dashboard
                   </Link>
                   {user.role === 'admin' && (
-                    <Link to="/admin" className="block px-3 py-2 text-gray-700">
+                    <Link to="/admin" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                       Admin
                     </Link>
                   )}
-                  <div className="px-3 py-2 text-sm text-gray-500 capitalize">
+                  <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 capitalize">
                     Role: {user.role}
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-3 py-2 text-gray-700"
+                    className="block w-full text-left px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                   >
                     Logout
                   </button>
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="block px-3 py-2 text-gray-700">
+                  <Link to="/login" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                     Login
                   </Link>
-                  <Link to="/register" className="block px-3 py-2 text-gray-700">
+                  <Link to="/register" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                     Sign Up
                   </Link>
                 </>

@@ -33,9 +33,9 @@ function RequireRole({ allowed, children }) {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
         <Navbar />
-        <main className="flex-1">
+        <main className="flex-1 dark:text-gray-100">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />

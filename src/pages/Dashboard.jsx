@@ -184,14 +184,14 @@ export default function Dashboard() {
                         }}
                       />
                     ) : (
-                      <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center group-hover:bg-opacity-30 transition-all">
+                      <div className="w-16 h-16 bg-white dark:bg-gray-800 bg-opacity-20 rounded-full flex items-center justify-center group-hover:bg-opacity-30 transition-all">
                         <span className="text-white font-bold text-2xl">
                           {user?.full_name?.[0] || user?.email?.[0] || 'U'}
                         </span>
                       </div>
                     )}
-                    <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md group-hover:bg-gray-50 transition-colors">
-                      <CameraIcon className="w-3 h-3 text-gray-600" />
+                    <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full p-1 shadow-md group-hover:bg-gray-50 dark:bg-gray-900 transition-colors">
+                      <CameraIcon className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                     </div>
                   </button>
                   <div>
@@ -208,7 +208,7 @@ export default function Dashboard() {
               </div>
               <button
                 onClick={() => setBannerSelectorOpen(true)}
-                className="absolute top-4 right-4 bg-white bg-opacity-20 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-opacity-30 transition-all duration-200"
+                className="absolute top-4 right-4 bg-white dark:bg-gray-800 bg-opacity-20 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-opacity-30 transition-all duration-200"
                 title="Change Banner"
               >
                 <PencilIcon className="h-5 w-5" />
@@ -238,14 +238,14 @@ export default function Dashboard() {
                       }}
                     />
                   ) : (
-                    <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center group-hover:bg-opacity-30 transition-all">
+                    <div className="w-16 h-16 bg-white dark:bg-gray-800 bg-opacity-20 rounded-full flex items-center justify-center group-hover:bg-opacity-30 transition-all">
                       <span className="text-white font-bold text-2xl">
                         {user?.full_name?.[0] || user?.email?.[0] || 'U'}
                       </span>
                     </div>
                   )}
-                  <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md group-hover:bg-gray-50 transition-colors">
-                    <CameraIcon className="w-3 h-3 text-gray-600" />
+                  <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-800 rounded-full p-1 shadow-md group-hover:bg-gray-50 dark:bg-gray-900 transition-colors">
+                    <CameraIcon className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                   </div>
                 </button>
                 <PhotoIcon className="h-16 w-16 opacity-70" />
@@ -260,7 +260,7 @@ export default function Dashboard() {
               </p>
               <button
                 onClick={() => setBannerSelectorOpen(true)}
-                className="bg-white bg-opacity-20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center mx-auto"
+                className="bg-white dark:bg-gray-800 bg-opacity-20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center mx-auto"
               >
                 <PhotoIcon className="h-5 w-5 mr-2" />
                 Choose Banner
@@ -277,14 +277,14 @@ export default function Dashboard() {
       {/* Stats */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         {stats.map((stat) => (
-          <div key={stat.name} className="bg-white p-6 rounded-lg shadow-md">
+          <div key={stat.name} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="flex items-center">
               <div className={`${stat.color} p-3 rounded-lg`}>
                 <stat.icon className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.name}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
               </div>
             </div>
           </div>
@@ -292,8 +292,8 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Quick Actions</h2>
         <div className="flex flex-wrap gap-4">
           {(user?.role === 'organizer' || user?.role === 'admin') && (
             <Link
@@ -306,7 +306,7 @@ export default function Dashboard() {
           )}
           <Link
             to="/events"
-            className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 flex items-center"
+            className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
           >
             <CalendarIcon className="h-5 w-5 mr-2" />
             Browse Events
@@ -314,7 +314,7 @@ export default function Dashboard() {
           {(user?.role === 'organizer' || user?.role === 'admin') && (
             <Link
               to="/event-analytics"
-              className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 flex items-center"
+              className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
             >
               <UsersIcon className="h-5 w-5 mr-2" />
               Event Analytics
@@ -333,8 +333,8 @@ export default function Dashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-md">
-        <div className="border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             {user?.role !== 'attendee' && (
               <button
@@ -342,7 +342,7 @@ export default function Dashboard() {
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'created'
                     ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-300'
                 }`}
               >
                 My Events ({myEvents.length})
@@ -354,7 +354,7 @@ export default function Dashboard() {
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'attending'
                     ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-300'
                 }`}
               >
                 Attending ({rsvpEvents.length})
@@ -368,11 +368,11 @@ export default function Dashboard() {
             <div className="space-y-4">
               {myEvents.length > 0 ? (
                 myEvents.map((event) => (
-                  <div key={event.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
-                        <p className="text-gray-600 mt-1">{event.description}</p>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mt-1">{event.description}</p>
                         <div className="flex items-center mt-2 text-sm text-gray-500">
                           <CalendarIcon className="h-4 w-4 mr-1" />
                           {format(new Date(event.event_start), 'PPP')} at {formatTime(new Date(event.event_start).toISOString().split('T')[1]?.slice(0,5))}
@@ -395,9 +395,9 @@ export default function Dashboard() {
                                 <div className="space-y-2">
                                   {pendingRSVPs[event.id]?.length > 0 ? (
                                     pendingRSVPs[event.id].map((rsvp) => (
-                                      <div key={rsvp.rsvp_id} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                                      <div key={rsvp.rsvp_id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
                                         <div>
-                                          <p className="text-sm font-medium text-gray-900">
+                                          <p className="text-sm font-medium text-gray-900 dark:text-white">
                                             {rsvp.first_name} {rsvp.last_name}
                                           </p>
                                           <p className="text-xs text-gray-500">
@@ -454,7 +454,7 @@ export default function Dashboard() {
               ) : (
                 <div className="text-center py-8">
                   <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">You haven't created any events yet.</p>
+                  <p className="text-gray-600 dark:text-gray-300">You haven't created any events yet.</p>
                   <Link
                     to="/create-event"
                     className="text-primary-600 hover:text-primary-700 font-medium"
@@ -468,9 +468,9 @@ export default function Dashboard() {
             <div className="space-y-4">
               {rsvpEvents.length > 0 ? (
                 rsvpEvents.map((event) => (
-                  <div key={event.id} className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
-                    <p className="text-gray-600 mt-1">{event.description}</p>
+                  <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mt-1">{event.description}</p>
                     <div className="flex items-center mt-2 text-sm text-gray-500">
                       <CalendarIcon className="h-4 w-4 mr-1" />
                       {format(new Date(event.event_start), 'PPP')} at {formatTime(new Date(event.event_start).toISOString().split('T')[1]?.slice(0,5))}
@@ -480,7 +480,7 @@ export default function Dashboard() {
               ) : (
                 <div className="text-center py-8">
                   <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">You're not attending any events yet.</p>
+                  <p className="text-gray-600 dark:text-gray-300">You're not attending any events yet.</p>
                   <Link
                     to="/events"
                     className="text-primary-600 hover:text-primary-700 font-medium"
