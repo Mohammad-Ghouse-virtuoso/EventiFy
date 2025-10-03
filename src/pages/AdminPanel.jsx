@@ -339,10 +339,10 @@ export default function AdminPanel() {
   {/* Who's Going: upcoming events */}
       <div className="card p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Who's going (upcoming)</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Who's going (upcoming)</h2>
           <button
             onClick={() => setShowWhoIsGoing(!showWhoIsGoing)}
-            className="text-primary-600 hover:text-primary-700 font-medium"
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
           >
             {showWhoIsGoing ? 'Hide' : 'Show'} Going Lists
           </button>
@@ -365,21 +365,21 @@ export default function AdminPanel() {
                 const stats = rsvpData[event.id] || { attendees: [], confirmed: 0 }
                 const confirmed = (stats.attendees || []).filter(a => a.status === 'going' || a.status === 'approved')
                 return (
-                  <div key={event.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <h3 className="font-medium text-gray-900">{event.title}</h3>
+                        <h3 className="font-medium text-gray-900 dark:text-white">{event.title}</h3>
                         {event.organizer_name && (
-                          <p className="text-xs text-gray-500 mt-0.5">Organizer: {event.organizer_name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Organizer: {event.organizer_name}</p>
                         )}
                       </div>
                       <div className="flex items-center space-x-3">
-                        <span className="inline-flex items-center px-2 py-1 rounded-md text-sm bg-success-50 text-success-700">
+                        <span className="inline-flex items-center px-2 py-1 rounded-md text-sm bg-success-50 dark:bg-success-900/30 text-success-700 dark:text-success-400">
                           Confirmed: {confirmed.length}
                         </span>
                         <button
                           onClick={() => setRevealEmailsByEvent(prev => ({ ...prev, [event.id]: !prev[event.id] }))}
-                          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800"
+                          className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                         >
                           <EyeIcon className="h-4 w-4 mr-1" />
                           {revealEmailsByEvent[event.id] ? 'Hide emails' : 'Show emails'}
@@ -388,24 +388,41 @@ export default function AdminPanel() {
                     </div>
 
                     {confirmed.length === 0 ? (
-                      <p className="text-sm text-gray-500">No confirmed attendees yet.</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">No confirmed attendees yet.</p>
                     ) : (
-                      <ul className="divide-y divide-gray-100">
-                        {confirmed.map((a, idx) => (
-                          <li key={idx} className="py-2 flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs ${getStatusColor(a.status)}`}>
-                                {getStatusIcon(a.status)}
-                                <span className="ml-1 capitalize">{a.status}</span>
-                              </span>
-                              <span className="text-gray-900 font-medium">{a.name}</span>
-                            </div>
-                            {revealEmailsByEvent[event.id] && (
-                              <span className="text-sm text-gray-600">{a.email}</span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                      <>
+                        <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                          {confirmed.slice(0, revealEmailsByEvent[`expand_${event.id}`] ? confirmed.length : 10).map((a, idx) => (
+                            <li key={idx} className="py-2 flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs ${getStatusColor(a.status)}`}>
+                                  {getStatusIcon(a.status)}
+                                  <span className="ml-1 capitalize">{a.status}</span>
+                                </span>
+                                <span className="text-gray-900 dark:text-white font-medium">
+                                  {a.name}
+                                  {a.is_npc && <span className="ml-1.5 text-xs text-gray-400 dark:text-gray-500 italic">(virtual)</span>}
+                                </span>
+                              </div>
+                              {revealEmailsByEvent[event.id] && (
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{a.email || 'N/A'}</span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                        {confirmed.length > 10 && (
+                          <div className="mt-3 text-center">
+                            <button
+                              onClick={() => setRevealEmailsByEvent(prev => ({ ...prev, [`expand_${event.id}`]: !prev[`expand_${event.id}`] }))}
+                              className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
+                            >
+                              {revealEmailsByEvent[`expand_${event.id}`] 
+                                ? '▲ Show less' 
+                                : `▼ Show all ${confirmed.length} attendees`}
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )

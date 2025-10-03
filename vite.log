@@ -3,23 +3,17 @@
 > vite
 
 
-  VITE v4.5.14  ready in 531 ms
+  VITE v4.5.14  ready in 996 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: use --host to expose
-(node:7200) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(node:3228) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-3:17:14 PM [vite] hmr update /src/components/ThemeSwitch.jsx, /src/index.css
-3:18:06 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
-3:18:26 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
-3:24:53 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
-3:29:36 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-3:29:42 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-3:36:16 PM [vite] page reload assets/EventiFy Hero Card.jpg
-3:36:27 PM [vite] page reload assets/EventiFy Hero Card.jpg
-3:36:32 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-3:37:43 PM [vite] hmr update /src/components/ClosingCTA.jsx, /src/index.css
-3:38:57 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
-3:44:30 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-3:44:52 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
-3:45:39 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+8:17:37 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+8:25:06 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+9:08:07 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+9:09:07 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css
+9:09:51 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+9:59:30 PM [vite] hmr update /src/pages/AdminPanel.jsx, /src/index.css
+9:59:30 PM [vite] hmr update /src/components/TestimonialsSection.jsx, /src/index.css
+9:59:30 PM [vite] hmr update /src/pages/EventAnalytics.jsx, /src/index.css

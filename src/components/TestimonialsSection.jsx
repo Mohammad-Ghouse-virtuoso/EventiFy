@@ -205,23 +205,6 @@ export default function TestimonialsSection({ className = '', testimonials }) {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          {/* Arrow controls */}
-          <button
-            type="button"
-            aria-label="Previous testimonial"
-            onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 shadow p-2 hover:bg-white dark:hover:bg-gray-800 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-gray-700 dark:text-gray-300"><path fillRule="evenodd" d="M12.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L8.414 10l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd"/></svg>
-          </button>
-          <button
-            type="button"
-            aria-label="Next testimonial"
-            onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 shadow p-2 hover:bg-white dark:hover:bg-gray-800 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-gray-700 dark:text-gray-300"><path fillRule="evenodd" d="M7.293 4.293a1 1 0 011.414 0L14 9.586a1 1 0 010 1.414l-5.293 5.293a1 1 0 01-1.414-1.414L11.586 10 7.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
-          </button>
           {/* Track */}
           <div
             ref={trackRef}

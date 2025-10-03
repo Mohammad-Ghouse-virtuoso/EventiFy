@@ -8,9 +8,15 @@ from app.models.user import User
 from app.models.rsvp import RSVP, RSVPCreate, RSVPUpdate, RSVPStatus
 from app.core.auth import get_current_active_user, require_organizer_or_admin, require_admin
 from app.core.config import settings
+from app.core.npc_generator import inject_npcs_into_attendees
 from sqlalchemy import func, exists, select as sa_select
 
 router = APIRouter()
+
+# 🎭 Event-specific NPC configurations (event_id: npc_count)
+SPECIAL_NPC_COUNTS = {
+    17: 43,  # Heema's Choir Show - 43 NPCs + 2 real (latha + Jamie) = 45 total
+}
 
 @router.get("/", response_model=List[EventOut])
 @router.get("", response_model=List[EventOut])  # Handle both with and without trailing slash
@@ -153,6 +159,11 @@ async def get_events(
         except AttributeError:
             role_value = str(organizer_role).lower() if organizer_role is not None else "attendee"
 
+        # Include NPC count if configured for this event
+        real_count = attendees_count or 0
+        npc_count = SPECIAL_NPC_COUNTS.get(ev.id, 0)
+        total_attendees = real_count + npc_count
+
         event_out_list.append(
             EventOut(
                 id=ev.id,
@@ -172,7 +183,7 @@ async def get_events(
                 organizer_role=role_value or "attendee",
                 created_at=ev.created_at,
                 is_active=ev.is_active,
-                attendees_count=attendees_count or 0,
+                attendees_count=total_attendees,
             )
         )
     return event_out_list
@@ -196,6 +207,12 @@ async def get_event(
             RSVP.status.in_([RSVPStatus.GOING, RSVPStatus.APPROVED]),
         )
     ).all()
+    
+    # Include NPC count if configured for this event
+    real_count = len(attendees_count)
+    npc_count = SPECIAL_NPC_COUNTS.get(event.id, 0)
+    total_attendees = real_count + npc_count
+    
     # Normalize role to plain string
     if organizer:
         try:
@@ -222,7 +239,7 @@ async def get_event(
     organizer_role=role_value,
         created_at=event.created_at,
         is_active=event.is_active,
-        attendees_count=len(attendees_count)
+        attendees_count=total_attendees
     )
 
 
@@ -617,7 +634,23 @@ async def get_event_rsvps(
             }
             rsvps_with_users.append(rsvp_dict)
         
-        return rsvps_with_users
+        # 🎭 Inject NPC attendees ONLY for events with specific NPC configuration
+        # Check if this event has a special NPC count requirement
+        force_npc_count = SPECIAL_NPC_COUNTS.get(event.id)
+        
+        if force_npc_count is not None:
+            # Only inject NPCs if event is configured in SPECIAL_NPC_COUNTS
+            rsvps_with_npcs = inject_npcs_into_attendees(
+                event_id=event.id,
+                real_attendees=rsvps_with_users,
+                event_max=None,  # Don't auto-fill to max
+                force_npc_count=force_npc_count
+            )
+        else:
+            # No NPCs for events not in SPECIAL_NPC_COUNTS
+            rsvps_with_npcs = rsvps_with_users
+        
+        return rsvps_with_npcs
     
     else:
         # For regular users, only return their own RSVP

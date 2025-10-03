@@ -61,15 +61,15 @@ export default function EventAnalytics() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-display-md text-gray-900">{title}</h1>
-          <p className="text-gray-600">Review RSVP responses and attendee details</p>
+          <h1 className="text-display-md text-gray-900 dark:text-white">{title}</h1>
+          <p className="text-gray-600 dark:text-gray-400">Review RSVP responses and attendee details</p>
         </div>
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+        <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
           <input
             type="checkbox"
             checked={includePast}
             onChange={(e) => setIncludePast(e.target.checked)}
-            className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            className="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500 dark:bg-gray-700"
           />
           Include past events
         </label>
@@ -78,11 +78,11 @@ export default function EventAnalytics() {
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading analytics...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading analytics...</p>
         </div>
       ) : events.length === 0 ? (
-        <div className="card p-8 text-center text-gray-600">
-          <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+        <div className="card p-8 text-center text-gray-600 dark:text-gray-400">
+          <CalendarIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
           No events found
         </div>
       ) : (
@@ -97,14 +97,14 @@ export default function EventAnalytics() {
             const eventDate = new Date(event.event_start)
             const showDetails = !!openIds[event.id]
             return (
-              <div key={event.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-800">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
-                    <p className="text-gray-600 text-sm">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
                       {event.location} • {eventDate.toLocaleDateString()}
                       {event.organizer_name && event.organizer_role !== 'admin' && (
-                        <span className="ml-2 text-gray-500">by {event.organizer_name}</span>
+                        <span className="ml-2 text-gray-500 dark:text-gray-500">by {event.organizer_name}</span>
                       )}
                     </p>
                   </div>
@@ -119,44 +119,44 @@ export default function EventAnalytics() {
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <CheckCircleIcon className="h-5 w-5 text-success-500 mr-1" />
-                      <span className="font-semibold text-success-600">{confirmed}</span>
+                      <CheckCircleIcon className="h-5 w-5 text-success-500 dark:text-success-400 mr-1" />
+                      <span className="font-semibold text-success-600 dark:text-success-400">{confirmed}</span>
                     </div>
-                    <p className="text-xs text-gray-600">Attending</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Attending</p>
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <QuestionMarkCircleIcon className="h-5 w-5 text-warning-500 mr-1" />
-                      <span className="font-semibold text-warning-600">{maybe}</span>
+                      <QuestionMarkCircleIcon className="h-5 w-5 text-warning-500 dark:text-warning-400 mr-1" />
+                      <span className="font-semibold text-warning-600 dark:text-warning-400">{maybe}</span>
                     </div>
-                    <p className="text-xs text-gray-600">Maybe</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Maybe</p>
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <XCircleIcon className="h-5 w-5 text-error-500 mr-1" />
-                      <span className="font-semibold text-error-600">{notGoing}</span>
+                      <XCircleIcon className="h-5 w-5 text-error-500 dark:text-error-400 mr-1" />
+                      <span className="font-semibold text-error-600 dark:text-error-400">{notGoing}</span>
                     </div>
-                    <p className="text-xs text-gray-600">Can't Go</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Can't Go</p>
                   </div>
                 </div>
 
                 {showDetails && (
-                  <div className="border-t pt-4 animate-slide-up">
-                    <h4 className="font-medium text-gray-900 mb-3">Attendee Responses ({rsvps.length})</h4>
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 animate-slide-up">
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-3">Attendee Responses ({rsvps.length})</h4>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {rsvps.map((rsvp) => (
-                        <div key={rsvp.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                        <div key={rsvp.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                           <div>
-                            <p className="font-medium text-gray-900">{rsvp.user?.full_name || rsvp.user?.email || 'Unknown User'}</p>
-                            <p className="text-sm text-gray-600">{rsvp.user?.email || 'N/A'}</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{rsvp.user?.full_name || rsvp.user?.email || 'Unknown User'}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{rsvp.user?.email || 'N/A'}</p>
                           </div>
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                            rsvp.status === 'going' ? 'bg-success-100 text-success-800' :
-                            rsvp.status === 'maybe' ? 'bg-warning-100 text-warning-800' :
-                            rsvp.status === 'not_going' ? 'bg-error-100 text-error-800' :
-                            rsvp.status === 'approved' ? 'bg-success-100 text-success-900' :
-                            rsvp.status === 'waiting_for_approval' ? 'bg-warning-100 text-warning-800' :
-                            rsvp.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                            rsvp.status === 'going' ? 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400' :
+                            rsvp.status === 'maybe' ? 'bg-warning-100 dark:bg-warning-900/30 text-warning-800 dark:text-warning-400' :
+                            rsvp.status === 'not_going' ? 'bg-error-100 dark:bg-error-900/30 text-error-800 dark:text-error-400' :
+                            rsvp.status === 'approved' ? 'bg-success-100 dark:bg-success-900/30 text-success-900 dark:text-success-300' :
+                            rsvp.status === 'waiting_for_approval' ? 'bg-warning-100 dark:bg-warning-900/30 text-warning-800 dark:text-warning-400' :
+                            rsvp.status === 'rejected' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300'
                           }`}>
                             {String(rsvp.status).toUpperCase().replace(/_/g, ' ')}
                           </span>
