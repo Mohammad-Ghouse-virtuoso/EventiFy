@@ -1,4 +1,5 @@
-import React from 'react'
+import heroImage from '../../assets/EventiFy Hero Card.jpg'
+// Then use: illustrationSrc={heroImage}import React from 'react'
 
 /**
  * EventifyHeroCard
@@ -17,8 +18,23 @@ export default function EventifyHeroCard({
   onGetStarted,
   illustrationAlt = 'Colorful illustration placeholder representing events and community',
   illustrationSrc,
+  illustrationType = 'image', // 'image', 'gif', or 'video'
+  videoAutoPlay = true,
+  videoLoop = true,
+  videoMuted = true,
   className = '',
 }) {
+  // Determine if the source is a video based on file extension or explicit type
+  const isVideo = illustrationType === 'video' || 
+    (illustrationSrc && (
+      illustrationSrc.endsWith('.mp4') || 
+      illustrationSrc.endsWith('.webm') || 
+      illustrationSrc.endsWith('.mov')
+    ))
+  
+  const isGif = illustrationType === 'gif' || 
+    (illustrationSrc && illustrationSrc.endsWith('.gif'))
+
   return (
     <section
       className={`w-full bg-gradient-to-br from-primary-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden ${className}`}
@@ -48,17 +64,31 @@ export default function EventifyHeroCard({
             </div>
           </div>
 
-          {/* Right: Illustration placeholder */}
+          {/* Right: Illustration/Media placeholder */}
           <div className="order-1 lg:order-2">
             {illustrationSrc ? (
               <div className="relative w-full aspect-[4/3] sm:aspect-[3/2] lg:aspect-[16/10] xl:aspect-[16/9] max-h-[420px] rounded-xl overflow-hidden border border-primary-200 dark:border-primary-800 bg-white dark:bg-gray-800 shadow-sm">
-                <img
-                  src={illustrationSrc}
-                  alt={illustrationAlt}
-                  className="absolute inset-0 w-full h-full object-contain p-3 sm:p-4"
-                  loading="eager"
-                  decoding="async"
-                />
+                {isVideo ? (
+                  <video
+                    src={illustrationSrc}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    autoPlay={videoAutoPlay}
+                    loop={videoLoop}
+                    muted={videoMuted}
+                    playsInline
+                    aria-label={illustrationAlt}
+                  />
+                ) : (
+                  <img
+                    src={illustrationSrc}
+                    alt={illustrationAlt}
+                    className={`absolute inset-0 w-full h-full ${
+                      isGif ? 'object-cover' : 'object-contain p-3 sm:p-4'
+                    }`}
+                    loading="eager"
+                    decoding="async"
+                  />
+                )}
                 {/* subtle accent */}
                 <div className="pointer-events-none absolute -z-0 -right-6 -top-6 h-24 w-24 rounded-full bg-primary-200/40 dark:bg-primary-800/40 blur-2xl" aria-hidden="true" />
               </div>

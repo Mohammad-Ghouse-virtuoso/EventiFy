@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { CalendarDaysIcon, UserGroupIcon, QrCodeIcon, SparklesIcon, ArrowRightIcon, PlayIcon } from '@heroicons/react/24/outline'
 import EventifyHeroCard from '../components/EventifyHeroCard'
-import heroArtwork from '../../assets/EventiFy Hero Card.jpg'
+import heroImage from '../../assets/EventiFy Hero Card.jpg'
 import EventifyAudienceGrid from '../components/EventifyAudienceGrid'
 import ActiveEventsCarousel from '../components/ActiveEventsCarousel'
 import HowItWorks from '../components/HowItWorks'
@@ -56,8 +56,8 @@ export default function Home() {
         <div className="px-4 sm:px-6 lg:px-8 py-6">
           <EventifyHeroCard
             onGetStarted={() => navigate(user ? '/events' : '/register')}
-            illustrationSrc={heroArtwork}
-            illustrationAlt="EventiFy hero artwork: happy attendee with laptop and flower"
+            illustrationSrc={heroImage}
+            illustrationAlt="EventiFy hero banner"
           />
         </div>
       ) : (
