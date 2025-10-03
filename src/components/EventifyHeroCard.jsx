@@ -1,6 +1,3 @@
-import heroImage from '../../assets/EventiFy Hero Card.jpg'
-// Then use: illustrationSrc={heroImage}import React from 'react'
-
 /**
  * EventifyHeroCard
  *

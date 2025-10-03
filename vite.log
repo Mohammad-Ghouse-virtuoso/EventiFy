@@ -23,3 +23,16 @@
 3:44:30 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
 3:44:52 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
 3:45:39 PM [vite] hmr update /src/pages/Home.jsx, /src/index.css
+5:00:43 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+5:01:38 PM [vite] page reload src/tests/setup.js
+5:01:52 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+5:02:24 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+5:04:09 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+5:05:59 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+5:07:35 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
+5:08:16 PM [vite] page reload src/components/__tests__/EventifyHeroCard.test.jsx
+5:08:19 PM [vite] page reload src/components/__tests__/EventifyHeroCard.test.jsx
+5:08:22 PM [vite] page reload src/components/__tests__/EventifyHeroCard.test.jsx
+5:09:16 PM [vite] page reload src/tests/setup.js
+5:09:16 PM [vite] page reload src/components/__tests__/EventifyHeroCard.test.jsx
+5:09:16 PM [vite] hmr update /src/components/EventifyHeroCard.jsx, /src/index.css
