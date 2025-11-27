@@ -837,3 +837,280 @@ async def get_pending_rsvps(
         })
     
     return pending_rsvps
+
+
+# ============================================================================
+# QR CODE CHECK-IN ENDPOINTS
+# ============================================================================
+
+from jose import jwt
+from pydantic import BaseModel
+
+class QRTokenResponse(BaseModel):
+    """Response containing QR token data"""
+    qr_token: str
+    event_id: int
+    rsvp_id: int
+    attendee_name: str
+    event_title: str
+    expires_at: datetime
+
+class CheckinRequest(BaseModel):
+    """Request body for check-in"""
+    qr_token: str
+
+class CheckinResponse(BaseModel):
+    """Response after successful check-in"""
+    success: bool
+    message: str
+    attendee_name: str
+    attendee_email: str
+    rsvp_status: str
+    checked_in_at: datetime
+
+
+@router.get("/{event_id}/qr/{rsvp_id}", response_model=QRTokenResponse)
+async def generate_qr_token(
+    event_id: int,
+    rsvp_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Generate a QR token for an attendee's RSVP.
+    
+    - Attendee can only get their own QR code
+    - Organizer/Admin can get any attendee's QR code for their event
+    """
+    # Get the event
+    event = session.get(Event, event_id)
+    if not event or not event.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found"
+        )
+    
+    # Get the RSVP
+    rsvp = session.get(RSVP, rsvp_id)
+    if not rsvp or rsvp.event_id != event_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="RSVP not found"
+        )
+    
+    # Check permissions: own RSVP or organizer/admin of the event
+    is_own_rsvp = rsvp.user_id == current_user.id
+    is_organizer = event.organizer_id == current_user.id
+    is_admin = current_user.role.value == "admin" if hasattr(current_user.role, 'value') else current_user.role == "admin"
+    
+    if not (is_own_rsvp or is_organizer or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only view your own ticket or manage events you organize"
+        )
+    
+    # Only approved/going RSVPs can get QR codes
+    valid_statuses = [RSVPStatus.GOING, RSVPStatus.APPROVED]
+    if rsvp.status not in valid_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"QR code only available for confirmed attendees. Current status: {rsvp.status.value}"
+        )
+    
+    # Get attendee info
+    attendee = session.get(User, rsvp.user_id)
+    
+    # Generate JWT token for QR code (expires 24 hours after event ends)
+    event_end = event.event_end or event.event_start
+    expiry = event_end + timedelta(hours=24)
+    
+    token_payload = {
+        "rsvp_id": rsvp.id,
+        "event_id": event.id,
+        "user_id": rsvp.user_id,
+        "exp": expiry.timestamp(),
+        "type": "checkin"
+    }
+    
+    qr_token = jwt.encode(token_payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    
+    return QRTokenResponse(
+        qr_token=qr_token,
+        event_id=event.id,
+        rsvp_id=rsvp.id,
+        attendee_name=attendee.full_name if attendee else "Unknown",
+        event_title=event.title,
+        expires_at=expiry
+    )
+
+
+@router.post("/{event_id}/checkin", response_model=CheckinResponse)
+async def checkin_attendee(
+    event_id: int,
+    request: CheckinRequest,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Check in an attendee by scanning their QR code.
+    
+    - Only organizer of the event or admin can check in attendees
+    - Validates the QR token signature and expiry
+    - Prevents double check-in
+    """
+    # Get the event
+    event = session.get(Event, event_id)
+    if not event or not event.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found"
+        )
+    
+    # Check permissions: must be organizer or admin
+    is_organizer = event.organizer_id == current_user.id
+    is_admin = current_user.role.value == "admin" if hasattr(current_user.role, 'value') else current_user.role == "admin"
+    
+    if not (is_organizer or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only event organizers or admins can check in attendees"
+        )
+    
+    # Decode and validate the QR token
+    try:
+        payload = jwt.decode(
+            request.qr_token, 
+            settings.SECRET_KEY, 
+            algorithms=[settings.ALGORITHM]
+        )
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="QR code has expired"
+        )
+    except jwt.JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid QR code"
+        )
+    
+    # Validate token type
+    if payload.get("type") != "checkin":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid QR code type"
+        )
+    
+    # Validate event matches
+    if payload.get("event_id") != event_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This QR code is for a different event"
+        )
+    
+    # Get the RSVP
+    rsvp_id = payload.get("rsvp_id")
+    rsvp = session.get(RSVP, rsvp_id)
+    if not rsvp or rsvp.event_id != event_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="RSVP not found"
+        )
+    
+    # Check if already checked in
+    if rsvp.checked_in:
+        attendee = session.get(User, rsvp.user_id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"{attendee.full_name if attendee else 'Attendee'} is already checked in (at {rsvp.checked_in_at})"
+        )
+    
+    # Perform check-in
+    rsvp.checked_in = True
+    rsvp.checked_in_at = datetime.utcnow()
+    rsvp.updated_at = datetime.utcnow()
+    
+    session.add(rsvp)
+    session.commit()
+    session.refresh(rsvp)
+    
+    # Get attendee info for response
+    attendee = session.get(User, rsvp.user_id)
+    
+    return CheckinResponse(
+        success=True,
+        message=f"Welcome, {attendee.full_name if attendee else 'Attendee'}! ✅",
+        attendee_name=attendee.full_name if attendee else "Unknown",
+        attendee_email=attendee.email if attendee else "Unknown",
+        rsvp_status=rsvp.status.value if hasattr(rsvp.status, 'value') else str(rsvp.status),
+        checked_in_at=rsvp.checked_in_at
+    )
+
+
+@router.get("/{event_id}/checkin-stats")
+async def get_checkin_stats(
+    event_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get check-in statistics for an event.
+    
+    - Only organizer or admin can view stats
+    """
+    # Get the event
+    event = session.get(Event, event_id)
+    if not event:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found"
+        )
+    
+    # Check permissions
+    is_organizer = event.organizer_id == current_user.id
+    is_admin = current_user.role.value == "admin" if hasattr(current_user.role, 'value') else current_user.role == "admin"
+    
+    if not (is_organizer or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only event organizers or admins can view check-in stats"
+        )
+    
+    # Get all confirmed RSVPs (going + approved)
+    confirmed_rsvps = session.exec(
+        select(RSVP).where(
+            RSVP.event_id == event_id,
+            RSVP.status.in_([RSVPStatus.GOING, RSVPStatus.APPROVED])
+        )
+    ).all()
+    
+    total_confirmed = len(confirmed_rsvps)
+    checked_in = sum(1 for r in confirmed_rsvps if r.checked_in)
+    not_checked_in = total_confirmed - checked_in
+    
+    # Get list of checked-in attendees
+    checked_in_list = []
+    for rsvp in confirmed_rsvps:
+        if rsvp.checked_in:
+            attendee = session.get(User, rsvp.user_id)
+            checked_in_list.append({
+                "rsvp_id": rsvp.id,
+                "user_id": rsvp.user_id,
+                "name": attendee.full_name if attendee else "Unknown",
+                "email": attendee.email if attendee else "Unknown",
+                "checked_in_at": rsvp.checked_in_at
+            })
+    
+    # Sort by check-in time (most recent first)
+    checked_in_list.sort(key=lambda x: x["checked_in_at"] or datetime.min, reverse=True)
+    
+    return {
+        "event_id": event_id,
+        "event_title": event.title,
+        "total_confirmed": total_confirmed,
+        "checked_in": checked_in,
+        "not_checked_in": not_checked_in,
+        "check_in_rate": round(checked_in / total_confirmed * 100, 1) if total_confirmed > 0 else 0,
+        "max_attendees": event.max_attendees,
+        "recently_checked_in": checked_in_list[:10]  # Last 10 check-ins
+    }

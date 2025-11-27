@@ -175,4 +175,25 @@ export const adminAPI = {
   }
 }
 
+// QR Check-in API
+export const checkinAPI = {
+  // Get QR token for an RSVP (attendee gets their own, organizer can get any)
+  getQRToken: async (eventId, rsvpId) => {
+    const { data } = await api.get(`/events/${eventId}/qr/${rsvpId}`)
+    return data
+  },
+  
+  // Check in an attendee using their QR token
+  checkinAttendee: async (eventId, qrToken) => {
+    const { data } = await api.post(`/events/${eventId}/checkin`, { qr_token: qrToken })
+    return data
+  },
+  
+  // Get check-in statistics for an event
+  getCheckinStats: async (eventId) => {
+    const { data } = await api.get(`/events/${eventId}/checkin-stats`)
+    return data
+  }
+}
+
 export default api
