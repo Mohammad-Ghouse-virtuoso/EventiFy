@@ -1114,3 +1114,136 @@ async def get_checkin_stats(
         "max_attendees": event.max_attendees,
         "recently_checked_in": checked_in_list[:10]  # Last 10 check-ins
     }
+
+
+@router.get("/admin/dashboard-stats")
+async def get_admin_dashboard_stats(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_admin)
+):
+    """
+    Comprehensive admin dashboard stats.
+    Admin-only endpoint showing complete event & attendance data.
+    
+    Returns:
+    - All events with full details
+    - RSVP breakdown per event (going/maybe/not_going)
+    - All attendee data with emails & status
+    - Check-in statistics
+    """
+    
+    # Get all events
+    all_events = session.exec(select(Event).order_by(Event.event_start.desc())).all()
+    
+    events_data = []
+    
+    for event in all_events:
+        # Get all RSVPs for this event
+        all_rsvps = session.exec(
+            select(RSVP).where(RSVP.event_id == event.id)
+        ).all()
+        
+        # Count by status
+        rsvp_stats = {
+            "going": 0,
+            "maybe": 0,
+            "not_going": 0,
+            "approved": 0,
+            "rejected": 0,
+            "waiting_for_approval": 0
+        }
+        
+        attendees_list = []
+        
+        for rsvp in all_rsvps:
+            # Count status
+            status_key = rsvp.status.value if hasattr(rsvp.status, 'value') else str(rsvp.status).lower()
+            if status_key in rsvp_stats:
+                rsvp_stats[status_key] += 1
+            
+            # Get user details
+            user = session.get(User, rsvp.user_id)
+            if user:
+                attendees_list.append({
+                    "user_id": user.id,
+                    "name": user.full_name,
+                    "email": user.email,
+                    "rsvp_status": status_key,
+                    "rsvp_id": rsvp.id,
+                    "checked_in": rsvp.checked_in,
+                    "checked_in_at": rsvp.checked_in_at.isoformat() if rsvp.checked_in_at else None,
+                    "rsvp_created_at": rsvp.created_at.isoformat() if rsvp.created_at else None
+                })
+        
+        # Get organizer details
+        organizer = session.get(User, event.organizer_id) if event.organizer_id else None
+        
+        # Calculate attendance rate
+        confirmed = rsvp_stats["going"] + rsvp_stats["approved"]
+        checked_in_count = sum(1 for a in attendees_list if a["checked_in"])
+        attendance_rate = round(checked_in_count / confirmed * 100, 1) if confirmed > 0 else 0
+        
+        event_data = {
+            "event_id": event.id,
+            "title": event.title,
+            "description": event.description[:100] + "..." if len(event.description or "") > 100 else event.description,
+            "category": event.category,
+            "location": event.location,
+            "event_start": event.event_start.isoformat() if event.event_start else None,
+            "event_end": event.event_end.isoformat() if event.event_end else None,
+            "price": float(event.price) if event.price else 0,
+            "max_attendees": event.max_attendees,
+            "is_active": event.is_active,
+            "created_at": event.created_at.isoformat() if event.created_at else None,
+            "organizer": {
+                "user_id": organizer.id,
+                "name": organizer.full_name,
+                "email": organizer.email
+            } if organizer else None,
+            "rsvp_statistics": {
+                "total_rsvps": len(all_rsvps),
+                "going": rsvp_stats["going"],
+                "maybe": rsvp_stats["maybe"],
+                "not_going": rsvp_stats["not_going"],
+                "approved": rsvp_stats["approved"],
+                "rejected": rsvp_stats["rejected"],
+                "waiting_for_approval": rsvp_stats["waiting_for_approval"],
+                "confirmed_attendees": confirmed,
+                "checked_in": checked_in_count,
+                "attendance_rate": attendance_rate
+            },
+            "attendees": sorted(attendees_list, key=lambda x: x["rsvp_created_at"], reverse=True)
+        }
+        
+        events_data.append(event_data)
+    
+    # Get all users summary
+    all_users = session.exec(select(User)).all()
+    
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "admin_user": {
+            "user_id": current_user.id,
+            "name": current_user.full_name,
+            "email": current_user.email
+        },
+        "summary": {
+            "total_events": len(all_events),
+            "total_users": len(all_users),
+            "total_rsvps": sum(len(e["attendees"]) for e in events_data),
+            "active_events": sum(1 for e in events_data if e["is_active"]),
+            "past_events": sum(1 for e in events_data if not e["is_active"])
+        },
+        "events": events_data,
+        "all_users": [
+            {
+                "user_id": user.id,
+                "name": user.full_name,
+                "email": user.email,
+                "role": user.role.value if hasattr(user.role, 'value') else str(user.role),
+                "is_active": user.is_active,
+                "created_at": user.created_at.isoformat() if user.created_at else None
+            }
+            for user in all_users
+        ]
+    }
