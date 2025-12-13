@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventiFy Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .login-modal.hidden {
+            display: none;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-box h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .login-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .login-error.show {
+            display: block;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+        
+        .login-button:hover {
+            opacity: 0.9;
+        }
+        
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .login-demo {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .demo-user {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            font-family: monospace;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .summary-card h3 {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .events-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .events-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .event-card {
+            border-bottom: 1px solid #eee;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+        
+        .event-card:hover {
+            background: #f9f9f9;
+        }
+        
+        .event-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .event-meta {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .event-location {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .rsvp-stats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+        
+        .going { color: #10b981; }
+        .maybe { color: #f59e0b; }
+        .not-going { color: #ef4444; }
+        .approved { color: #0ea5e9; }
+        .checked-in { color: #8b5cf6; }
+        
+        .attendees-toggle {
+            cursor: pointer;
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        .attendees-toggle:hover {
+            background: #764ba2;
+        }
+        
+        .attendees-list {
+            display: none;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        
+        .attendees-list.show {
+            display: block;
+        }
+        
+        .attendee-item {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr 1fr;
+            gap: 10px;
+            padding: 8px;
+            font-size: 12px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        
+        .status-going { background: #d1fae5; color: #065f46; }
+        .status-maybe { background: #fef3c7; color: #92400e; }
+        .status-not-going { background: #fee2e2; color: #991b1b; }
+        .status-approved { background: #cffafe; color: #164e63; }
+        .status-checked-in { background: #e9d5ff; color: #5b21b6; }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .users-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 30px;
+        }
+        
+        .users-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .user-item {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1.5fr;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            font-size: 13px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .role-admin { background: #fee2e2; color: #991b1b; }
+        .role-organizer { background: #dbeafe; color: #1e40af; }
+        .role-attendee { background: #dcfce7; color: #166534; }
+        
+        .logout-button {
+            padding: 10px 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .logout-button:hover {
+            background: #dc2626;
+        }
+        
+        @media (max-width: 768px) {
+            .rsvp-stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .attendee-item {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal -->
+    <div class="login-modal" id="login-modal">
+        <div class="login-box">
+            <h2>🔐 Admin Login</h2>
+            <p>Sign in to view dashboard</p>
+            
+            <div class="login-error" id="login-error"></div>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="admin@example.com" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="your password" required>
+                </div>
+                
+                <button type="submit" class="login-button" id="login-btn">Login</button>
+            </form>
+            
+            <div class="login-demo">
+                <strong>📝 Test Users:</strong>
+                <div class="demo-user">Email: admin@example.com</div>
+                <div class="demo-user">Email: organizer@eventify.com</div>
+                <p style="margin-top: 8px; font-size: 11px;">Default password: eventify123</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div class="container" id="dashboard" style="display: none;">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>📊 EventiFy Admin Dashboard</h1>
+                    <p id="refresh-time">Last updated: --:--:--</p>
+                </div>
+                <button class="logout-button" onclick="handleLogout()">Logout</button>
+            </div>
+            <div class="header-actions">
+                <button style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;" onclick="loadDashboard()">🔄 Refresh Data</button>
+            </div>
+        </div>
+        
+        <div id="error-container"></div>
+        
+        <div class="summary-grid" id="summary-grid">
+            <div class="summary-card">
+                <h3>📅 Total Events</h3>
+                <div class="value" id="total-events">--</div>
+            </div>
+            <div class="summary-card" style="border-left-color: #10b981;">
+                <h3>👥 Total Users</h3>
+                <div class="value" id="total-users">--</div>
+            </div>
+            <div class="summary-card" style="border-left-color: #f59e0b;">
+                <h3>✅ Total RSVPs</h3>
+                <div class="value" id="total-rsvps">--</div>
+            </div>
+            <div class="summary-card" style="border-left-color: #0ea5e9;">
+                <h3>🔴 Active Events</h3>
+                <div class="value" id="active-events">--</div>
+            </div>
+        </div>
+        
+        <div class="events-section">
+            <div class="section-header">📋 Events & Attendance</div>
+            <div class="events-container" id="events-container">
+                <div class="loading">Loading events...</div>
+            </div>
+        </div>
+        
+        <div class="users-section">
+            <div class="section-header">👤 All Users</div>
+            <div class="users-container" id="users-container">
+                <div class="loading">Loading users...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8000/api/v1';
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('login-btn');
+            const loginError = document.getElementById('login-error');
+            
+            loginError.classList.remove('show');
+            loginBtn.disabled = true;
+            loginBtn.textContent = '⏳ Logging in...';
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Login failed');
+                }
+                
+                const data = await response.json();
+                localStorage.setItem('admin_token', data.access_token);
+                
+                // Show dashboard, hide login
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('dashboard').style.display = 'block';
+                
+                loadDashboard();
+            } catch (error) {
+                loginError.textContent = `❌ ${error.message}`;
+                loginError.classList.add('show');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        }
+        
+        function handleLogout() {
+            localStorage.removeItem('admin_token');
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
+        
+        async function loadDashboard() {
+            try {
+                document.getElementById('error-container').innerHTML = '';
+                
+                const token = localStorage.getItem('admin_token');
+                
+                const response = await fetch(`${API_URL}/events/admin/dashboard-stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.status === 401) {
+                    handleLogout();
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                renderDashboard(data);
+                document.getElementById('refresh-time').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+            } catch (error) {
+                showError(`❌ Error loading dashboard: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('error-container').innerHTML = `<div class="error">${message}</div>`;
+        }
+        
+        function renderDashboard(data) {
+            const summary = data.summary;
+            document.getElementById('total-events').textContent = summary.total_events;
+            document.getElementById('total-users').textContent = summary.total_users;
+            document.getElementById('total-rsvps').textContent = summary.total_rsvps;
+            document.getElementById('active-events').textContent = summary.active_events;
+            
+            const eventsHtml = data.events.map(event => `
+                <div class="event-card">
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-meta">
+                        <span class="event-location">📍 ${event.location}</span>
+                        <span>${new Date(event.event_start).toLocaleDateString()}</span>
+                        ${event.is_active ? '🔵' : '⚫'}
+                    </div>
+                    <div style="font-size: 12px; color: #666; margin-bottom: 12px;">
+                        <strong>Organizer:</strong> ${event.organizer ? event.organizer.name + ' (' + event.organizer.email + ')' : 'N/A'}
+                    </div>
+                    <div class="rsvp-stats">
+                        <div class="stat">
+                            <div class="stat-label">Going</div>
+                            <div class="stat-value going">${event.rsvp_statistics.going}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Maybe</div>
+                            <div class="stat-value maybe">${event.rsvp_statistics.maybe}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Not Going</div>
+                            <div class="stat-value not-going">${event.rsvp_statistics.not_going}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Approved</div>
+                            <div class="stat-value approved">${event.rsvp_statistics.approved}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Confirmed</div>
+                            <div class="stat-value">${event.rsvp_statistics.confirmed_attendees}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Attendance</div>
+                            <div class="stat-value checked-in">${event.rsvp_statistics.attendance_rate}%</div>
+                        </div>
+                    </div>
+                    <button class="attendees-toggle" onclick="toggleAttendees(this)">👥 Show Attendees (${event.attendees.length})</button>
+                    <div class="attendees-list">
+                        <div style="display: grid; grid-template-columns: 2fr 2fr 1fr 1fr; gap: 10px; padding: 8px 0; border-bottom: 2px solid #ddd; font-weight: 600; font-size: 11px;">
+                            <div>Name</div>
+                            <div>Email</div>
+                            <div>Status</div>
+                            <div>Checked In</div>
+                        </div>
+                        ${event.attendees.map(att => `
+                            <div class="attendee-item">
+                                <div>${att.name}</div>
+                                <div style="font-size: 11px;">${att.email}</div>
+                                <div><span class="status-badge status-${att.rsvp_status}">${att.rsvp_status.replace('_', ' ')}</span></div>
+                                <div>${att.checked_in ? '✅ ' + new Date(att.checked_in_at).toLocaleTimeString() : '❌'}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('events-container').innerHTML = eventsHtml || '<div class="loading">No events found</div>';
+            
+            const usersHtml = data.all_users.map(user => `
+                <div class="user-item">
+                    <div>
+                        <div class="user-name">${user.name}</div>
+                        <div style="color: #666; font-size: 12px;">${user.email}</div>
+                    </div>
+                    <div><span class="role-badge role-${user.role.toLowerCase()}">${user.role}</span></div>
+                    <div style="color: #666;">${user.is_active ? '🟢 Active' : '🔴 Inactive'}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('users-container').innerHTML = usersHtml || '<div class="loading">No users found</div>';
+        }
+        
+        function toggleAttendees(button) {
+            const list = button.nextElementSibling;
+            list.classList.toggle('show');
+            button.textContent = button.textContent.includes('Show') ? '👥 Hide Attendees' : '👥 Show Attendees';
+        }
+        
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('admin_token');
+            if (token) {
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('dashboard').style.display = 'block';
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
