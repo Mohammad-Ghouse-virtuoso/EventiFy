@@ -25,39 +25,39 @@ const API = process.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
 const client = axios.create({ baseURL: API, headers: { 'Content-Type': 'application/json' } });
 
 // ============================================================================
-// EVERGREEN EVENT TEMPLATES
+// EVERGREEN EVENT TEMPLATES (Realistic, Diverse Events)
 // ============================================================================
 const EVERGREEN_TEMPLATES = [
   {
-    title: "Weekly Tech Meetup",
-    description: "Join fellow tech enthusiasts for an evening of talks, demos, and networking. This week's topic: Building Modern Web Apps. Pizza and drinks provided!",
+    title: "Berlin Tech Summit 2025",
+    description: "Join 200+ developers, designers, and founders for keynotes on AI, Web3, and sustainable tech. Network over coffee and pastries. Early bird tickets 20% off!",
     category: "Technology",
     location: "Berlin, Germany",
-    max_attendees: 50,
-    price: 0,
+    max_attendees: 200,
+    price: 29.99,
     image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80",
     thumbnail: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80",
     daysAhead: { min: 3, max: 7 },
     npcCount: { min: 8, max: 15 }
   },
   {
-    title: "Photography Walk",
-    description: "Explore the city through your lens! Meet at the main square for a guided photo walk through iconic spots. All skill levels welcome. Bring your camera or smartphone.",
+    title: "Manhattan Photography Collective - Urban Exploration",
+    description: "Discover hidden gems in Manhattan through the lens! Led by award-winning photographer James Chen. Showcase your best shots for group critique and feedback.",
     category: "Art",
     location: "New York, USA",
-    max_attendees: 30,
-    price: 10,
+    max_attendees: 25,
+    price: 35,
     image: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&q=80",
     thumbnail: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=400&q=80",
     daysAhead: { min: 5, max: 10 },
     npcCount: { min: 5, max: 12 }
   },
   {
-    title: "Fitness Bootcamp",
-    description: "High-intensity outdoor workout session! Join our certified trainer for a full-body workout in the park. All fitness levels welcome. Bring water and a towel.",
+    title: "Hyde Park Bootcamp - Outdoor Fitness Series",
+    description: "Led by certified CrossFit coach Sarah Miller. HIIT training in the heart of London. All levels welcome. Bring your own mat, we provide water and energy bars!",
     category: "Sports",
     location: "London, UK",
-    max_attendees: 25,
+    max_attendees: 40,
     price: 15,
     image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80",
     thumbnail: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80",
@@ -65,28 +65,88 @@ const EVERGREEN_TEMPLATES = [
     npcCount: { min: 10, max: 20 }
   },
   {
-    title: "Cooking Workshop: Asian Cuisine",
-    description: "Learn to make authentic dishes from across Asia! This hands-on workshop covers sushi, pad thai, and dumplings. All ingredients provided. Take home your creations!",
+    title: "Shinjuku Culinary Arts - Japanese Ramen Masterclass",
+    description: "Master the art of tonkotsu ramen with Michelin-trained chef Yuki Tanaka. Learn broth techniques, noodle selection, and authentic toppings. Hands-on, cook what you learn!",
     category: "Food",
     location: "Tokyo, Japan",
-    max_attendees: 20,
-    price: 45,
+    max_attendees: 18,
+    price: 65,
     image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80",
     thumbnail: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&q=80",
     daysAhead: { min: 7, max: 14 },
     npcCount: { min: 6, max: 10 }
   },
   {
-    title: "Live Music Jam Session",
-    description: "Open mic night for musicians! Bring your instrument or just come to listen. All genres welcome. Great vibes, good people, amazing music. Drinks available at the bar.",
+    title: "Melkweg Open Stage - Live Music & Comedy",
+    description: "Amsterdam's iconic venue hosts emerging artists and comedians. Expect eclectic performances from funk to indie rock. Bar open all night. Come support local talent!",
     category: "Music",
     location: "Amsterdam, Netherlands",
-    max_attendees: 60,
-    price: 5,
+    max_attendees: 150,
+    price: 12.50,
     image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80",
     thumbnail: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80",
     daysAhead: { min: 4, max: 8 },
     npcCount: { min: 8, max: 18 }
+  },
+  {
+    title: "Barcelona Art Gallery - Modern & Contemporary Showcase",
+    description: "New exhibition featuring 40+ artists from across Europe. Opening night reception with wine & catering. Meet the artists, discuss inspiration, and network with collectors.",
+    category: "Art",
+    location: "Barcelona, Spain",
+    max_attendees: 100,
+    price: 18,
+    image: "https://images.unsplash.com/photo-1578321272176-aaa1b1e19a1c?w=800&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1578321272176-aaa1b1e19a1c?w=400&q=80",
+    daysAhead: { min: 3, max: 9 },
+    npcCount: { min: 6, max: 14 }
+  },
+  {
+    title: "Startup Pitch Night - Singapore Tech Hub",
+    description: "See 10 innovative startups pitch to VCs and angel investors. Q&A session follows. Network with founders, investors, and tech enthusiasts. Free for early-stage founders!",
+    category: "Technology",
+    location: "Singapore",
+    max_attendees: 80,
+    price: 0,
+    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80",
+    daysAhead: { min: 6, max: 12 },
+    npcCount: { min: 7, max: 16 }
+  },
+  {
+    title: "Sydney Harbour Yoga & Wellness Retreat",
+    description: "Sunset yoga with ocean views led by certified instructors. Meditation, breathing exercises, and wellness talk. Vegetarian snacks and herbal tea included. Relaxation guaranteed!",
+    category: "Sports",
+    location: "Sydney, Australia",
+    max_attendees: 35,
+    price: 22,
+    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80",
+    daysAhead: { min: 2, max: 6 },
+    npcCount: { min: 7, max: 13 }
+  },
+  {
+    title: "Paris Cooking Academy - French Pastry Masterclass",
+    description: "Learn croissant, éclair, and macaron techniques from classically trained pastry chef Marie Dubois. Work with premium European ingredients. Take home your pastries!",
+    category: "Food",
+    location: "Paris, France",
+    max_attendees: 20,
+    price: 95,
+    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&q=80",
+    daysAhead: { min: 5, max: 11 },
+    npcCount: { min: 5, max: 9 }
+  },
+  {
+    title: "Toronto Film Festival - Indie Cinema Night",
+    description: "Screening of 3 award-winning short films followed by director Q&A. Popcorn and drinks available. Support independent filmmakers. Perfect for cinema lovers!",
+    category: "Entertainment",
+    location: "Toronto, Canada",
+    max_attendees: 120,
+    price: 16,
+    image: "https://images.unsplash.com/photo-1489599849228-58cccc1b1c13?w=800&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1489599849228-58cccc1b1c13?w=400&q=80",
+    daysAhead: { min: 4, max: 10 },
+    npcCount: { min: 8, max: 17 }
   }
 ];
 
@@ -249,27 +309,56 @@ async function createEvergreenEvent(template) {
 
 async function addNPCsToEvent(event, npcCount) {
   const selectedNPCs = shuffle(NPC_POOL).slice(0, npcCount);
-  let rsvpCount = 0;
+  let rsvpCount = { going: 0, maybe: 0, not_going: 0 };
+  
+  // Distribution: 65% going, 20% maybe, 15% not_going (realistic RSVP pattern)
+  const goingTarget = Math.ceil(selectedNPCs.length * 0.65);
+  const maybeTarget = Math.ceil(selectedNPCs.length * 0.20);
 
-  for (const npc of selectedNPCs) {
+  for (let i = 0; i < selectedNPCs.length; i++) {
+    const npc = selectedNPCs[i];
     const npcUser = await registerNPC(npc);
     if (!npcUser) continue;
 
+    // Determine RSVP status based on distribution
+    let status = 'not_going';
+    if (i < goingTarget) {
+      status = 'going';
+    } else if (i < goingTarget + maybeTarget) {
+      status = 'maybe';
+    }
+
+    const notes = {
+      going: `Can't wait to attend ${event.title}!`,
+      maybe: `Interested but might have conflicts.`,
+      not_going: `Thanks for the invite, but I'll have to skip this one.`
+    }[status];
+
     try {
       await client.post(`/events/${event.id}/rsvp`, 
-        { status: 'going', notes: `Excited to attend ${event.title}!` },
+        { status, notes },
         { headers: { Authorization: `Bearer ${npcUser.token}` } }
       );
-      rsvpCount++;
+      rsvpCount[status]++;
     } catch (e) {
-      // RSVP might already exist
+      // RSVP might already exist; update it
+      try {
+        await client.put(`/events/${event.id}/rsvp`, 
+          { status, notes },
+          { headers: { Authorization: `Bearer ${npcUser.token}` } }
+        );
+        rsvpCount[status]++;
+      } catch (err) {
+        // Silently skip if both fail
+      }
     }
     
-    await delay(50); // Small delay to avoid rate limiting
+    await delay(30); // Small delay to avoid rate limiting
   }
 
-  console.log(`   👥 Added ${rsvpCount} NPC attendees`);
-  return rsvpCount;
+  const total = rsvpCount.going + rsvpCount.maybe + rsvpCount.not_going;
+  console.log(`   👥 ${total} NPCs added: ${rsvpCount.going}✅ ${rsvpCount.maybe}❓ ${rsvpCount.not_going}❌`);
+  return total;
 }
 
 async function checkExistingEvents() {

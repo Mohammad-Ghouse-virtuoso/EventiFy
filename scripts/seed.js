@@ -25,7 +25,7 @@ Console output confirms each user action:
 import axios from 'axios'
 import { faker } from '@faker-js/faker'
 
-const API = process.env.VITE_API_URL || 'http://127.0.0.1:8001/api/v1'
+const API = process.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'
 const client = axios.create({ baseURL: API, withCredentials: true, headers: { 'Content-Type': 'application/json' } })
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
