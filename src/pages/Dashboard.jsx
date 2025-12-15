@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfile } from '../contexts/ProfileContext'
 import { useNotification } from '../contexts/NotificationContext'
 import { eventsAPI, adminAPI } from '../services/api'
-import { PlusIcon, CalendarIcon, UsersIcon, QrCodeIcon, PhotoIcon, PencilIcon, CameraIcon, CheckCircleIcon, XCircleIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, CalendarIcon, UsersIcon, QrCodeIcon, PhotoIcon, PencilIcon, CameraIcon, CheckCircleIcon, XCircleIcon, UserGroupIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import BannerSelector from '../components/BannerSelector'
 import AvatarSelector from '../components/AvatarSelector'
@@ -31,6 +31,8 @@ export default function Dashboard() {
   const [showAvatarSelector, setShowAvatarSelector] = useState(false)
   const [pendingRSVPs, setPendingRSVPs] = useState({})
   const [showRSVPManagement, setShowRSVPManagement] = useState({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('upcoming')
 
   useEffect(() => {
     loadDashboardData()
@@ -56,6 +58,17 @@ export default function Dashboard() {
       setLoading(false)
     }
   }
+
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    const savedSort = localStorage.getItem('dashboard_attendee_sort') || 'upcoming'
+    setSortBy(savedSort)
+  }, [])
+
+  // Save sort preference to localStorage
+  useEffect(() => {
+    localStorage.setItem('dashboard_attendee_sort', sortBy)
+  }, [sortBy])
 
   const loadPendingRSVPs = async (eventId) => {
     try {
@@ -117,6 +130,42 @@ export default function Dashboard() {
   const handleAvatarSelect = (avatar) => {
     updateAvatar(avatar)
   }
+
+  // Compute filtered and sorted events
+  const filteredEvents = useMemo(() => {
+    let result = rsvpEvents
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(event =>
+        event.title.toLowerCase().includes(query) ||
+        (event.description && event.description.toLowerCase().includes(query))
+      )
+    }
+
+    // Sort
+    const sorted = [...result]
+    switch (sortBy) {
+      case 'upcoming':
+        sorted.sort((a, b) =>
+          new Date(a.event_start) - new Date(b.event_start)
+        )
+        break
+      case 'name':
+        sorted.sort((a, b) => a.title.localeCompare(b.title))
+        break
+      case 'added':
+        // Reverse order (most recent first)
+        sorted.reverse()
+        break
+      case 'distance':
+        // Placeholder for future implementation
+        break
+    }
+
+    return sorted
+  }, [rsvpEvents, searchQuery, sortBy])
 
   // Create stats based on user role
   const stats = [
@@ -465,30 +514,75 @@ export default function Dashboard() {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
-              {rsvpEvents.length > 0 ? (
-                rsvpEvents.map((event) => (
-                  <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mt-1">{event.description}</p>
-                    <div className="flex items-center mt-2 text-sm text-gray-500">
-                      <CalendarIcon className="h-4 w-4 mr-1" />
-                      {format(new Date(event.event_start), 'PPP')} at {formatTime(new Date(event.event_start).toISOString().split('T')[1]?.slice(0,5))}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-gray-300">You're not attending any events yet.</p>
-                  <Link
-                    to="/events"
-                    className="text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    Browse events to attend
-                  </Link>
+            <div>
+              {/* Search and Sort Controls */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-6 items-stretch sm:items-center">
+                <div className="relative flex-1">
+                  <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search events..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
-              )}
+
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white bg-white"
+                >
+                  <option value="upcoming">Upcoming</option>
+                  <option value="name">Name (A-Z)</option>
+                  <option value="added">Recently Added</option>
+                  <option value="distance">Distance</option>
+                </select>
+              </div>
+
+              {/* Event Count */}
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Attending Events ({filteredEvents.length})
+              </p>
+
+              {/* Events List */}
+              <div className="space-y-4">
+                {filteredEvents.length > 0 ? (
+                  filteredEvents.map((event) => (
+                    <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mt-1">{event.description}</p>
+                      <div className="flex items-center mt-2 text-sm text-gray-500">
+                        <CalendarIcon className="h-4 w-4 mr-1" />
+                        {format(new Date(event.event_start), 'PPP')} at {formatTime(new Date(event.event_start).toISOString().split('T')[1]?.slice(0,5))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {searchQuery ? 'No events match your search.' : "You're not attending any events yet."}
+                    </p>
+                    {!searchQuery && (
+                      <Link
+                        to="/events"
+                        className="text-primary-600 hover:text-primary-700 font-medium"
+                      >
+                        Browse events to attend
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
