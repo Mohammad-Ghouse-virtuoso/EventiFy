@@ -11,11 +11,6 @@ class UserBookmark(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
     __tablename__ = "user_bookmarks"
-    
-    # Add unique constraint so user can only bookmark each event once
-    __table_args__ = (
-        {'sa': True},
-    )
 
 class BookmarkResponse(SQLModel):
     """Response format for bookmark operations"""

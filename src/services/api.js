@@ -119,7 +119,8 @@ export const eventsAPI = {
   },
   rsvp: async (eventId, status) => {
     const token = localStorage.getItem('token')
-    const { data } = await api.post(`/events/${eventId}/rsvp`, { status }, {
+    const payload = typeof status === 'string' ? { status } : status
+    const { data } = await api.post(`/events/${eventId}/rsvp`, payload, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
     return data
@@ -220,6 +221,29 @@ export const bookmarkAPI = {
   isBookmarked: async (eventId) => {
     const { data } = await api.get(`/events/${eventId}/bookmark/status`)
     return data.is_bookmarked
+  }
+}
+
+export const questionsAPI = {
+  getQuestions: async (eventId) => {
+    const { data } = await api.get(`/events/${eventId}/questions`)
+    return data
+  },
+  askQuestion: async (eventId, payload) => {
+    const { data } = await api.post(`/events/${eventId}/questions`, payload)
+    return data
+  },
+  answerQuestion: async (eventId, questionId, text) => {
+    const { data } = await api.post(`/events/${eventId}/questions/${questionId}/answers`, { text })
+    return data
+  },
+  voteHelpful: async (eventId, answerId) => {
+    const { data } = await api.post(`/events/${eventId}/answers/${answerId}/vote`)
+    return data
+  },
+  removeVote: async (eventId, answerId) => {
+    const { data } = await api.delete(`/events/${eventId}/answers/${answerId}/vote`)
+    return data
   }
 }
 

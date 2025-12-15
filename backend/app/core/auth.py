@@ -31,6 +31,7 @@ argon2_hasher = PasswordHasher(
 
 # JWT token security
 security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash. Supports argon2id and legacy bcrypt."""
@@ -160,3 +161,35 @@ def require_admin(current_user: User = Depends(get_current_active_user)) -> User
             detail="Admin access required"
         )
     return current_user
+
+
+async def get_current_user_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_optional),
+    session: Session = Depends(get_session)
+) -> Optional[User]:
+    """Return the current user when a bearer token is present; otherwise None.
+
+    This is useful for endpoints that support anonymous access but want to
+    personalize responses (e.g., helpful-vote state).
+    """
+    if credentials is None:
+        return None
+
+    payload = verify_token(credentials.credentials)
+    if payload is None:
+        return None
+
+    user_id = payload.get("sub")
+    if user_id is None:
+        return None
+
+    user = session.exec(select(User).where(User.id == user_id)).first()
+    if user is None or not user.is_active:
+        return None
+
+    try:
+        if isinstance(user.role, str):
+            user.role = UserRole(user.role.lower())
+    except Exception:
+        pass
+    return user

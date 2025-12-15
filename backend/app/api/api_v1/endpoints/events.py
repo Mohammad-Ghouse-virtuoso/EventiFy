@@ -2,11 +2,26 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile
 from sqlmodel import Session, select
 from typing import List, Optional
 from datetime import datetime, timedelta
+import re
 from app.db.database import get_session
 from app.models.event import Event, EventCreate, EventUpdate, EventOut
 from app.models.user import User
 from app.models.rsvp import RSVP, RSVPCreate, RSVPUpdate, RSVPStatus
-from app.core.auth import get_current_active_user, require_organizer_or_admin, require_admin
+from app.models.qna import (
+    EventQuestion,
+    EventQuestionCreate,
+    EventQuestionResponse,
+    EventAnswer,
+    EventAnswerCreate,
+    EventAnswerResponse,
+    AnswerHelpfulVote,
+)
+from app.core.auth import (
+    get_current_active_user,
+    get_current_user_optional,
+    require_organizer_or_admin,
+    require_admin,
+)
 from app.core.config import settings
 from app.core.npc_generator import inject_npcs_into_attendees
 from sqlalchemy import func, exists, select as sa_select
@@ -17,6 +32,51 @@ router = APIRouter()
 SPECIAL_NPC_COUNTS = {
     17: 43,  # Heema's Choir Show - 43 NPCs + 2 real (latha + Jamie) = 45 total
 }
+
+_STOPWORDS = {
+    "the", "and", "for", "with", "that", "this", "from", "your", "about",
+    "will", "have", "what", "when", "where", "which", "does", "can",
+    "how", "are", "you", "its", "any", "into", "been", "they", "them",
+}
+
+_GENERIC_EVENT_TOPICS = {
+    "parking", "dress", "clothes", "food", "meal", "vegan", "vegetarian",
+    "ticket", "tickets", "price", "cost", "entry", "time", "start", "end",
+    "schedule", "agenda", "location", "venue", "address", "arrival", "gate",
+    "accessibility", "wheelchair", "refund", "policy", "age", "kids", "child",
+    "alcohol", "drink", "security", "recording", "stream", "livestream",
+    "seat", "seating", "capacity", "max", "register", "registration",
+}
+
+
+def _tokenize(text: str) -> set:
+    tokens = re.findall(r"[a-zA-Z]{3,}", text.lower())
+    return {t for t in tokens if t not in _STOPWORDS}
+
+
+def _keywords_from_event(event: Event) -> set:
+    chunks = [event.title or "", event.description or "", event.category or "", event.location or ""]
+    tokens = set()
+    for chunk in chunks:
+        tokens |= _tokenize(chunk)
+    return tokens | _GENERIC_EVENT_TOPICS
+
+
+def _validate_question_relevance(question_text: str, event: Event) -> Optional[str]:
+    text = (question_text or "").strip()
+    if len(text) < 8:
+        return "Please provide a bit more detail in your question."
+    if len(text) > 500:
+        return "Questions must be 500 characters or fewer."
+    if re.search(r"https?://", text):
+        return "Links are not allowed in questions."
+    if re.search(r"\b(violence|harm|weapon|bomb|kill)\b", text, re.IGNORECASE):
+        return "This content is not allowed."
+
+    overlap = _tokenize(text) & _keywords_from_event(event)
+    if not overlap:
+        return "Please keep questions about this event's schedule, location, access, or logistics."
+    return None
 
 @router.get("/", response_model=List[EventOut])
 @router.get("", response_model=List[EventOut])  # Handle both with and without trailing slash
@@ -674,6 +734,229 @@ async def get_event_rsvps(
             }]
         else:
             return []
+
+
+@router.get("/{event_id}/questions", response_model=List[EventQuestionResponse])
+async def get_event_questions(
+    event_id: int,
+    session: Session = Depends(get_session),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    event = session.get(Event, event_id)
+    if not event or not event.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found",
+        )
+
+    questions = session.exec(
+        select(EventQuestion)
+        .where(EventQuestion.event_id == event_id)
+        .order_by(EventQuestion.created_at.desc())
+    ).all()
+
+    responses: List[EventQuestionResponse] = []
+    for question in questions:
+        answers_with_names = session.exec(
+            select(EventAnswer, User.full_name)
+            .join(User, EventAnswer.user_id == User.id)
+            .where(EventAnswer.question_id == question.id)
+            .order_by(EventAnswer.created_at.desc())
+        ).all()
+        answer_ids = [a.id for a, _ in answers_with_names]
+
+        voted_ids = set()
+        if current_user and answer_ids:
+            voted_rows = session.exec(
+                select(AnswerHelpfulVote.answer_id).where(
+                    AnswerHelpfulVote.answer_id.in_(answer_ids),
+                    AnswerHelpfulVote.user_id == current_user.id,
+                )
+            ).all()
+            voted_ids = {row for row in voted_rows}
+
+        answers: List[EventAnswerResponse] = [
+            EventAnswerResponse(
+                **answer.dict(),
+                answerer_name=full_name,
+                has_voted=answer.id in voted_ids,
+            )
+            for answer, full_name in answers_with_names
+        ]
+
+        responses.append(
+            EventQuestionResponse(
+                **question.dict(),
+                answers=answers,
+            )
+        )
+
+    return responses
+
+
+@router.post(
+    "/{event_id}/questions",
+    response_model=EventQuestionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_event_question(
+    event_id: int,
+    question_data: EventQuestionCreate,
+    session: Session = Depends(get_session),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    event = session.get(Event, event_id)
+    if not event or not event.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found",
+        )
+
+    if not question_data.asker_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is required to ask a question",
+        )
+
+    relevance_error = _validate_question_relevance(question_data.text, event)
+    if relevance_error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=relevance_error,
+        )
+
+    db_question = EventQuestion(
+        **question_data.dict(),
+        event_id=event_id,
+        user_id=current_user.id if current_user else None,
+    )
+    session.add(db_question)
+    session.commit()
+    session.refresh(db_question)
+
+    return EventQuestionResponse(**db_question.dict(), answers=[])
+
+
+@router.post(
+    "/{event_id}/questions/{question_id}/answers",
+    response_model=EventAnswerResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def answer_event_question(
+    event_id: int,
+    question_id: int,
+    answer_data: EventAnswerCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user),
+):
+    event = session.get(Event, event_id)
+    if not event or not event.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found",
+        )
+
+    question = session.get(EventQuestion, question_id)
+    if not question or question.event_id != event_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Question not found",
+        )
+
+    role_value = getattr(current_user.role, "value", current_user.role)
+    is_admin = str(role_value).lower() == "admin"
+    if current_user.id != event.organizer_id and not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the organizer or an admin can answer questions",
+        )
+
+    if not answer_data.text or not answer_data.text.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Answer cannot be empty",
+        )
+
+    db_answer = EventAnswer(
+        question_id=question_id,
+        user_id=current_user.id,
+        text=answer_data.text.strip(),
+    )
+    session.add(db_answer)
+    session.commit()
+    session.refresh(db_answer)
+
+    return EventAnswerResponse(
+        **db_answer.dict(),
+        answerer_name=current_user.full_name,
+        has_voted=False,
+    )
+
+
+@router.post("/{event_id}/answers/{answer_id}/vote")
+async def vote_answer_helpful(
+    event_id: int,
+    answer_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user),
+):
+    answer = session.get(EventAnswer, answer_id)
+    if not answer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Answer not found",
+        )
+
+    existing_vote = session.exec(
+        select(AnswerHelpfulVote).where(
+            AnswerHelpfulVote.answer_id == answer_id,
+            AnswerHelpfulVote.user_id == current_user.id,
+        )
+    ).first()
+
+    if existing_vote:
+        return {"helpful_count": answer.helpful_count or 0, "voted": True}
+
+    vote = AnswerHelpfulVote(answer_id=answer_id, user_id=current_user.id)
+    answer.helpful_count = max(0, (answer.helpful_count or 0) + 1)
+    session.add(vote)
+    session.add(answer)
+    session.commit()
+    session.refresh(answer)
+
+    return {"helpful_count": answer.helpful_count, "voted": True}
+
+
+@router.delete("/{event_id}/answers/{answer_id}/vote")
+async def remove_vote_answer_helpful(
+    event_id: int,
+    answer_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user),
+):
+    answer = session.get(EventAnswer, answer_id)
+    if not answer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Answer not found",
+        )
+
+    existing_vote = session.exec(
+        select(AnswerHelpfulVote).where(
+            AnswerHelpfulVote.answer_id == answer_id,
+            AnswerHelpfulVote.user_id == current_user.id,
+        )
+    ).first()
+
+    if existing_vote:
+        session.delete(existing_vote)
+        answer.helpful_count = max(0, (answer.helpful_count or 0) - 1)
+        session.add(answer)
+        session.commit()
+        session.refresh(answer)
+        return {"helpful_count": answer.helpful_count, "voted": False}
+
+    return {"helpful_count": answer.helpful_count or 0, "voted": False}
 
 @router.post("/{event_id}/rsvp/{rsvp_id}/approve")
 async def approve_rsvp(

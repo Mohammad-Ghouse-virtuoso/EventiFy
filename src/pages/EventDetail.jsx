@@ -27,6 +27,7 @@ export default function EventDetail() {
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [rsvpStatus, setRsvpStatus] = useState(null)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [hasUsedEdit, setHasUsedEdit] = useState(false)
 
   // Fetch event details
   useEffect(() => {
@@ -52,6 +53,8 @@ export default function EventDetail() {
             if (userRsvp) {
               setRsvpStatus(userRsvp.status)
             }
+            const editKey = `hasEdited_${user?.id}_${id}`
+            setHasUsedEdit(localStorage.getItem(editKey) === 'true')
           } catch (err) {
             console.log('Could not fetch RSVP status')
           }
@@ -91,24 +94,39 @@ export default function EventDetail() {
     }
   }
 
-  const handleRSVP = async (status) => {
+  const handleRSVP = async (status, options = {}) => {
     if (!user) {
       showInfo('Please log in to RSVP')
       navigate('/login')
-      return
+      return false
     }
 
     try {
-      await eventsAPI.rsvp(id, { status })
-      setRsvpStatus(status)
-      
+      const result = await eventsAPI.rsvp(id, status)
+      let nextStatus = status
+      if (event?.requires_approval && (status === 'going' || status === 'maybe')) {
+        nextStatus = 'waiting_for_approval'
+      } else if (typeof result?.status === 'string') {
+        nextStatus = result.status
+      }
+      setRsvpStatus(nextStatus)
+
+      if (options.lockAfterEdit) {
+        const editKey = `hasEdited_${user.id}_${id}`
+        localStorage.setItem(editKey, 'true')
+        setHasUsedEdit(true)
+      }
+
       if (event?.requires_approval) {
         showInfo('RSVP sent for organizer approval')
       } else {
-        showSuccess(`You are now marked as "${status}"`)
+        showSuccess(`You are now marked as "${nextStatus}"`)
       }
+      return true
     } catch (err) {
-      showError('Failed to update RSVP')
+      const detail = err?.response?.data?.detail || 'Failed to update RSVP'
+      showError(detail)
+      return false
     }
   }
 
@@ -219,7 +237,7 @@ export default function EventDetail() {
         <TermsSection event={event} />
 
         {/* Q&A Section */}
-        <QASection eventId={id} />
+        <QASection event={event} />
       </div>
 
       {/* Sticky Action Bar */}
@@ -229,6 +247,7 @@ export default function EventDetail() {
         onRSVP={handleRSVP}
         onBookmark={handleBookmark}
         isBookmarked={isBookmarked}
+        hasUsedEdit={hasUsedEdit}
       />
     </div>
   )

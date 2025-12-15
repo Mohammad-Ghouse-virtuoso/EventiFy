@@ -1,163 +1,295 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { format } from 'date-fns'
+import { HandThumbUpIcon as HandThumbUpOutline, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
+import { HandThumbUpIcon as HandThumbUpSolid } from '@heroicons/react/24/solid'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNotification } from '../../contexts/NotificationContext'
+import { questionsAPI } from '../../services/api'
 
-export default function QASection({ eventId }) {
+const STOPWORDS = new Set(['the', 'and', 'for', 'with', 'that', 'this', 'from', 'your', 'about', 'will', 'have', 'what', 'when', 'where', 'which', 'does', 'can', 'how', 'are', 'you', 'its', 'any', 'into', 'been', 'they', 'them'])
+const GENERIC_TERMS = new Set(['parking', 'dress', 'clothes', 'food', 'meal', 'vegan', 'vegetarian', 'ticket', 'tickets', 'price', 'cost', 'entry', 'time', 'start', 'end', 'schedule', 'agenda', 'location', 'venue', 'address', 'arrival', 'gate', 'accessibility', 'wheelchair', 'refund', 'policy', 'age', 'kids', 'child', 'alcohol', 'drink', 'security', 'recording', 'stream', 'livestream', 'seat', 'seating', 'capacity', 'max', 'register', 'registration'])
+
+const tokenize = (text = '') => {
+  const matches = text.toLowerCase().match(/[a-zA-Z]{3,}/g) || []
+  return matches.filter((t) => !STOPWORDS.has(t))
+}
+
+export default function QASection({ event }) {
   const { user } = useAuth()
   const { showSuccess, showError, showInfo } = useNotification()
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      user_name: 'Sarah',
-      question: 'When does parking open?',
-      answer: 'Free parking opens at 6 PM. Street parking available near the venue.',
-      answered: true
-    },
-    {
-      id: 2,
-      user_name: 'John',
-      question: 'Is vegetarian food available?',
-      answer: null,
-      answered: false
-    },
-    {
-      id: 3,
-      user_name: 'Maria',
-      question: 'What is the dress code?',
-      answer: 'Smart casual. No formal attire required.',
-      answered: true
-    }
-  ])
+  const [questions, setQuestions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [askOpen, setAskOpen] = useState(false)
+  const [askForm, setAskForm] = useState({
+    asker_email: user?.email || '',
+    asker_name: user?.full_name || '',
+    text: ''
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [replyingTo, setReplyingTo] = useState(null)
+  const [answerText, setAnswerText] = useState('')
 
-  const [newQuestion, setNewQuestion] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const isOrganizer = user && (user.id === event?.organizer_id || user.role === 'admin')
+
+  const eventKeywords = useMemo(() => {
+    const chunks = [event?.title || '', event?.description || '', event?.category || '', event?.location || '']
+    const tokens = new Set()
+    chunks.forEach((chunk) => tokenize(chunk).forEach((t) => tokens.add(t)))
+    GENERIC_TERMS.forEach((t) => tokens.add(t))
+    return tokens
+  }, [event?.title, event?.description, event?.category, event?.location])
+
+  useEffect(() => {
+    setAskForm((prev) => ({ ...prev, asker_email: user?.email || '', asker_name: user?.full_name || '' }))
+  }, [user])
+
+  useEffect(() => {
+    if (!event?.id) return
+    loadQuestions()
+  }, [event?.id])
+
+  const loadQuestions = async () => {
+    try {
+      setLoading(true)
+      const data = await questionsAPI.getQuestions(event.id)
+      setQuestions(data)
+    } catch (error) {
+      console.error('Failed to load questions', error)
+      showError('Could not load Q&A')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const validateQuestion = (text) => {
+    const trimmed = (text || '').trim()
+    if (!trimmed) return 'Please enter your question'
+    if (trimmed.length < 8) return 'Please provide a bit more detail in your question'
+    if (trimmed.length > 500) return 'Questions must be 500 characters or fewer'
+    if (/https?:\/\//i.test(trimmed)) return 'Links are not allowed in questions'
+    if (/\b(violence|harm|weapon|bomb|kill)\b/i.test(trimmed)) return 'This content is not allowed'
+    const tokens = tokenize(trimmed)
+    const overlaps = tokens.some((t) => eventKeywords.has(t))
+    if (!overlaps) return 'Please keep questions about this event (timing, location, access, logistics).'
+    return null
+  }
 
   const handleAskQuestion = async (e) => {
     e.preventDefault()
-
-    if (!user) {
-      showInfo('Please log in to ask questions')
+    const validationError = validateQuestion(askForm.text)
+    if (validationError) {
+      showError(validationError)
       return
     }
 
-    if (!newQuestion.trim()) {
-      showError('Please enter your question')
+    if (!askForm.asker_email) {
+      showError('Email is required so the organizer can follow up')
       return
     }
 
     try {
-      setIsSubmitting(true)
-      // TODO: Call API to save question
-      // const response = await fetch(`/api/v1/events/${eventId}/questions`, ...)
-
-      const question = {
-        id: questions.length + 1,
-        user_name: user.full_name,
-        question: newQuestion,
-        answer: null,
-        answered: false
-      }
-
-      setQuestions([question, ...questions])
-      setNewQuestion('')
-      showSuccess('Question posted!')
+      setSubmitting(true)
+      await questionsAPI.askQuestion(event.id, {
+        asker_email: askForm.asker_email,
+        asker_name: askForm.asker_name,
+        text: askForm.text.trim(),
+      })
+      setAskForm((prev) => ({ ...prev, text: '' }))
+      setAskOpen(false)
+      showSuccess('Question posted')
+      loadQuestions()
     } catch (err) {
-      showError('Failed to post question')
+      console.error('Failed to post question', err)
+      showError(err?.response?.data?.detail || 'Failed to post question')
     } finally {
-      setIsSubmitting(false)
+      setSubmitting(false)
+    }
+  }
+
+  const handleAnswer = async (questionId) => {
+    if (!isOrganizer) {
+      showInfo('Only the organizer can reply')
+      return
+    }
+    if (!answerText.trim()) {
+      showError('Please add an answer first')
+      return
+    }
+    try {
+      await questionsAPI.answerQuestion(event.id, questionId, answerText.trim())
+      setAnswerText('')
+      setReplyingTo(null)
+      showSuccess('Reply posted')
+      loadQuestions()
+    } catch (err) {
+      console.error('Failed to post answer', err)
+      showError(err?.response?.data?.detail || 'Failed to post answer')
+    }
+  }
+
+  const toggleVote = async (answer) => {
+    try {
+      if (!user) {
+        showInfo('Please log in to vote')
+        return
+      }
+      if (answer.has_voted) {
+        const res = await questionsAPI.removeVote(event.id, answer.id)
+        setQuestions((prev) => prev.map((q) => ({
+          ...q,
+          answers: q.answers.map((a) => a.id === answer.id ? { ...a, helpful_count: res.helpful_count, has_voted: false } : a)
+        })))
+      } else {
+        const res = await questionsAPI.voteHelpful(event.id, answer.id)
+        setQuestions((prev) => prev.map((q) => ({
+          ...q,
+          answers: q.answers.map((a) => a.id === answer.id ? { ...a, helpful_count: res.helpful_count, has_voted: true } : a)
+        })))
+      }
+    } catch (err) {
+      console.error('Vote failed', err)
+      showError('Could not update your vote')
     }
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-        Questions & Answers
-      </h2>
+      <div className="flex items-center gap-2">
+        <ChatBubbleLeftRightIcon className="h-6 w-6 text-primary-500" />
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Questions & Answers</h2>
+      </div>
 
-      {/* Ask Question Form */}
-      {user && (
-        <form onSubmit={handleAskQuestion} className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Ask the organizer a question
-            </label>
-            <textarea
-              value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
-              placeholder="What would you like to know about this event?"
-              rows={3}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/60 dark:bg-gray-800/70">
+        <div className="flex items-center justify-between">
           <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 transition font-medium"
+            onClick={() => setAskOpen(!askOpen)}
+            className="font-semibold text-primary-600 dark:text-primary-400 hover:underline"
           >
-            {isSubmitting ? 'Posting...' : 'Post Question'}
+            {askOpen ? 'Hide question form' : 'Ask the organizer a question'}
           </button>
-        </form>
-      )}
-
-      {!user && (
-        <div className="p-4 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
-          <p className="text-sm text-blue-700 dark:text-blue-200">
-            <a href="/login" className="font-semibold hover:underline">
-              Log in
-            </a>
-            {' '}to ask questions about this event
-          </p>
+          <span className="text-xs text-gray-500">Email required • Max 500 chars</span>
         </div>
-      )}
 
-      {/* Questions List */}
-      <div className="space-y-4">
-        {questions.length === 0 ? (
-          <p className="text-gray-600 dark:text-gray-400 text-center py-8">
-            No questions yet. Be the first to ask!
-          </p>
-        ) : (
-          questions.map((q) => (
-            <div
-              key={q.id}
-              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-300 dark:hover:border-primary-700 transition"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-white">
-                    {q.question}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Asked by {q.user_name}
-                  </p>
-                </div>
-
-                {q.answered && (
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded">
-                    Answered
-                  </span>
-                )}
-              </div>
-
-              {q.answered && (
-                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded border-l-4 border-primary-500">
-                  <p className="text-xs font-semibold text-primary-600 dark:text-primary-400 mb-2">
-                    ORGANIZER REPLY
-                  </p>
-                  <p className="text-gray-700 dark:text-gray-300 text-sm">
-                    {q.answer}
-                  </p>
-                </div>
-              )}
+        {askOpen && (
+          <form onSubmit={handleAskQuestion} className="mt-3 space-y-3">
+            <div className="grid md:grid-cols-2 gap-3">
+              <input
+                type="email"
+                value={askForm.asker_email}
+                onChange={(e) => setAskForm({ ...askForm, asker_email: e.target.value })}
+                placeholder="your@email.com"
+                required
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+              />
+              <input
+                type="text"
+                value={askForm.asker_name}
+                onChange={(e) => setAskForm({ ...askForm, asker_name: e.target.value })}
+                placeholder="Your name (optional)"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+              />
             </div>
-          ))
+            <textarea
+              value={askForm.text}
+              onChange={(e) => setAskForm({ ...askForm, text: e.target.value })}
+              maxLength={500}
+              rows={3}
+              placeholder="What would you like to know about this event?"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">Context-aware filter blocks off-topic questions</span>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-60"
+              >
+                {submitting ? 'Posting...' : 'Post Question'}
+              </button>
+            </div>
+          </form>
         )}
       </div>
 
-      {questions.length >= 3 && (
-        <button className="w-full py-3 text-center text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 rounded-lg transition font-medium">
-          Load More Questions
-        </button>
+      {loading ? (
+        <div className="text-center py-8 text-gray-600">Loading Q&A...</div>
+      ) : questions.length === 0 ? (
+        <div className="text-center py-8 text-gray-600 dark:text-gray-400">No questions yet. Be the first to ask!</div>
+      ) : (
+        <div className="space-y-4">
+          {questions.map((q) => (
+            <div key={q.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white/60 dark:bg-gray-800/60">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900 dark:text-white">Q: {q.text}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {(q.asker_name || 'Anonymous')} • {q.created_at ? format(new Date(q.created_at), 'MMM d, yyyy') : ''}
+                  </p>
+                </div>
+              </div>
+
+              {q.answers?.length ? (
+                <div className="mt-3 space-y-3 border-l-2 border-primary-500 pl-4">
+                  {q.answers.map((a) => (
+                    <div key={a.id} className="bg-primary-50 dark:bg-gray-900/60 p-3 rounded">
+                      <p className="text-gray-900 dark:text-white text-sm">A: {a.text}</p>
+                      <div className="flex items-center justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
+                        <span>Organizer {a.answerer_name} • {a.created_at ? format(new Date(a.created_at), 'MMM d') : ''}</span>
+                        <button
+                          type="button"
+                          onClick={() => toggleVote(a)}
+                          className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-primary-600"
+                        >
+                          {a.has_voted ? <HandThumbUpSolid className="h-4 w-4 text-primary-600" /> : <HandThumbUpOutline className="h-4 w-4" />}
+                          <span>{a.helpful_count ?? 0}</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-600 dark:text-gray-400 italic mt-2">
+                  No answer yet.
+                  {isOrganizer && (
+                    <button
+                      className="ml-2 text-primary-600 dark:text-primary-400 font-medium"
+                      onClick={() => setReplyingTo(q.id)}
+                    >
+                      Reply
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {isOrganizer && replyingTo === q.id && (
+                <div className="mt-3 space-y-2">
+                  <textarea
+                    value={answerText}
+                    onChange={(e) => setAnswerText(e.target.value)}
+                    maxLength={1000}
+                    rows={3}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+                    placeholder="Share a concise answer for attendees"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+                      onClick={() => handleAnswer(q.id)}
+                    >
+                      Post Reply
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg"
+                      onClick={() => { setReplyingTo(null); setAnswerText('') }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )
