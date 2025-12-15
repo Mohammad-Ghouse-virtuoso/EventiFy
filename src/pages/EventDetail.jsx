@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotification } from '../contexts/NotificationContext'
-import { eventsAPI } from '../services/api'
+import { eventsAPI, bookmarkAPI } from '../services/api'
 import { format } from 'date-fns'
 import { ArrowLeftIcon, HeartIcon, ShareIcon, CalendarIcon, MapPinIcon, UserGroupIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
@@ -38,13 +38,8 @@ export default function EventDetail() {
         // Check if user has bookmarked
         if (user) {
           try {
-            const isBookmarkedRes = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/events/${id}/bookmark/status`, {
-              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            })
-            if (isBookmarkedRes.ok) {
-              const { is_bookmarked } = await isBookmarkedRes.json()
-              setIsBookmarked(is_bookmarked)
-            }
+            const isBookmarkedData = await bookmarkAPI.isBookmarked(id)
+            setIsBookmarked(isBookmarkedData)
           } catch (err) {
             console.log('Could not fetch bookmark status')
           }
@@ -79,23 +74,14 @@ export default function EventDetail() {
     }
 
     try {
-      const apiBase = import.meta.env.VITE_API_URL || '/api/v1'
-      const token = localStorage.getItem('token')
-      
       if (isBookmarked) {
         // Unbookmark
-        await fetch(`${apiBase}/events/${id}/bookmark`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
+        await bookmarkAPI.unbookmark(id)
         setIsBookmarked(false)
         showSuccess('Removed from bookmarks')
       } else {
         // Bookmark
-        await fetch(`${apiBase}/events/${id}/bookmark`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
+        await bookmarkAPI.bookmark(id)
         setIsBookmarked(true)
         showSuccess('Event bookmarked!')
       }

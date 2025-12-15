@@ -196,4 +196,31 @@ export const checkinAPI = {
   }
 }
 
+// Bookmark API
+export const bookmarkAPI = {
+  // Create bookmark
+  bookmark: async (eventId) => {
+    const { data } = await api.post(`/events/${eventId}/bookmark`)
+    return data
+  },
+  
+  // Remove bookmark
+  unbookmark: async (eventId) => {
+    const { data } = await api.delete(`/events/${eventId}/bookmark`)
+    return data
+  },
+  
+  // Get user's bookmarks
+  getMyBookmarks: async () => {
+    const { data } = await api.get('/user/bookmarks')
+    return data
+  },
+  
+  // Check if event is bookmarked
+  isBookmarked: async (eventId) => {
+    const { data } = await api.get(`/events/${eventId}/bookmark/status`)
+    return data.is_bookmarked
+  }
+}
+
 export default api
