@@ -13,6 +13,7 @@ import EventDescription from '../components/event-detail/EventDescription'
 import TermsSection from '../components/event-detail/TermsSection'
 import QASection from '../components/event-detail/QASection'
 import ActionBar from '../components/event-detail/ActionBar'
+import ShareButtons from '../components/ShareButtons'
 
 export default function EventDetail() {
   const { id } = useParams()
@@ -177,11 +178,13 @@ export default function EventDetail() {
               </button>
 
               {showShareMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
-                  <a href={`https://wa.me/?text=${encodeURIComponent(`I'm attending ${event.title} on ${format(new Date(event.event_start), 'MMM dd')}! Join me there! 🎉`)}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">WhatsApp</a>
-                  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I'm attending ${event.title}! 🎉`)}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Twitter</a>
-                  <a href={`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Facebook</a>
-                  <a href={`mailto:?subject=${encodeURIComponent(event.title)}&body=${encodeURIComponent(`Check out this event: ${window.location.href}`)}`} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Email</a>
+                <div className="absolute right-0 mt-2 w-80 z-50">
+                  <ShareButtons
+                    eventTitle={event.title}
+                    eventUrl={window.location.href}
+                    eventDate={format(new Date(event.event_start), 'PPP p')}
+                    onClose={() => setShowShareMenu(false)}
+                  />
                 </div>
               )}
             </div>
