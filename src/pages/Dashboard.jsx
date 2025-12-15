@@ -8,6 +8,7 @@ import { PlusIcon, CalendarIcon, UsersIcon, QrCodeIcon, PhotoIcon, PencilIcon, C
 import { format } from 'date-fns'
 import BannerSelector from '../components/BannerSelector'
 import AvatarSelector from '../components/AvatarSelector'
+import EventTimer from '../components/EventTimer'
 
 // Helper function to format time from 24-hour to 12-hour format
 const formatTime = (time) => {
@@ -557,8 +558,11 @@ export default function Dashboard() {
               <div className="space-y-4">
                 {filteredEvents.length > 0 ? (
                   filteredEvents.map((event) => (
-                    <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                    <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 relative">
+                      <div className="absolute top-4 right-4">
+                        <EventTimer eventStartTime={event.event_start} />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white pr-20">{event.title}</h3>
                       <p className="text-gray-600 dark:text-gray-300 mt-1">{event.description}</p>
                       <div className="flex items-center mt-2 text-sm text-gray-500">
                         <CalendarIcon className="h-4 w-4 mr-1" />

@@ -1,6 +1,7 @@
 import { useAuth } from '../../contexts/AuthContext'
 import { useNotification } from '../../contexts/NotificationContext'
 import { CheckIcon } from '@heroicons/react/24/outline'
+import EventTimer from '../EventTimer'
 
 export default function ActionBar({ event, rsvpStatus, onRSVP, onBookmark, isBookmarked }) {
   const { user } = useAuth()
@@ -18,6 +19,12 @@ export default function ActionBar({ event, rsvpStatus, onRSVP, onBookmark, isBoo
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+      <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between">
+        <div className="text-sm text-gray-600 dark:text-gray-300">
+          {rsvpStatus ? `RSVP Status: ${rsvpStatus.charAt(0).toUpperCase() + rsvpStatus.slice(1).replace('_', ' ')}` : 'Not RSVPed'}
+        </div>
+        <EventTimer eventStartTime={event.event_start} />
+      </div>
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex-1 flex gap-2">
           <button
