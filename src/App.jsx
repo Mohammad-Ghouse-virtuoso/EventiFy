@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import NotificationContainer from './components/NotificationContainer'
 import Home from './pages/Home'
 import Events from './pages/Events'
+import EventDetail from './pages/EventDetail'
 import CreateEvent from './pages/CreateEvent'
 import EditEvent from './pages/EditEvent'
 import Login from './pages/Login'
@@ -39,6 +40,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/events/:id" element={<EventDetail />} />
             <Route
               path="/create-event"
               element={

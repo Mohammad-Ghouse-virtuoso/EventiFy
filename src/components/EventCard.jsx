@@ -155,8 +155,9 @@ function EventCard({ event, onRSVP, userRSVP }) {
   }, [event.event_start])
 
   return (
-    <div
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+    <Link
+      to={`/events/${event.id}`}
+      className="block bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
       style={{
         // Don’t render offscreen cards until scrolled near viewport
         contentVisibility: 'auto',
@@ -443,7 +444,7 @@ function EventCard({ event, onRSVP, userRSVP }) {
           </div>
         )}
       </div>
-    </div>
+    </Link>
   )
 }
 
