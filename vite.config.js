@@ -9,7 +9,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8001',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         // keep /api prefix so frontend uses '/api/v1/...'
         // If backend is mounted at /api/v1, no rewrite needed
@@ -18,7 +18,7 @@ export default defineConfig({
       // Proxy backend static files (served by FastAPI) so '/static/...'
       // requests from the frontend resolve correctly in dev
       '/static': {
-        target: 'http://127.0.0.1:8001',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       }
     }

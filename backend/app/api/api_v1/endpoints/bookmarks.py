@@ -6,7 +6,7 @@ from app.models.event import Event
 from app.core.auth import get_current_active_user
 from app.models.user import User
 
-router = APIRouter(prefix="/api/v1", tags=["bookmarks"])
+router = APIRouter(tags=["bookmarks"])
 
 @router.post("/events/{event_id}/bookmark")
 async def bookmark_event(
