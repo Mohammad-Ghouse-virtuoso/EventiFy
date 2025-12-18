@@ -126,7 +126,7 @@ async def get_user_bookmarks(
             result.append({
                 "id": event.id,
                 "title": event.title,
-                "date": event.event_start,
+                "event_start": event.event_start,
                 "location": event.location,
                 "image": event.image,
                 "category": event.category,
