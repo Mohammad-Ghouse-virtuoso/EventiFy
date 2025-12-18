@@ -132,7 +132,7 @@ export default function Events() {
   }, [highlightEventId, loading, events])
 
   const loadUserRSVPs = async (eventsList) => {
-    if (!user) return
+    if (!user || !user.id) return
     
     try {
       const rsvpMap = {}
@@ -146,8 +146,8 @@ export default function Events() {
               rsvpMap[event.id] = userRSVP
             }
           } catch (error) {
-            // If no RSVP found, continue
-            console.log(`No RSVP found for event ${event.id}`)
+            // Silent fail - 401 is expected for unauthenticated users or if endpoint fails
+            console.debug(`Could not fetch RSVP for event ${event.id}:`, error?.response?.status)
           }
         })
       )

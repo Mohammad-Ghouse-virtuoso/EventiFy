@@ -24,13 +24,13 @@ export default function DateTimeField({
   error,
 }) {
   const dateValue = useMemo(() => {
-    if (!value) return null
+    if (!value || value === '') return undefined
     try {
       // Support both ISO strings and anything Date can parse
       const d = new Date(value)
-      return isNaN(d.getTime()) ? null : d
+      return isNaN(d.getTime()) ? undefined : d
     } catch {
-      return null
+      return undefined
     }
   }, [value])
 

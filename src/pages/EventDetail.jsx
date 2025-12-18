@@ -50,17 +50,20 @@ export default function EventDetail() {
             console.log('Could not fetch bookmark status')
           }
           
-          // Get user's RSVP status
-          try {
-            const rsvps = await eventsAPI.getRSVPs(id)
-            const userRsvp = rsvps.find(r => r.user_id === user.id)
-            if (userRsvp) {
-              setRsvpStatus(userRsvp.status)
+          // Get user's RSVP status (only if authenticated)
+          if (user?.id) {
+            try {
+              const rsvps = await eventsAPI.getRSVPs(id)
+              const userRsvp = rsvps.find(r => r.user_id === user.id)
+              if (userRsvp) {
+                setRsvpStatus(userRsvp.status)
+              }
+              const editKey = `hasEdited_${user?.id}_${id}`
+              setHasUsedEdit(localStorage.getItem(editKey) === 'true')
+            } catch (err) {
+              // Silent fail - 401 is expected if not authenticated or endpoint fails
+              console.debug('Could not fetch RSVP status:', err?.response?.status)
             }
-            const editKey = `hasEdited_${user?.id}_${id}`
-            setHasUsedEdit(localStorage.getItem(editKey) === 'true')
-          } catch (err) {
-            console.log('Could not fetch RSVP status')
           }
         }
       } catch (err) {
