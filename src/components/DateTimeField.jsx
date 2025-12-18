@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect } from 'react'
 import Flatpickr from 'react-flatpickr'
 import Timekeeper from 'react-timekeeper'
 import 'flatpickr/dist/themes/material_blue.css'
-import 'react-timekeeper/dist/react-timekeeper.css'
 
 // Props:
 // - label: string
