@@ -32,7 +32,8 @@
     "react-dom": "^18.2.0",
     "react-flatpickr": "^4.0.11",
     "react-router-dom": "^6.8.0",
-    "react-timekeeper": "^2.2.1",
+    "react-time-picker": "^8.0.2",
+    "react-clock": "^4.0.1",
     "react-window": "^1.8.9"
   },
   "devDependencies": {

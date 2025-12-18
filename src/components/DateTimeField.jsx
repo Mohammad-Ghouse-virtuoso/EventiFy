@@ -1,6 +1,8 @@
 import { useMemo, useState, useEffect } from 'react'
 import Flatpickr from 'react-flatpickr'
-import Timekeeper from 'react-timekeeper'
+import TimePicker from 'react-time-picker'
+import 'react-time-picker/dist/TimePicker.css'
+import 'react-clock/dist/Clock.css'
 import 'flatpickr/dist/themes/material_blue.css'
 
 // Props:
@@ -159,11 +161,13 @@ export default function DateTimeField({
       {useDialTimePicker && showDial && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-lg shadow-2xl p-4 w-full max-w-md relative">
-            <Timekeeper
-              time={dialTime}
-              onChange={handleDialChange}
-              hour24Mode
-              switchToMinuteOnHourSelect
+            <TimePicker
+              onChange={(val) => handleDialChange(typeof val === 'string' ? val : '')}
+              value={dialTime}
+              disableClock={false}
+              clockIcon={null}
+              clearIcon={null}
+              format="HH:mm"
             />
             <div className="mt-3 flex justify-end gap-2">
               <button
