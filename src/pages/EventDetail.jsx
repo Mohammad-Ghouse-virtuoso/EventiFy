@@ -29,6 +29,10 @@ export default function EventDetail() {
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [hasUsedEdit, setHasUsedEdit] = useState(false)
 
+  // Check if current user is the organizer
+  const isOrganizer = event && user && event.organizer_id === user.id
+  const isAdmin = user?.role === 'admin' || user?.role === 'UserRole.ADMIN'
+
   // Fetch event details
   useEffect(() => {
     const loadEvent = async () => {
@@ -240,15 +244,42 @@ export default function EventDetail() {
         <QASection event={event} />
       </div>
 
-      {/* Sticky Action Bar */}
-      <ActionBar
-        event={event}
-        rsvpStatus={rsvpStatus}
-        onRSVP={handleRSVP}
-        onBookmark={handleBookmark}
-        isBookmarked={isBookmarked}
-        hasUsedEdit={hasUsedEdit}
-      />
+      {/* Organizer/Admin Edit Button */}
+      {(isOrganizer || isAdmin) && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-blue-600 dark:text-blue-400">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {isAdmin ? 'You can edit this event (Admin)' : 'You created this event'}
+              </span>
+            </div>
+            <button
+              onClick={() => navigate(`/events/${event.id}/edit`)}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+              </svg>
+              Edit Event
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky Action Bar - Only for non-organizers */}
+      {!isOrganizer && !isAdmin && (
+        <ActionBar
+          event={event}
+          rsvpStatus={rsvpStatus}
+          onRSVP={handleRSVP}
+          onBookmark={handleBookmark}
+          isBookmarked={isBookmarked}
+          hasUsedEdit={hasUsedEdit}
+        />
+      )}
     </div>
   )
 }
