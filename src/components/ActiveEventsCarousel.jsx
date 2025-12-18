@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { eventsAPI } from '../services/api'
 import { format } from 'date-fns'
 import placeholderImg from '../../assets/doodle.png'
@@ -35,7 +36,11 @@ function SmallEventCard({ event }) {
   }, [event.event_start])
 
   return (
-    <div className="snap-start shrink-0 w-72 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <Link 
+      to="/events" 
+      state={{ highlightEventId: event.id }}
+      className="snap-start shrink-0 w-72 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden block"
+    >
       <div className="relative h-40 bg-gray-100 dark:bg-gray-700 overflow-hidden">
         {imageSrc ? (
           <img
@@ -59,7 +64,7 @@ function SmallEventCard({ event }) {
         <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">{dateLabel}</div>
         <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{event.location}</div>
       </div>
-    </div>
+    </Link>
   )
 }
 

@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { eventsAPI } from '../services/api'
 import EventCard from '../components/EventCard'
 import VirtualizedEventsGrid from '../components/VirtualizedEventsGrid'
@@ -8,6 +9,9 @@ import useDebounce from '../hooks/useDebounce'
 
 export default function Events() {
   const { user } = useAuth()
+  const location = useLocation()
+  const highlightEventId = location.state?.highlightEventId
+  const eventRefs = useRef({})
   const [events, setEvents] = useState([])
   const [userRSVPs, setUserRSVPs] = useState({}) // Store user's RSVP status for each event
   const [loading, setLoading] = useState(true)
@@ -78,6 +82,28 @@ export default function Events() {
       setLoading(false)
     }
   }
+
+  // Scroll and highlight effect when coming from hero section
+  useEffect(() => {
+    if (!highlightEventId || loading || events.length === 0) return
+    
+    // Wait for DOM to be ready
+    setTimeout(() => {
+      const targetElement = eventRefs.current[highlightEventId]
+      if (targetElement) {
+        // Scroll to the event with smooth behavior
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        
+        // Add highlight effect
+        targetElement.classList.add('ring-4', 'ring-primary-400', 'ring-opacity-75', 'shadow-2xl')
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          targetElement.classList.remove('ring-4', 'ring-primary-400', 'ring-opacity-75', 'shadow-2xl')
+        }, 3000)
+      }
+    }, 100)
+  }, [highlightEventId, loading, events])
 
   const loadUserRSVPs = async (eventsList) => {
     if (!user) return
@@ -233,12 +259,13 @@ export default function Events() {
             contain: 'paint layout style',
           }}>
             {events.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onRSVP={handleRSVP}
-                userRSVP={userRSVPs[event.id]}
-              />
+              <div key={event.id} ref={(el) => eventRefs.current[event.id] = el}>
+                <EventCard
+                  event={event}
+                  onRSVP={handleRSVP}
+                  userRSVP={userRSVPs[event.id]}
+                />
+              </div>
             ))}
           </div>
         )
