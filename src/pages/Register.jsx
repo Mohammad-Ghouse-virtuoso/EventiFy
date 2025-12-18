@@ -239,7 +239,7 @@ export default function Register() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full btn bg-gradient-secondary text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className="w-full btn bg-gradient-primary text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     {loading ? (
                       <div className="flex items-center justify-center">

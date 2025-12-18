@@ -97,7 +97,9 @@ export default App
 // Helper component to conditionally render Footer based on route
 function ConditionalFooter() {
   const location = useLocation()
-  const hideFooter = location.pathname.startsWith('/register') || location.pathname.startsWith('/login')
+  const hideFooter = location.pathname.startsWith('/register') || 
+                     location.pathname.startsWith('/login') ||
+                     location.pathname.startsWith('/events/')
   if (hideFooter) return null
   return <Footer />
 }

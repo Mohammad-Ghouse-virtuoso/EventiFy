@@ -18,6 +18,8 @@ export default function CreateEvent() {
     location: '',
     category: '',
     max_attendees: '',
+    price: '',
+    currency: 'USD',
     image: null,
     imageUrl: null,  // For predefined banners
     is_public: true,
@@ -265,6 +267,38 @@ export default function CreateEvent() {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="e.g. 100"
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Ticket Price (Optional)
+              </label>
+              <div className="flex gap-3">
+                <select
+                  name="currency"
+                  value={formData.currency}
+                  onChange={handleChange}
+                  className="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="INR">INR (₹)</option>
+                </select>
+                <input
+                  type="number"
+                  id="price"
+                  name="price"
+                  min="0"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="0.00 (Leave blank for free events)"
+                />
+              </div>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Set to 0 or leave blank for free events
+              </p>
             </div>
           </div>
         </div>
