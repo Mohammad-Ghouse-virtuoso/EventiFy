@@ -79,7 +79,11 @@ function EventCard({ event, onRSVP, userRSVP }) {
     }
   }
 
-  const handleEditRSVP = (status) => {
+  const handleEditRSVP = (status, e) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     handleRSVP(status)
     // Mark that user has used their one edit for this event
     localStorage.setItem(`hasEdited_${user.id}_${event.id}`, 'true')
@@ -318,7 +322,7 @@ function EventCard({ event, onRSVP, userRSVP }) {
                 {canEditRSVP(userRSVP.status) && !hasEditedOnce ? (
                   <div className="text-center">
                     <button
-                      onClick={() => setShowConfirmDialog(true)}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowConfirmDialog(true); }}
                       className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors flex items-center justify-center gap-1 mx-auto"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -341,7 +345,7 @@ function EventCard({ event, onRSVP, userRSVP }) {
                 {showEditRSVP && (
                   <div className="flex space-x-2 animate-slide-up">
                     <button
-                      onClick={() => handleEditRSVP('going')}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditRSVP('going', e); }}
                       className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
                         userRSVP.status === 'going' 
                           ? 'bg-green-100 text-green-800 cursor-default' 
@@ -352,7 +356,7 @@ function EventCard({ event, onRSVP, userRSVP }) {
                       Going
                     </button>
                     <button
-                      onClick={() => handleEditRSVP('maybe')}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditRSVP('maybe', e); }}
                       className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
                         userRSVP.status === 'maybe' 
                           ? 'bg-yellow-100 text-yellow-800 cursor-default' 
@@ -363,7 +367,7 @@ function EventCard({ event, onRSVP, userRSVP }) {
                       Maybe
                     </button>
                     <button
-                      onClick={() => handleEditRSVP('not_going')}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditRSVP('not_going', e); }}
                       className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
                         userRSVP.status === 'not_going' 
                           ? 'bg-red-100 text-red-800 cursor-default' 
@@ -385,13 +389,15 @@ function EventCard({ event, onRSVP, userRSVP }) {
                       <div className="flex justify-center gap-3">
                         <button
                           className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-                          onClick={() => setShowConfirmDialog(false)}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowConfirmDialog(false); }}
                         >
                           Cancel
                         </button>
                         <button
                           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                          onClick={() => { 
+                          onClick={(e) => { 
+                            e.preventDefault(); 
+                            e.stopPropagation(); 
                             setShowConfirmDialog(false); 
                             setShowEditRSVP(true); 
                           }}
@@ -409,19 +415,19 @@ function EventCard({ event, onRSVP, userRSVP }) {
                 <p className="text-sm text-gray-600 text-center">Will you attend this event?</p>
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleRSVP('going')}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRSVP('going'); }}
                     className="flex-1 py-2 px-4 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 hover:scale-105 transition-all duration-200"
                   >
                     Going
                   </button>
                   <button
-                    onClick={() => handleRSVP('maybe')}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRSVP('maybe'); }}
                     className="flex-1 py-2 px-4 rounded-md text-sm font-medium bg-yellow-600 text-white hover:bg-yellow-700 hover:scale-105 transition-all duration-200"
                   >
                     Maybe
                   </button>
                   <button
-                    onClick={() => handleRSVP('not_going')}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRSVP('not_going'); }}
                     className="flex-1 py-2 px-4 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 hover:scale-105 transition-all duration-200"
                   >
                     Can't Go
