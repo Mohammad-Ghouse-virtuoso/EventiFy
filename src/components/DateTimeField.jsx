@@ -55,8 +55,16 @@ export default function DateTimeField({
       onChange(null)
       return
     }
-    // Use ISO string in UTC to avoid timezone ambiguity
-    onChange(d.toISOString())
+    // Convert to ISO string in local timezone format (YYYY-MM-DDTHH:mm:ss)
+    // This avoids the timezone conversion issue that toISOString() causes
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const hours = String(d.getHours()).padStart(2, '0')
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    const seconds = String(d.getSeconds()).padStart(2, '0')
+    const localISO = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+    onChange(localISO)
   }
 
   return (
