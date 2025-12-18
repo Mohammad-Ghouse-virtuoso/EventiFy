@@ -6,6 +6,7 @@ import NotificationContainer from './components/NotificationContainer'
 import Home from './pages/Home'
 import Events from './pages/Events'
 import EventDetail from './pages/EventDetail'
+import Bookmarks from './pages/Bookmarks'
 import CreateEvent from './pages/CreateEvent'
 import EditEvent from './pages/EditEvent'
 import Login from './pages/Login'
@@ -41,6 +42,14 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetail />} />
+            <Route
+              path="/bookmarks"
+              element={
+                <RequireRole allowed={["attendee", "organizer", "admin"]}>
+                  <Bookmarks />
+                </RequireRole>
+              }
+            />
             <Route
               path="/create-event"
               element={

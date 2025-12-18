@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfile } from '../contexts/ProfileContext'
 import { Bars3Icon, XMarkIcon, CalendarDaysIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/outline'
+import { HeartIcon } from '@heroicons/react/24/outline'
 import ThemeSwitch from './ThemeSwitch'
 
 // Custom sparkles star icon component
@@ -70,6 +71,15 @@ export default function Navbar() {
               <CalendarDaysIcon className="h-5 w-5" />
               <span>Events</span>
             </Link>
+            {user && (
+              <Link
+                to="/bookmarks"
+                className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-105"
+              >
+                <HeartIcon className="h-5 w-5" />
+                <span>Bookmarks</span>
+              </Link>
+            )}
             {user ? (
               <>
                 {(user.role === 'organizer' || user.role === 'admin') && (
@@ -178,6 +188,11 @@ export default function Navbar() {
               <Link to="/events" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                 Events
               </Link>
+              {user && (
+                <Link to="/bookmarks" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                  Bookmarks
+                </Link>
+              )}
               {user ? (
                 <>
                   {(user.role === 'organizer' || user.role === 'admin') && (
