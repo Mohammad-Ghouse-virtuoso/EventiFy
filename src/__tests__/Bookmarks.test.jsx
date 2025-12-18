@@ -56,7 +56,7 @@ describe('Bookmarks page', () => {
     const bookmark = {
       id: 42,
       title: 'Music Night',
-      date: '2024-01-01T10:00:00Z',
+      event_start: '2024-01-01T10:00:00Z',
       location: 'NYC',
       category: 'music'
     }
