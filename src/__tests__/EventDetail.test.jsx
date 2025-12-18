@@ -4,17 +4,17 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import EventDetail from '../pages/EventDetail'
 
 // Shared mocks
-let mockUser = null
-const mockEventsAPI = {
+const mockEventsAPI = vi.hoisted(() => ({
   getById: vi.fn(),
   getRSVPs: vi.fn(),
   rsvp: vi.fn()
-}
-const mockBookmarkAPI = {
+}))
+const mockBookmarkAPI = vi.hoisted(() => ({
   isBookmarked: vi.fn(),
   bookmark: vi.fn(),
   unbookmark: vi.fn()
-}
+}))
+let mockUser = null
 
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({ user: mockUser })

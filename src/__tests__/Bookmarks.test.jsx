@@ -4,11 +4,11 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Bookmarks from '../pages/Bookmarks'
 
-let mockUser = null
-const mockBookmarkAPI = {
+const mockBookmarkAPI = vi.hoisted(() => ({
   getMyBookmarks: vi.fn(),
   unbookmark: vi.fn()
-}
+}))
+let mockUser = null
 
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({ user: mockUser })

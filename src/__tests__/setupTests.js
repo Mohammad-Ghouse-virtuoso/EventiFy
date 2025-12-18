@@ -44,3 +44,10 @@ global.localStorage = localStorageMock;
 
 // Mock scrollTo
 global.scrollTo = vi.fn();
+
+// React Refresh preamble shim for Vitest (prevents @vitejs/plugin-react preamble errors)
+if (!globalThis.__vite_plugin_react_preamble_installed__) {
+  globalThis.__vite_plugin_react_preamble_installed__ = true;
+  globalThis.$RefreshReg$ = () => {};
+  globalThis.$RefreshSig$ = () => () => {};
+}

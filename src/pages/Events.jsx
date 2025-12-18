@@ -371,7 +371,6 @@ export default function Events() {
                 </div>
 
                 <div className="flex items-center justify-between pt-2">
-                  <a
                   <Link
                     to={`/events/${event.id}`}
                     className="text-primary-600 dark:text-primary-300 font-medium hover:underline text-sm"

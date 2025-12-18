@@ -5,9 +5,9 @@ import Events from '../pages/Events'
 
 let mockUser = null
 
-const mockEventsAPI = {
+const mockEventsAPI = vi.hoisted(() => ({
   getAll: vi.fn()
-}
+}))
 
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({ user: mockUser })
