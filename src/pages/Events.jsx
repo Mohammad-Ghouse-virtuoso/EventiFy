@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { format } from 'date-fns'
 import { eventsAPI } from '../services/api'
 import EventCard from '../components/EventCard'
@@ -92,9 +92,10 @@ export default function Events() {
       setLoadingPast(true)
       const data = await eventsAPI.getAll({ include_past: true, include_inactive: true, limit: 50 })
       const now = new Date()
+      const cutoff = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
       const past = data.filter((ev) => {
         const endDate = ev.event_end ? new Date(ev.event_end) : new Date(ev.event_start)
-        return endDate < now
+        return endDate < now && endDate >= cutoff
       })
       past.sort((a, b) => {
         const aDate = new Date(a.event_end || a.event_start)
@@ -121,11 +122,11 @@ export default function Events() {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
         
         // Add highlight effect
-        targetElement.classList.add('ring-4', 'ring-primary-400', 'ring-opacity-75', 'shadow-2xl')
+        targetElement.classList.add('ring-2', 'ring-primary-300', 'ring-opacity-40', 'shadow-lg')
         
         // Remove highlight after 3 seconds
         setTimeout(() => {
-          targetElement.classList.remove('ring-4', 'ring-primary-400', 'ring-opacity-75', 'shadow-2xl')
+          targetElement.classList.remove('ring-2', 'ring-primary-300', 'ring-opacity-40', 'shadow-lg')
         }, 3000)
       }
     }, 100)
@@ -329,6 +330,7 @@ export default function Events() {
           <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
             {pastEvents.length}
           </span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">Showing last 14 days only</span>
         </div>
 
         {loadingPast ? (
@@ -370,14 +372,9 @@ export default function Events() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <Link
-                    to={`/events/${event.id}`}
-                    className="text-primary-600 dark:text-primary-300 font-medium hover:underline text-sm"
-                  >
-                    View details
-                  </Link>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{event.is_active ? 'Active' : 'Ended'}</span>
+                <div className="flex items-center justify-between pt-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="font-medium">Ended</span>
+                  <span>{event.is_active ? 'Active' : 'Ended'}</span>
                 </div>
               </div>
             ))}

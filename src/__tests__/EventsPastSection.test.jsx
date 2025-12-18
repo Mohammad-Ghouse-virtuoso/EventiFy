@@ -31,25 +31,23 @@ vi.mock('../services/api', () => ({
   eventsAPI: mockEventsAPI
 }))
 
-const pastEvents = [
-  {
-    id: 101,
-    title: 'Newer Past Event',
-    organizer_id: 1,
-    event_start: '2024-02-02T10:00:00Z',
-    event_end: '2024-02-02T12:00:00Z',
-    location: 'Paris',
-    category: 'art'
-  },
-  {
-    id: 102,
-    title: 'Older Past Event',
-    organizer_id: 2,
-    event_start: '2023-01-01T10:00:00Z',
-    event_end: '2023-01-01T12:00:00Z',
-    location: 'NYC',
-    category: 'music'
+const makePastEvent = (id, title, daysAgo, location, category, organizer_id) => {
+  const end = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+  const start = new Date(end.getTime() - 2 * 60 * 60 * 1000)
+  return {
+    id,
+    title,
+    organizer_id,
+    event_start: start.toISOString(),
+    event_end: end.toISOString(),
+    location,
+    category
   }
+}
+
+const pastEvents = [
+  makePastEvent(101, 'Newer Past Event', 2, 'Paris', 'art', 1),
+  makePastEvent(102, 'Older Past Event', 7, 'NYC', 'music', 2)
 ]
 
 const renderPage = () =>

@@ -20,10 +20,17 @@ export default function EventTimer({ eventStartTime }) {
       const hours = Math.floor(totalMinutes / 60)
       const minutes = totalMinutes % 60
 
+      let severity = 'info'
+      if (hours < 10) {
+        severity = 'danger'
+      } else if (hours < 24) {
+        severity = 'warning'
+      }
+
       setTimeRemaining({
         hours,
         minutes,
-        isUrgent: hours < 1
+        severity
       })
     }
 
@@ -37,9 +44,11 @@ export default function EventTimer({ eventStartTime }) {
 
   return (
     <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-      timeRemaining.isUrgent
-        ? 'bg-red-500 text-white'
-        : 'bg-blue-500 text-white'
+      timeRemaining.severity === 'danger'
+        ? 'bg-red-600 text-white'
+        : timeRemaining.severity === 'warning'
+          ? 'bg-orange-500 text-white'
+          : 'bg-blue-500 text-white'
     }`}>
       <ClockIcon className="h-4 w-4" />
       <span>
