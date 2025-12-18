@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
+import { format } from 'date-fns'
 import { eventsAPI } from '../services/api'
 import EventCard from '../components/EventCard'
 import VirtualizedEventsGrid from '../components/VirtualizedEventsGrid'
@@ -13,8 +14,10 @@ export default function Events() {
   const highlightEventId = location.state?.highlightEventId
   const eventRefs = useRef({})
   const [events, setEvents] = useState([])
+  const [pastEvents, setPastEvents] = useState([])
   const [userRSVPs, setUserRSVPs] = useState({}) // Store user's RSVP status for each event
   const [loading, setLoading] = useState(true)
+  const [loadingPast, setLoadingPast] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({
     category: '',
@@ -41,6 +44,7 @@ export default function Events() {
       const t1 = performance?.now?.() || 0
       import.meta.env.DEV && console.debug('[DBG] events:load:done in', (t1 - t0).toFixed(1), 'ms')
     })
+    loadPastEvents()
   }, [])
 
   useEffect(() => {
@@ -80,6 +84,28 @@ export default function Events() {
       console.error('Failed to load events:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadPastEvents = async () => {
+    try {
+      setLoadingPast(true)
+      const data = await eventsAPI.getAll({ include_past: true, include_inactive: true, limit: 50 })
+      const now = new Date()
+      const past = data.filter((ev) => {
+        const endDate = ev.event_end ? new Date(ev.event_end) : new Date(ev.event_start)
+        return endDate < now
+      })
+      past.sort((a, b) => {
+        const aDate = new Date(a.event_end || a.event_start)
+        const bDate = new Date(b.event_end || b.event_start)
+        return bDate - aDate // newest past first
+      })
+      setPastEvents(past)
+    } catch (error) {
+      console.error('Failed to load past events:', error)
+    } finally {
+      setLoadingPast(false)
     }
   }
 
@@ -295,6 +321,70 @@ export default function Events() {
           </button>
         </div>
       )}
+
+      {/* Past Events */}
+      <div className="mt-12">
+        <div className="flex items-center gap-3 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Past Events</h2>
+          <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
+            {pastEvents.length}
+          </span>
+        </div>
+
+        {loadingPast ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1,2,3,4,5,6].map((i) => (
+              <div key={i} className="h-44 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : pastEvents.length === 0 ? (
+          <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-400 text-lg">No past events yet.</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pastEvents.map((event) => (
+              <div key={event.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm p-5 flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Event Ended</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{event.title}</h3>
+                  </div>
+                  <span className="px-2 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Past</span>
+                </div>
+
+                <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-gray-400" />
+                    <span>{format(new Date(event.event_end || event.event_start), 'MMM dd, yyyy • h:mm a')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-gray-400" />
+                    <span className="line-clamp-1">{event.location || 'Location not specified'}</span>
+                  </div>
+                  {event.category && (
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-gray-400" />
+                      <span className="px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded-md text-xs font-medium capitalize">{event.category}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <a
+                  <Link
+                    to={`/events/${event.id}`}
+                    className="text-primary-600 dark:text-primary-300 font-medium hover:underline text-sm"
+                  >
+                    View details
+                  </Link>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{event.is_active ? 'Active' : 'Ended'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
