@@ -143,7 +143,8 @@ export default function Bookmarks() {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <CalendarIcon className="h-4 w-4 flex-shrink-0" />
-                    <span>{format(new Date(bookmark.event_start), 'MMM dd, yyyy • h:mm a')}</span>
+                      <span>{format(new Date(bookmark.event_start), 'MMM dd, yyyy • h:mm a')}</span>
+                    </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <MapPinIcon className="h-4 w-4 flex-shrink-0" />
                       <span className="line-clamp-1">{bookmark.location}</span>

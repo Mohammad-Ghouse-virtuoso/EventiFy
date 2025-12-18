@@ -1,26 +1,27 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, select, SQLModel
 from sqlalchemy import inspect
 from datetime import datetime, timedelta
 from app.db.database import engine
 from app.models.user import User, UserRole
 from app.models.event import Event
 from app.models.rsvp import RSVP, RSVPStatus
+from app.models.comment import Comment
+from app.models.bookmark import UserBookmark
 from app.core.auth import get_password_hash
 
 def init_db():
-    """Seed initial data if database is empty.
-
-    Note: Schema creation is now handled by Alembic migrations.
-    Run `alembic upgrade head` before starting the app.
+    """Seed initial data and create all tables if they don't exist.
+    
+    This creates tables from SQLModel models.
     """
     
-    # Ensure tables exist (managed by Alembic). If not, skip seeding.
+    # Create all tables (for SQLModel models)
+    SQLModel.metadata.create_all(engine)
+    
+    # Check if we have the required tables
     inspector = inspect(engine)
-    required_tables = {"user", "event", "rsvp", "comment"}
     existing = set(inspector.get_table_names())
-    if not required_tables.issubset(existing):
-        print("Alembic migrations not applied yet. Skipping seed. Run `make alembic-upgrade` first.")
-        return
+    print(f"Existing tables: {existing}")
 
     with Session(engine) as session:
         # Check if we already have users (avoid duplicate seeding)
