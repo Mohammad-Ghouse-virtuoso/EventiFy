@@ -14,6 +14,9 @@ class EventBase(SQLModel):
     image: Optional[str] = None  # URL for event banner/image
     thumbnail: Optional[str] = None  # URL for small card thumbnail
     requires_approval: bool = False  # Whether RSVPs need admin approval
+    terms_and_conditions: Optional[str] = None  # T&C for the event
+    organizer_bio: Optional[str] = None  # About the organizer
+    organizer_contact: Optional[str] = None  # Contact email or info
 
 class Event(EventBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -36,6 +39,9 @@ class EventUpdate(SQLModel):
     image: Optional[str] = None  # URL for event banner/image
     thumbnail: Optional[str] = None  # URL for small card thumbnail
     requires_approval: Optional[bool] = None  # Whether RSVPs need admin approval
+    terms_and_conditions: Optional[str] = None  # T&C for the event
+    organizer_bio: Optional[str] = None  # About the organizer
+    organizer_contact: Optional[str] = None  # Contact email or info
 
 
 class EventOut(EventBase):
@@ -48,3 +54,6 @@ class EventOut(EventBase):
     is_active: bool
     # Optional convenience field used by UI; backend may leave it unset
     attendees_count: Optional[int] = 0
+    terms_and_conditions: Optional[str] = None
+    organizer_bio: Optional[str] = None
+    organizer_contact: Optional[str] = None

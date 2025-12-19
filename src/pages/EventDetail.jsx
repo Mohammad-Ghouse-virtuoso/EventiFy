@@ -13,6 +13,7 @@ import EventDescription from '../components/event-detail/EventDescription'
 import TermsSection from '../components/event-detail/TermsSection'
 import QASection from '../components/event-detail/QASection'
 import ActionBar from '../components/event-detail/ActionBar'
+import AdminEventEditModal from '../components/event-detail/AdminEventEditModal'
 import ShareButtons from '../components/ShareButtons'
 
 export default function EventDetail() {
@@ -28,6 +29,7 @@ export default function EventDetail() {
   const [rsvpStatus, setRsvpStatus] = useState(null)
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [hasUsedEdit, setHasUsedEdit] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   // Check if current user is the organizer
   const isOrganizer = event && user && event.organizer_id === user.id
@@ -249,7 +251,7 @@ export default function EventDetail() {
 
       {/* Organizer/Admin Edit Button */}
       {(isOrganizer || isAdmin) && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40">
           <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-blue-600 dark:text-blue-400">
@@ -260,17 +262,25 @@ export default function EventDetail() {
               </span>
             </div>
             <button
-              onClick={() => navigate(`/events/${event.id}/edit`)}
+              onClick={() => setShowEditModal(true)}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
               </svg>
-              Edit Event
+              Edit Details
             </button>
           </div>
         </div>
       )}
+
+      {/* Admin Edit Modal */}
+      <AdminEventEditModal
+        event={event}
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onUpdate={setEvent}
+      />
 
       {/* Sticky Action Bar - Only for non-organizers */}
       {!isOrganizer && !isAdmin && (

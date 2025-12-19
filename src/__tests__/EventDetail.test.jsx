@@ -52,6 +52,9 @@ vi.mock('../components/event-detail/TermsSection', () => ({
 vi.mock('../components/event-detail/QASection', () => ({
   default: () => <div data-testid="qa" />
 }))
+vi.mock('../components/event-detail/AdminEventEditModal', () => ({
+  default: () => <div data-testid="admin-edit-modal" />
+}))
 vi.mock('../components/ShareButtons', () => ({
   default: () => <div data-testid="share-buttons" />
 }))
@@ -93,7 +96,7 @@ describe('EventDetail organizer/admin view', () => {
 
     await waitFor(() => expect(mockEventsAPI.getById).toHaveBeenCalled())
 
-    expect(screen.getByRole('button', { name: /edit event/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /edit details/i })).toBeInTheDocument()
     expect(screen.getByText(/You created this event/i)).toBeInTheDocument()
     expect(screen.queryByTestId('action-bar')).toBeNull()
   })

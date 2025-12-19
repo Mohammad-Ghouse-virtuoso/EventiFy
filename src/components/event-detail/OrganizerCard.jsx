@@ -1,15 +1,12 @@
 import { useState } from 'react'
 
-const defaultOrganizerData = {
-  full_name: 'Event Organizer',
-  email: 'contact@eventify.com',
-  phone: '+1 (555) 123-4567'
-}
-
 export default function OrganizerCard({ event }) {
   if (!event) return null
 
-  const organizer = event.organizer || defaultOrganizerData
+  const organizer = event.organizer
+
+  // If no organizer info available, don't show card
+  if (!organizer) return null
 
   return (
     <div className="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-lg p-6 border border-primary-200 dark:border-gray-600">
@@ -30,37 +27,42 @@ export default function OrganizerCard({ event }) {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             {organizer.full_name}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Event Organizer
-          </p>
+          
+          {/* Organizer Bio */}
+          {event.organizer_bio && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+              {event.organizer_bio}
+            </p>
+          )}
 
           <div className="mt-4 space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">📧</span>
-              <a
-                href={`mailto:${organizer.email}`}
-                className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
-              >
-                {organizer.email}
-              </a>
-            </div>
+            {/* Contact Info or Custom Contact */}
+            {event.organizer_contact && (
+              <div className="flex items-start gap-3">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-0.5">📞</span>
+                <div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {event.organizer_contact}
+                  </p>
+                </div>
+              </div>
+            )}
 
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">📱</span>
-              <a
-                href={`tel:${organizer.phone}`}
-                className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-              >
-                {organizer.phone}
-              </a>
-            </div>
+            {/* Email */}
+            {organizer.email && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">📧</span>
+                <a
+                  href={`mailto:${organizer.email}`}
+                  className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  {organizer.email}
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      <button className="mt-4 w-full px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition font-medium">
-        Add to Network
-      </button>
     </div>
   )
 }
