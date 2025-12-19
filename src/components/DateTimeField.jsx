@@ -133,7 +133,7 @@ export default function DateTimeField({
         </label>
       )}
       <Flatpickr
-        value={dateValue}
+        value={dateValue ?? null}
         options={options}
         onChange={handleChange}
         placeholder={placeholder}

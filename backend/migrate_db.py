@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
-Database migration script to add new columns for RSVP approval workflow
+Database migration script to add new columns without requiring Alembic in dev.
+
+Adds:
+- event.requires_approval (if missing)
+- rsvp.approved_by, rsvp.approved_at (if missing)
+- event.terms_and_conditions, event.organizer_bio, event.organizer_contact (if missing)
 """
 
 import sqlite3
@@ -17,16 +22,39 @@ def migrate_database():
     cursor = conn.cursor()
     
     try:
-        # Check if requires_approval column exists in event table
+        # Check current columns in event table
         cursor.execute("PRAGMA table_info(event)")
         columns = [column[1] for column in cursor.fetchall()]
-        
+
+        # requires_approval for RSVP workflow
         if 'requires_approval' not in columns:
             print("Adding requires_approval column to event table...")
             cursor.execute("ALTER TABLE event ADD COLUMN requires_approval BOOLEAN DEFAULT 0")
             print("✓ Added requires_approval column")
         else:
             print("requires_approval column already exists in event table")
+
+        # New organizer/terms metadata columns
+        if 'terms_and_conditions' not in columns:
+            print("Adding terms_and_conditions column to event table...")
+            cursor.execute("ALTER TABLE event ADD COLUMN terms_and_conditions TEXT")
+            print("✓ Added terms_and_conditions column")
+        else:
+            print("terms_and_conditions column already exists in event table")
+
+        if 'organizer_bio' not in columns:
+            print("Adding organizer_bio column to event table...")
+            cursor.execute("ALTER TABLE event ADD COLUMN organizer_bio TEXT")
+            print("✓ Added organizer_bio column")
+        else:
+            print("organizer_bio column already exists in event table")
+
+        if 'organizer_contact' not in columns:
+            print("Adding organizer_contact column to event table...")
+            cursor.execute("ALTER TABLE event ADD COLUMN organizer_contact TEXT")
+            print("✓ Added organizer_contact column")
+        else:
+            print("organizer_contact column already exists in event table")
         
         # Check if approved_by and approved_at columns exist in rsvp table
         cursor.execute("PRAGMA table_info(rsvp)")
