@@ -21,7 +21,7 @@ ifeq (,$(wildcard $(ENV_FILE)))
 	endif
 endif
 
-.PHONY: alembic-rev alembic-upgrade alembic-downgrade
+.PHONY: alembic-rev alembic-upgrade alembic-downgrade alembic-stamp
 
 alembic-rev:
 	cd $(BACKEND_DIR) && ENVIRONMENT=$(ENV) $(PYTHON) -m alembic revision --autogenerate -m "$(m)"
@@ -32,11 +32,24 @@ alembic-upgrade:
 alembic-downgrade:
 	cd $(BACKEND_DIR) && ENVIRONMENT=$(ENV) $(PYTHON) -m alembic downgrade -1
 
+alembic-stamp:
+	# Mark current database at head without applying migrations (useful for existing dev DBs)
+	cd $(BACKEND_DIR) && ENVIRONMENT=$(ENV) $(PYTHON) -m alembic stamp head
+
 .PHONY: migrate
 
 # Apply migrations for the selected ENV (ENV=dev|prod)
 migrate: alembic-upgrade
 	@echo "Applied Alembic migrations for ENV=$(ENV)."
+
+.PHONY: db-reset db-seed-past
+
+db-reset:
+	# Danger: resets local SQLite DB and seeds baseline data
+	cd $(BACKEND_DIR) && rm -f eventify.db eventify.db-shm eventify.db-wal && ENVIRONMENT=$(ENV) $(PYTHON) -c "from app.db.init_db import init_db; init_db()"
+
+db-seed-past:
+	cd $(BACKEND_DIR) && ENVIRONMENT=$(ENV) PYTHONPATH=. $(PYTHON) scripts/seed_past_events.py
 
 .PHONY: test
 test:
