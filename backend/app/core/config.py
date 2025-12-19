@@ -69,9 +69,17 @@ class Settings(BaseSettings):
         raise ValueError(v)
     
     # JWT
-    # Secrets: MUST be provided via env in production
-    SECRET_KEY: str = _env("SECRET_KEY")
-    REFRESH_SECRET_KEY: str = _env("REFRESH_SECRET_KEY")
+    # Secrets: MUST be provided via env in production.
+    # Provide safe defaults in dev/test to avoid CI/test failures when secrets are absent.
+    if _ENV_NAME in ("dev", "test"):
+        _DEFAULT_SECRET = "dev-secret-key"
+        _DEFAULT_REFRESH = "dev-refresh-secret"
+        SECRET_KEY: str = _env("SECRET_KEY", default=_DEFAULT_SECRET)
+        REFRESH_SECRET_KEY: str = _env("REFRESH_SECRET_KEY", default=_DEFAULT_REFRESH)
+    else:
+        # In prod, require explicit values (no defaults)
+        SECRET_KEY: str = _env("SECRET_KEY")
+        REFRESH_SECRET_KEY: str = _env("REFRESH_SECRET_KEY")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour default
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30

@@ -37,25 +37,35 @@ jobs:
       - name: Environment setup
         run: |
           echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          echo "DATABASE_URL=sqlite:///./eventify.db" >> $GITHUB_ENV
+          echo "SECRET_KEY=ci-dev-secret" >> $GITHUB_ENV
+          echo "REFRESH_SECRET_KEY=ci-dev-refresh" >> $GITHUB_ENV
 
-      - name: Alembic stamp (if existing DB)
+      # Run migrations to create schema from scratch on CI
+      # Avoid 'stamp head' which marks migrations applied without actually running them
+
+      - name: Reset SQLite database (fresh CI run)
         run: |
-          # Stamp head to avoid initial schema conflict when running on ephemeral SQLite
-          python -m alembic stamp head || true
+          rm -f eventify.db eventify.db-shm eventify.db-wal || true
 
       - name: Run migrations (upgrade head)
         run: |
+          echo "Running Alembic migrations..."
           python -m alembic upgrade head
+          echo "Migrations complete. Checking DB..."
+          python -c "import sqlite3; print('Tables:', sqlite3.connect('eventify.db').execute('SELECT name FROM sqlite_master WHERE type=\"table\"').fetchall())"
 
       - name: Backend tests
         run: |
-          pytest -q
+          echo "Running pytest..."
+          pytest -v --tb=short
 
       - name: SQLite health
         run: |
           python - <<'PY'
           import sqlite3, os
-          db = os.path.join(os.path.dirname(__file__), 'eventify.db')
+          # CI runs with working-directory: backend, so DB is ./eventify.db
+          db = os.path.join(os.getcwd(), 'eventify.db')
           conn = sqlite3.connect(db)
           conn.execute('select count(*) from event')
           conn.execute('select count(*) from user')
