@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.api.api_v1.api import api_router
@@ -10,6 +10,8 @@ import secrets
 from fastapi.responses import JSONResponse
 import time
 from sqlalchemy import text
+import logging
+import uuid
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -149,3 +151,39 @@ async def dev_cors_fallback(request: Request, call_next):
                 response.headers["Vary"] = "Origin"
             return response
     return await call_next(request)
+
+# --- Global error handlers ---
+logger = logging.getLogger("eventify")
+
+def _request_id() -> str:
+    return uuid.uuid4().hex
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    err_id = _request_id()
+    # Log full details server-side
+    logger.exception(f"[error_id={err_id}] Unhandled error at {request.url.path}")
+    # Return minimal safe message to clients
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal Server Error",
+            "error_id": err_id,
+        },
+    )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    # Preserve original detail but enrich with error_id for traceability
+    err_id = _request_id()
+    try:
+        logger.warning(f"[error_id={err_id}] HTTP {exc.status_code} at {request.url.path}: {exc.detail}")
+    except Exception:
+        pass
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "detail": exc.detail,
+            "error_id": err_id,
+        },
+    )
