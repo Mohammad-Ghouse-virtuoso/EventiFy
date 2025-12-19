@@ -1,0 +1,64 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Environment setup
+        run: |
+          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+
+      - name: Alembic stamp (if existing DB)
+        run: |
+          # Stamp head to avoid initial schema conflict when running on ephemeral SQLite
+          python -m alembic stamp head || true
+
+      - name: Run migrations (upgrade head)
+        run: |
+          python -m alembic upgrade head
+
+      - name: Backend tests
+        run: |
+          pytest -q
+
+      - name: SQLite health
+        run: |
+          python - <<'PY'
+          import sqlite3, os
+          db = os.path.join(os.path.dirname(__file__), 'eventify.db')
+          conn = sqlite3.connect(db)
+          conn.execute('select count(*) from event')
+          conn.execute('select count(*) from user')
+          conn.close()
+          print('SQLite schema OK')
+          PY
