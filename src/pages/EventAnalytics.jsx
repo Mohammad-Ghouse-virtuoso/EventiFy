@@ -95,12 +95,25 @@ export default function EventAnalytics() {
             const maybe = rsvps.filter(r => r.status === 'maybe').length
             const notGoing = rsvps.filter(r => r.status === 'not_going').length
             const eventDate = new Date(event.event_start)
+            const eventEnd = event.event_end ? new Date(event.event_end) : eventDate
+            const now = new Date()
+            const daysSincePast = Math.floor((now - eventEnd) / (1000 * 60 * 60 * 24))
+            const isPast = eventEnd < now
+            const isRecentlyPast = isPast && daysSincePast <= 14
             const showDetails = !!openIds[event.id]
             return (
-              <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-800">
+              <div key={event.id} className={`border rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-800 ${isPast ? 'border-gray-300 dark:border-gray-600 opacity-90' : 'border-gray-200 dark:border-gray-700'}`}>
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h3>
+                      {isPast && (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${isRecentlyPast ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
+                          <CheckCircleIcon className="h-3.5 w-3.5" />
+                          {isRecentlyPast ? `Ended ${daysSincePast}d ago` : 'Past'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
                       {event.location} • {eventDate.toLocaleDateString()}
                       {event.organizer_name && event.organizer_role !== 'admin' && (

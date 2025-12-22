@@ -163,13 +163,21 @@ export default function EventDetail() {
     )
   }
 
+  // Derive backend origin for static assets
   const apiBase = import.meta.env.VITE_API_URL ?? '/api/v1'
-  const imageSrc = event?.image || event?.thumbnail || placeholderImg
-  const fullImageUrl = /^https?:\/\//i.test(imageSrc)
-    ? imageSrc
-    : imageSrc?.startsWith('/static/')
-    ? `${new URL(apiBase, window.location.origin).origin}${imageSrc}`
-    : imageSrc
+  // Backend origin: if VITE_API_URL is absolute, use it; else use current origin (for proxied dev)
+  const backendOrigin = /^https?:\/\//i.test(apiBase)
+    ? new URL(apiBase).origin
+    : window.location.origin
+  const imageSrc = event?.image || event?.thumbnail || null
+  // Build full URL: absolute URLs pass through; /static/ paths get backend origin prepended
+  const fullImageUrl = imageSrc
+    ? /^https?:\/\//i.test(imageSrc)
+      ? imageSrc
+      : imageSrc.startsWith('/static/')
+        ? `${backendOrigin}${imageSrc}`
+        : imageSrc
+    : placeholderImg
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 pb-24">
