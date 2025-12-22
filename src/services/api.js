@@ -86,14 +86,28 @@ export const eventsAPI = {
     const authHeader = token ? { Authorization: `Bearer ${token}` } : {}
     // Check if eventData is FormData (for file uploads)
     if (eventData instanceof FormData) {
-      // Use upload endpoint for file uploads
-      const { data } = await api.post('/events/upload', eventData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          ...authHeader,
-        },
-      })
-      return data
+      // Acquire CSRF token (sets cookie) and include header for protected form endpoints
+      try {
+        const t = await api.get('/auth/csrf-token')
+        const csrfToken = t?.data?.csrfToken
+        const { data } = await api.post('/events/upload', eventData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'x-csrf-token': csrfToken,
+            ...authHeader,
+          },
+        })
+        return data
+      } catch (err) {
+        // Fallback attempt without CSRF (dev environments disable CSRF)
+        const { data } = await api.post('/events/upload', eventData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            ...authHeader,
+          },
+        })
+        return data
+      }
     } else {
       // Use regular endpoint for JSON data
       const { data } = await api.post('/events', eventData, {

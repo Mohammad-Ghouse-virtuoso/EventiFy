@@ -244,6 +244,9 @@ async def get_events(
                 created_at=ev.created_at,
                 is_active=ev.is_active,
                 attendees_count=total_attendees,
+                terms_and_conditions=ev.terms_and_conditions,
+                organizer_bio=ev.organizer_bio,
+                organizer_contact=ev.organizer_contact,
             )
         )
     return event_out_list
@@ -299,7 +302,10 @@ async def get_event(
     organizer_role=role_value,
         created_at=event.created_at,
         is_active=event.is_active,
-        attendees_count=total_attendees
+        attendees_count=total_attendees,
+        terms_and_conditions=event.terms_and_conditions,
+        organizer_bio=event.organizer_bio,
+        organizer_contact=event.organizer_contact,
     )
 
 
@@ -345,7 +351,10 @@ async def create_event(
     organizer_role=role_value,
         created_at=db_event.created_at,
         is_active=db_event.is_active,
-        attendees_count=0
+        attendees_count=0,
+        terms_and_conditions=db_event.terms_and_conditions,
+        organizer_bio=db_event.organizer_bio,
+        organizer_contact=db_event.organizer_contact,
     )
 
 # New endpoint for file upload (cover image)
@@ -457,7 +466,10 @@ async def create_event_with_image(
     organizer_role=role_value,
         created_at=db_event.created_at,
         is_active=db_event.is_active,
-        attendees_count=0
+        attendees_count=0,
+        terms_and_conditions=db_event.terms_and_conditions,
+        organizer_bio=db_event.organizer_bio,
+        organizer_contact=db_event.organizer_contact,
     )
 
 @router.put("/{event_id}", response_model=EventOut)
@@ -524,7 +536,10 @@ async def update_event(
         organizer_role=role_value,
         created_at=event.created_at,
         is_active=event.is_active,
-        attendees_count=len(attendees_count)
+        attendees_count=len(attendees_count),
+        terms_and_conditions=event.terms_and_conditions,
+        organizer_bio=event.organizer_bio,
+        organizer_contact=event.organizer_contact,
     )
 
 @router.delete("/{event_id}")

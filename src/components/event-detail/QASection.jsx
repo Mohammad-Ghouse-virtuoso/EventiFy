@@ -28,8 +28,13 @@ export default function QASection({ event }) {
   const [submitting, setSubmitting] = useState(false)
   const [replyingTo, setReplyingTo] = useState(null)
   const [answerText, setAnswerText] = useState('')
+  // Organizer/Admin can seed FAQs
+  const [faqOpen, setFaqOpen] = useState(false)
+  const [faqQuestion, setFaqQuestion] = useState('')
+  const [faqAnswer, setFaqAnswer] = useState('')
 
-  const isOrganizer = user && (user.id === event?.organizer_id || user.role === 'admin')
+  const normalizedRole = (user?.role ?? '').toString().toLowerCase()
+  const isOrganizer = !!user && (user.id === event?.organizer_id || normalizedRole === 'admin' || normalizedRole === 'organizer')
 
   const eventKeywords = useMemo(() => {
     const chunks = [event?.title || '', event?.description || '', event?.category || '', event?.location || '']
@@ -127,6 +132,29 @@ export default function QASection({ event }) {
     }
   }
 
+  const handleAddFAQ = async () => {
+    if (!isOrganizer) return
+    const qErr = validateQuestion(faqQuestion)
+    if (qErr) { showError(qErr); return }
+    if (!faqAnswer.trim()) { showError('Please add an answer'); return }
+    try {
+      const q = await questionsAPI.askQuestion(event.id, {
+        asker_email: user?.email || 'organizer@eventify.com',
+        asker_name: user?.full_name || 'Organizer',
+        text: faqQuestion.trim(),
+      })
+      await questionsAPI.answerQuestion(event.id, q.id, faqAnswer.trim())
+      setFaqQuestion('')
+      setFaqAnswer('')
+      setFaqOpen(false)
+      showSuccess('FAQ added')
+      loadQuestions()
+    } catch (err) {
+      console.error('Add FAQ failed', err)
+      showError(err?.response?.data?.detail || 'Failed to add FAQ')
+    }
+  }
+
   const toggleVote = async (answer) => {
     try {
       if (!user) {
@@ -161,16 +189,30 @@ export default function QASection({ event }) {
 
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/60 dark:bg-gray-800/70">
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => setAskOpen(!askOpen)}
-            className="font-semibold text-primary-600 dark:text-primary-400 hover:underline"
-          >
-            {askOpen ? 'Hide question form' : 'Ask the organizer a question'}
-          </button>
-          <span className="text-xs text-gray-500">Email required • Max 500 chars</span>
+          {!isOrganizer ? (
+            <button
+              onClick={() => setAskOpen(!askOpen)}
+              className="font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+            >
+              {askOpen ? 'Hide question form' : 'Ask the organizer a question'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Admin/organizer view: ask form is hidden.</span>
+              <button
+                onClick={() => setFaqOpen(!faqOpen)}
+                className="text-sm font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+              >
+                {faqOpen ? 'Cancel FAQ' : 'Add FAQ'}
+              </button>
+            </div>
+          )}
+          {!isOrganizer && (
+            <span className="text-xs text-gray-500">Email required • Max 500 chars</span>
+          )}
         </div>
 
-        {askOpen && (
+        {!isOrganizer && askOpen && (
           <form onSubmit={handleAskQuestion} className="mt-3 space-y-3">
             <div className="grid md:grid-cols-2 gap-3">
               <input
@@ -208,6 +250,36 @@ export default function QASection({ event }) {
               </button>
             </div>
           </form>
+        )}
+
+        {isOrganizer && faqOpen && (
+          <div className="mt-3 space-y-3">
+            <input
+              type="text"
+              value={faqQuestion}
+              onChange={(e) => setFaqQuestion(e.target.value)}
+              maxLength={500}
+              placeholder="FAQ question attendees often ask"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+            />
+            <textarea
+              value={faqAnswer}
+              onChange={(e) => setFaqAnswer(e.target.value)}
+              maxLength={1000}
+              rows={3}
+              placeholder="Concise answer for attendees"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+            />
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                onClick={handleAddFAQ}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+              >
+                Add FAQ
+              </button>
+            </div>
+          </div>
         )}
       </div>
 

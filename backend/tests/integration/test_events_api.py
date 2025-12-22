@@ -105,6 +105,63 @@ class TestEventCreation:
         assert data["title"] == "New Tech Meetup"
         assert data["category"] == "Technology"
         assert "id" in data
+
+    def test_create_event_with_predefined_banner(self, client, organizer_headers):
+        """POST /api/v1/events with image URL should set image field."""
+        future_date = (datetime.now() + timedelta(days=7)).isoformat()
+        banner_url = "http://example.com/static/sample.jpg"
+        event_data = {
+            "title": "Banner Event",
+            "description": "Event with predefined banner",
+            "category": "Technology",
+            "event_start": future_date,
+            "event_end": (datetime.now() + timedelta(days=7, hours=2)).isoformat(),
+            "location": "Tech Hub",
+            "max_attendees": 80,
+            "price": 0.0,
+            "requires_approval": False,
+            "image": banner_url,
+        }
+
+        response = client.post("/api/v1/events", json=event_data, headers=organizer_headers)
+        assert response.status_code in [status.HTTP_200_OK, status.HTTP_201_CREATED]
+        data = response.json()
+        assert data["image"] == banner_url
+
+    def test_create_event_with_image_upload(self, client, organizer_headers, tmp_path):
+        """POST /api/v1/events/upload with file should save image and return URLs."""
+        from PIL import Image
+        img_path = tmp_path / "test.jpg"
+        Image.new('RGB', (640, 480), color='blue').save(img_path)
+
+        # Obtain CSRF token and include matching header; TestClient retains cookie
+        csrf_resp = client.get("/api/v1/auth/csrf-token")
+        csrf_token = csrf_resp.json().get("csrfToken")
+
+        future_date = (datetime.now() + timedelta(days=7)).isoformat()
+        files = {
+            "image": ("test.jpg", open(img_path, "rb"), "image/jpeg"),
+        }
+        data = {
+            "title": "Upload Event",
+            "description": "Event with uploaded image",
+            "category": "Technology",
+            "event_start": future_date,
+            "event_end": (datetime.now() + timedelta(days=7, hours=1)).isoformat(),
+            "location": "Tech Hub",
+            "max_attendees": "50",
+            "price": "0.0",
+            "requires_approval": "false",
+        }
+        # Merge auth headers with CSRF header for form submission
+        headers = {**organizer_headers, "x-csrf-token": csrf_token}
+        response = client.post("/api/v1/events/upload", files=files, data=data, headers=headers)
+        assert response.status_code in [status.HTTP_200_OK, status.HTTP_201_CREATED]
+        resp = response.json()
+        assert resp["image"] and resp["image"].startswith("http")
+        # Thumbnail is optional; if generated, it should be an http URL
+        if resp.get("thumbnail"):
+            assert resp["thumbnail"].startswith("http")
     
     def test_create_event_unauthenticated(self, client):
         """POST /api/v1/events without auth returns 401"""
@@ -205,6 +262,29 @@ class TestEventUpdate:
         
         # Admin should be able to update
         assert response.status_code in [status.HTTP_200_OK, status.HTTP_403_FORBIDDEN]
+
+    def test_update_event_meta_fields_reflect_for_attendee(self, client, test_event, admin_headers, auth_headers):
+        """Admin updates T&C, organizer bio & contact; attendee should see them via GET."""
+        update_data = {
+            "terms_and_conditions": "No refunds after 24 hours. Bring ID.",
+            "organizer_bio": "We host monthly meetups for developers.",
+            "organizer_contact": "organizer@example.com",
+        }
+        # Admin updates event
+        resp = client.put(f"/api/v1/events/{test_event.id}", json=update_data, headers=admin_headers)
+        assert resp.status_code == status.HTTP_200_OK
+        data = resp.json()
+        assert data["terms_and_conditions"] == update_data["terms_and_conditions"]
+        assert data["organizer_bio"] == update_data["organizer_bio"]
+        assert data["organizer_contact"] == update_data["organizer_contact"]
+
+        # Attendee fetches event details; should see updated fields
+        get_resp = client.get(f"/api/v1/events/{test_event.id}", headers=auth_headers)
+        assert get_resp.status_code == status.HTTP_200_OK
+        get_data = get_resp.json()
+        assert get_data["terms_and_conditions"] == update_data["terms_and_conditions"]
+        assert get_data["organizer_bio"] == update_data["organizer_bio"]
+        assert get_data["organizer_contact"] == update_data["organizer_contact"]
 
 
 @pytest.mark.integration
