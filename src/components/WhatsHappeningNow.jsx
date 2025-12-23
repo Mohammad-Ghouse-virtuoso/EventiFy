@@ -9,6 +9,8 @@ const SparklesIcon = ({ className }) => (
   </svg>
 );
 
+const API_BASE = import.meta.env.VITE_API_URL ?? '/api/v1';
+
 const CITIES = [
   "New York", "Los Angeles", "Chicago", "San Francisco", "Austin",
   "Seattle", "Boston", "Denver", "Miami", "Dallas"
@@ -33,7 +35,7 @@ export default function WhatsHappeningNow() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/events?location=${selectedCity}&limit=6`);
+      const response = await fetch(`${API_BASE}/events?location=${selectedCity}&limit=6`);
       if (response.ok) {
         const data = await response.json();
         setEvents(data.events || []);
@@ -51,7 +53,7 @@ export default function WhatsHappeningNow() {
       
       // Generate batch of events
       const response = await fetch(
-        `/api/v1/ai/generate/events-batch?city=${selectedCity}&count=3`,
+        `${API_BASE}/ai/generate/events-batch?city=${selectedCity}&count=3`,
         { method: 'POST' }
       );
       
@@ -136,7 +138,7 @@ export default function WhatsHappeningNow() {
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin">
-              <Sparkles className="h-8 w-8 text-blue-600" />
+              <SparklesIcon className="h-8 w-8 text-blue-600" />
             </div>
           </div>
         ) : events.length === 0 ? (
