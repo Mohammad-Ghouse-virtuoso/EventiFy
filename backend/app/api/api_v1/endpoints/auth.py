@@ -122,12 +122,13 @@ async def register(
             detail="Email already registered"
         )
 
-    # Create new user
+    # Create new user - always as attendee (unified account model)
+    # Users become "organizers" contextually when they create events
     hashed_password = get_password_hash(user_data.password)
     db_user = User(
         email=user_data.email,
         full_name=user_data.full_name,
-        role=user_data.role if hasattr(user_data, 'role') else UserRole.ATTENDEE,
+        role=UserRole.ATTENDEE,  # Always attendee - role is contextual
         hashed_password=hashed_password
     )
 

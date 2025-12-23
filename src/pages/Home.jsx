@@ -9,6 +9,9 @@ import HowItWorks from '../components/HowItWorks'
 import TestimonialsSection from '../components/TestimonialsSection'
 import ClosingCTA from '../components/ClosingCTA'
 import TrustedPartnersSection from '../components/TrustedPartnersSection'
+import LiveStats from '../components/LiveStats'
+import RecentActivity from '../components/RecentActivity'
+import TrendingEvents from '../components/TrendingEvents'
 
 // Custom sparkles star icon component (same as Navbar)
 const CustomSparklesIcon = ({ className }) => (
@@ -55,7 +58,10 @@ export default function Home() {
       {USE_NEW_HERO ? (
         <div className="px-4 sm:px-6 lg:px-8 py-6">
           <EventifyHeroCard
-            onGetStarted={() => navigate(user ? '/events' : '/register')}
+            onGetStarted={() => navigate('/events')}
+            onCreateEvent={() => navigate(user ? '/create-event' : '/login?redirect=/create-event')}
+            ctaText="Browse Events"
+            secondaryCtaText="Create Your Own"
             illustrationSrc={heroImage}
             illustrationAlt="EventiFy hero banner"
           />
@@ -146,6 +152,9 @@ export default function Home() {
         </div>
       )}
 
+      {/* Live Platform Stats - Social Proof */}
+      <LiveStats className="py-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800" />
+
       {/* Trusted Partners / Organizers section */}
       <TrustedPartnersSection className="bg-white" titleVariant="organizers" />
 
@@ -153,6 +162,22 @@ export default function Home() {
       {USE_AUDIENCE_GRID && (
         <EventifyAudienceGrid />
       )}
+
+      {/* Trending Events & Recent Activity - Social Proof */}
+      <div className="py-12 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Trending Events - Takes 2/3 */}
+            <div className="lg:col-span-2">
+              <TrendingEvents />
+            </div>
+            {/* Recent Activity - Takes 1/3 */}
+            <div className="lg:col-span-1">
+              <RecentActivity />
+            </div>
+          </div>
+        </div>
+      </div>
 
       {USE_ACTIVE_EVENTS && (
         <div className="py-8">

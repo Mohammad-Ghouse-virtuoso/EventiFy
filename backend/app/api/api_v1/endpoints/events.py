@@ -315,7 +315,7 @@ async def get_event(
 async def create_event(
     event_data: EventCreate,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_organizer_or_admin)
+    current_user: User = Depends(get_current_active_user)  # Any authenticated user can create events
 ):
     db_event = Event(
         **event_data.dict(),
@@ -371,7 +371,7 @@ async def create_event_with_image(
     requires_approval: bool = Form(False),
     image: UploadFile = File(None),
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_organizer_or_admin)
+    current_user: User = Depends(get_current_active_user)  # Any authenticated user can create events
 ):
     import os
     from datetime import datetime

@@ -8,8 +8,7 @@ export default function Register() {
     full_name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    role: 'attendee'
+    confirmPassword: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -42,8 +41,7 @@ export default function Register() {
       await register({
         full_name: formData.full_name,
         email: formData.email,
-        password: formData.password,
-        role: formData.role
+        password: formData.password
       })
       navigate('/dashboard')
     } catch (error) {
@@ -160,20 +158,11 @@ export default function Register() {
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="role" className="block text-sm font-medium text-white/90 mb-2">
-                      Account Type
-                    </label>
-                    <select
-                      id="role"
-                      name="role"
-                      value={formData.role}
-                      onChange={handleChange}
-                      className="input bg-white/10 border-white/20 text-white focus:border-secondary-300 focus:bg-white/20"
-                    >
-                      <option value="attendee" className="text-gray-900">Attendee - Join and discover events</option>
-                      <option value="organizer" className="text-gray-900">Organizer - Create and manage events</option>
-                    </select>
+                  {/* Info about capabilities */}
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                    <p className="text-sm text-white/70">
+                      ✨ With your account you can discover events, RSVP, <strong className="text-white">and create your own events</strong> — all in one place!
+                    </p>
                   </div>
 
                   <div>

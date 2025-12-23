@@ -82,15 +82,13 @@ export default function Navbar() {
             )}
             {user ? (
               <>
-                {(user.role === 'organizer' || user.role === 'admin') && (
-                  <Link
-                    to="/create-event"
-                    className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-105"
-                  >
-                    <PlusIcon className="h-5 w-5" />
-                    <span>Create Event</span>
-                  </Link>
-                )}
+                <Link
+                  to="/create-event"
+                  className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-105"
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  <span>Create Event</span>
+                </Link>
                 <Link
                   to="/dashboard"
                   className="flex items-center space-x-1 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-105"
@@ -195,11 +193,9 @@ export default function Navbar() {
               )}
               {user ? (
                 <>
-                  {(user.role === 'organizer' || user.role === 'admin') && (
-                    <Link to="/create-event" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
-                      Create Event
-                    </Link>
-                  )}
+                  <Link to="/create-event" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                    Create Event
+                  </Link>
                   <Link to="/dashboard" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                     Dashboard
                   </Link>

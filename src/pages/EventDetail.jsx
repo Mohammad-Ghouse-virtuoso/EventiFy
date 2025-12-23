@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotification } from '../contexts/NotificationContext'
 import { eventsAPI, bookmarkAPI } from '../services/api'
@@ -19,6 +19,7 @@ import ShareButtons from '../components/ShareButtons'
 export default function EventDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const { showSuccess, showError, showInfo } = useNotification()
   
@@ -82,7 +83,7 @@ export default function EventDetail() {
   const handleBookmark = async () => {
     if (!user) {
       showInfo('Please log in to bookmark events')
-      navigate('/login')
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)
       return
     }
 
@@ -106,7 +107,7 @@ export default function EventDetail() {
   const handleRSVP = async (status, options = {}) => {
     if (!user) {
       showInfo('Please log in to RSVP')
-      navigate('/login')
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)
       return false
     }
 

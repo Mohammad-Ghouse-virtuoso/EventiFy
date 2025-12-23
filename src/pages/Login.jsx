@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { EyeIcon, EyeSlashIcon, SparklesIcon, CalendarDaysIcon, UsersIcon } from '@heroicons/react/24/outline'
 
@@ -42,6 +42,8 @@ export default function Login() {
 
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
 
   const handleChange = (e) => {
     setFormData({
@@ -57,7 +59,7 @@ export default function Login() {
 
     try {
       await login(formData.email, formData.password)
-      navigate('/dashboard')
+      navigate(redirectTo)
     } catch (error) {
       setError(error.response?.data?.detail || 'Login failed')
     } finally {

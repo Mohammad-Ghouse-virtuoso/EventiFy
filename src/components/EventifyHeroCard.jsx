@@ -14,8 +14,10 @@ import heroImage from '../../assets/EventiFy Hero Card.jpg'
 export default function EventifyHeroCard({
   headline = 'Find Your Next Event. Connect. RSVP. Go!',
   subtext = 'Discover experiences around you and meet great people along the way.',
-  ctaText = 'Get Started',
+  ctaText = 'Browse Events',
+  secondaryCtaText = 'Create Your Own',
   onGetStarted,
+  onCreateEvent,
   illustrationAlt = 'Colorful illustration placeholder representing events and community',
   illustrationSrc,
   illustrationType = 'image', // 'image', 'gif', or 'video'
@@ -59,8 +61,23 @@ export default function EventifyHeroCard({
                 onClick={onGetStarted}
                 className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-semibold shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
               >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
                 {ctaText}
               </button>
+              {onCreateEvent && (
+                <button
+                  type="button"
+                  onClick={onCreateEvent}
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-lg border-2 border-primary-600 dark:border-primary-400 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  {secondaryCtaText}
+                </button>
+              )}
             </div>
           </div>
 

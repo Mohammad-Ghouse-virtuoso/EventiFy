@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
+import { Analytics } from '@vercel/analytics/react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import NotificationContainer from './components/NotificationContainer'
@@ -53,7 +54,7 @@ function App() {
             <Route
               path="/create-event"
               element={
-                <RequireRole allowed={["organizer", "admin"]}>
+                <RequireRole allowed={["attendee", "organizer", "admin"]}>
                   <CreateEvent />
                 </RequireRole>
               }
@@ -61,7 +62,7 @@ function App() {
             <Route
               path="/events/:id/edit"
               element={
-                <RequireRole allowed={["organizer", "admin"]}>
+                <RequireRole allowed={["attendee", "organizer", "admin"]}>
                   <EditEvent />
                 </RequireRole>
               }
@@ -79,7 +80,7 @@ function App() {
             <Route
               path="/event-analytics"
               element={
-                <RequireRole allowed={["organizer", "admin"]}>
+                <RequireRole allowed={["attendee", "organizer", "admin"]}>
                   <EventAnalytics />
                 </RequireRole>
               }
