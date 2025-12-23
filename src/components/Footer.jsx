@@ -42,8 +42,8 @@ export default function Footer() {
 
   return (
     <footer className="relative text-white mt-auto overflow-hidden">
-      {/* Base gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-500 to-orange-400"></div>
+      {/* Softer blue-orange gradient at 35% opacity */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-500/70 to-orange-400/80"></div>
       {/* Soft overlay for glass effect */}
       <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
