@@ -178,7 +178,7 @@ async def generate_event(
             detail=f"Error generating event: {str(e)}"
         )
 
-@router.get("/events-batch")
+@router.post("/events-batch")
 async def generate_events_batch(
     city: str = Query(..., description="City for event generation"),
     count: int = Query(5, ge=1, le=20, description="Number of events to generate"),

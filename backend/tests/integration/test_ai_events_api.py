@@ -63,7 +63,7 @@ def test_generate_event_invalid_city_returns_400(client, stub_hf_service):
 
 @pytest.mark.integration
 def test_generate_events_batch_creates_requested_count(client, session, stub_hf_service):
-    response = client.get("/api/v1/ai/generate/events-batch", params={"city": "Chicago", "count": 3})
+    response = client.post("/api/v1/ai/generate/events-batch", params={"city": "Chicago", "count": 3})
 
     assert response.status_code == 200
     data = response.json()
