@@ -4,7 +4,6 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import NotificationContainer from './components/NotificationContainer'
 import Home from './pages/Home'
-import LandingPage from './pages/LandingPage'
 import Events from './pages/Events'
 import EventDetail from './pages/EventDetail'
 import Bookmarks from './pages/Bookmarks'
@@ -40,8 +39,7 @@ function App() {
         <Navbar />
         <main className="flex-1 dark:text-gray-100">
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetail />} />
             <Route
