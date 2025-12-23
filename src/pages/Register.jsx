@@ -52,48 +52,54 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Softer blue-orange gradient at 35% opacity */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/35 via-blue-500/25 to-orange-400/35"></div>
-      {/* Soft overlay for glass effect */}
-      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm"></div>
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 right-10 w-80 h-80 bg-white/15 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-orange-300/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/3 left-1/2 w-72 h-72 bg-blue-300/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+    <div className="min-h-screen bg-[#FAFAFA] relative overflow-hidden">
+      {/* Subtle warm gradient overlay - Notion/iOS inspired */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/80 via-white to-blue-50/60"></div>
+      
+      {/* Subtle mesh gradient accents */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-gradient-to-br from-orange-100/40 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-gradient-to-tr from-blue-100/30 to-transparent rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10 min-h-screen flex">
         {/* Left Side - Welcome Content */}
-        <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 text-white">
+        <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-16">
           <div className="animate-slide-up">
-            <div className="flex items-center mb-8">
-              <UserPlusIcon className="h-12 w-12 text-secondary-300 mr-4" />
-              <h1 className="text-display-lg font-bold">Join EventiFy</h1>
+            <div className="flex items-center mb-10">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mr-4 shadow-lg shadow-orange-500/20">
+                <UserPlusIcon className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Join EventiFy</h1>
             </div>
 
-            <h2 className="text-display-md mb-6 leading-tight">
+            <h2 className="text-4xl font-semibold text-gray-900 mb-4 leading-tight tracking-tight">
               Start your journey to
-              <span className="block text-secondary-300">amazing events</span>
+              <span className="block bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">amazing events</span>
             </h2>
 
-            <p className="text-xl text-white/80 mb-8 leading-relaxed">
+            <p className="text-lg text-gray-500 mb-10 leading-relaxed max-w-md">
               Create your account and unlock access to incredible events, connect with your community, and start making memories.
             </p>
 
-            <div className="space-y-4">
-              <div className="flex items-center text-white/90">
-                <CalendarDaysIcon className="h-6 w-6 text-secondary-300 mr-3" />
-                <span>Access to exclusive events in your area</span>
+            <div className="space-y-5">
+              <div className="flex items-center text-gray-600">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center mr-4">
+                  <CalendarDaysIcon className="h-5 w-5 text-orange-500" />
+                </div>
+                <span className="text-[15px]">Access to exclusive events in your area</span>
               </div>
-              <div className="flex items-center text-white/90">
-                <UsersIcon className="h-6 w-6 text-secondary-300 mr-3" />
-                <span>Connect with like-minded event enthusiasts</span>
+              <div className="flex items-center text-gray-600">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mr-4">
+                  <UsersIcon className="h-5 w-5 text-blue-600" />
+                </div>
+                <span className="text-[15px]">Connect with like-minded event enthusiasts</span>
               </div>
-              <div className="flex items-center text-white/90">
-                <SparklesIcon className="h-6 w-6 text-secondary-300 mr-3" />
-                <span>Create and manage your own events</span>
+              <div className="flex items-center text-gray-600">
+                <div className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center mr-4">
+                  <SparklesIcon className="h-5 w-5 text-pink-500" />
+                </div>
+                <span className="text-[15px]">Create and manage your own events</span>
               </div>
             </div>
           </div>
@@ -101,37 +107,37 @@ export default function Register() {
 
         {/* Right Side - Registration Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
-          <div className="w-full max-w-md">
-            <div className="glass-effect rounded-2xl p-8 shadow-2xl animate-bounce-in">
-              <div className="text-center mb-8">
+          <div className="w-full max-w-[400px]">
+            <div className="bg-white rounded-2xl p-8 shadow-xl shadow-gray-200/50 border border-gray-100 animate-bounce-in">
+              <div className="text-center mb-6">
                 <div className="lg:hidden flex items-center justify-center mb-6">
-                  <SparklesIcon className="h-10 w-10 text-secondary-400 mr-3" />
-                  <h1 className="text-3xl font-bold text-white">EventiFy</h1>
+                  <SparklesIcon className="h-8 w-8 text-orange-500 mr-2" />
+                  <h1 className="text-2xl font-bold text-gray-900">EventiFy</h1>
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
+                <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                   Create Account
                 </h2>
-                <p className="text-white/70 mb-4">
+                <p className="text-gray-500 text-sm mb-3">
                   Join thousands of event enthusiasts
                 </p>
                 <Link
                   to="/login"
-                  className="text-secondary-300 hover:text-secondary-200 font-medium transition-colors"
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
                 >
                   Already have an account? Sign in →
                 </Link>
               </div>
 
-              <form className="space-y-6" onSubmit={handleSubmit}>
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 {error && (
-                  <div className="bg-error-500/20 border border-error-300/30 text-error-100 px-4 py-3 rounded-lg backdrop-blur-sm animate-fade-in">
+                  <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm animate-fade-in">
                     {error}
                   </div>
                 )}
 
-                <div className="space-y-5">
+                <div className="space-y-4">
                   <div>
-                    <label htmlFor="full_name" className="block text-sm font-medium text-white/90 mb-2">
+                    <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1.5">
                       Full Name
                     </label>
                     <input
@@ -141,13 +147,13 @@ export default function Register() {
                       required
                       value={formData.full_name}
                       onChange={handleChange}
-                      className="input bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-secondary-300 focus:bg-white/20"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                       placeholder="Enter your full name"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
                       Email address
                     </label>
                     <input
@@ -157,20 +163,20 @@ export default function Register() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="input bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-secondary-300 focus:bg-white/20"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                       placeholder="Enter your email"
                     />
                   </div>
 
                   {/* Info about capabilities */}
-                  <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-                    <p className="text-sm text-white/70">
-                      ✨ With your account you can discover events, RSVP, <strong className="text-white">and create your own events</strong> — all in one place!
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                    <p className="text-sm text-gray-600">
+                      ✨ With your account you can discover events, RSVP, <strong className="text-gray-900">and create your own events</strong> — all in one place!
                     </p>
                   </div>
 
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-2">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
                       Password
                     </label>
                     <div className="relative">
@@ -181,12 +187,12 @@ export default function Register() {
                         required
                         value={formData.password}
                         onChange={handleChange}
-                        className="input bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-secondary-300 focus:bg-white/20 pr-12"
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all pr-12"
                         placeholder="Create a password"
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
@@ -199,7 +205,7 @@ export default function Register() {
                   </div>
 
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-white/90 mb-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -210,12 +216,12 @@ export default function Register() {
                         required
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        className="input bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-secondary-300 focus:bg-white/20 pr-12"
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all pr-12"
                         placeholder="Confirm your password"
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
                         {showConfirmPassword ? (
@@ -228,15 +234,15 @@ export default function Register() {
                   </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-2">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full btn bg-gradient-primary text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
                   >
                     {loading ? (
                       <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white mr-2"></div>
                         Creating account...
                       </div>
                     ) : (
@@ -250,9 +256,9 @@ export default function Register() {
         </div>
       </div>
 
-      {/* Minimal bottom line (no footer sections) */}
-      <div className="absolute bottom-3 left-0 right-0 z-10">
-        <p className="text-center text-white/80 text-xs sm:text-sm">
+      {/* Minimal bottom line */}
+      <div className="absolute bottom-4 left-0 right-0 z-10">
+        <p className="text-center text-gray-400 text-xs">
           © {currentYear}, Copyright EventiFy. All Rights Reserved.
         </p>
       </div>
