@@ -5,6 +5,7 @@ from app.api.api_v1.api import api_router
 from app.core.config import settings
 from app.db.init_db import init_db
 from app.db.database import engine
+from app.services.huggingface_service import init_hf_service
 import os
 import secrets
 from fastapi.responses import JSONResponse
@@ -22,6 +23,18 @@ app = FastAPI(
 @app.on_event("startup")
 def startup_event():
     init_db()
+    
+    # Initialize Hugging Face service if token is available
+    hf_token = os.getenv("HF_TOKEN")
+    hf_text_model = os.getenv("HF_TEXT_MODEL", "mistralai/Mistral-7B-Instruct-v0.3")
+    hf_image_model = os.getenv("HF_IMAGE_MODEL", "stabilityai/stable-diffusion-3-medium")
+    
+    if hf_token:
+        try:
+            init_hf_service(hf_token, hf_text_model, hf_image_model)
+            logging.info("✅ Hugging Face service initialized successfully")
+        except Exception as e:
+            logging.error(f"❌ Failed to initialize Hugging Face service: {str(e)}")
 
 # Set all CORS enabled origins via settings
 # Ensure origins are plain strings (not AnyHttpUrl objects) so Starlette matches correctly

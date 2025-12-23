@@ -12,6 +12,7 @@ import TrustedPartnersSection from '../components/TrustedPartnersSection'
 import LiveStats from '../components/LiveStats'
 import RecentActivity from '../components/RecentActivity'
 import TrendingEvents from '../components/TrendingEvents'
+import WhatsHappeningNow from '../components/WhatsHappeningNow'
 
 // Custom sparkles star icon component (same as Navbar)
 const CustomSparklesIcon = ({ className }) => (
@@ -184,6 +185,9 @@ export default function Home() {
           <ActiveEventsCarousel />
         </div>
       )}
+
+      {/* What's Happening Now - AI Generated Events */}
+      <WhatsHappeningNow />
 
       {USE_HOW_IT_WORKS && (
         <HowItWorks />
