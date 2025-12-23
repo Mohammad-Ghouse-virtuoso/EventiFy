@@ -79,7 +79,7 @@ def _validate_question_relevance(question_text: str, event: Event) -> Optional[s
     return None
 
 @router.get("/", response_model=List[EventOut])
-@router.get("", response_model=List[EventOut])  # Handle both with and without trailing slash
+@router.get("", response_model=List[EventOut])
 async def get_events(
     session: Session = Depends(get_session),
     skip: int = Query(0, ge=0),
@@ -311,7 +311,7 @@ async def get_event(
 
 # Original JSON endpoint (for banner selection)
 @router.post("/", response_model=EventOut)
-@router.post("", response_model=EventOut)  # Handle both with and without trailing slash
+@router.post("", response_model=EventOut)
 async def create_event(
     event_data: EventCreate,
     session: Session = Depends(get_session),
