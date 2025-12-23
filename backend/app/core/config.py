@@ -1,6 +1,5 @@
-from typing import List, Union
-from pydantic import AnyHttpUrl, field_validator
-from pydantic_settings import BaseSettings
+from typing import List, ClassVar
+from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 from decouple import Config as DecoupleConfig, RepositoryEnv
 
@@ -40,7 +39,43 @@ def _bool_env(name: str, default: str = "0") -> bool:
     v = _env(name, default=default)
     return str(v).strip().lower() in {"1", "true", "yes", "on"}
 
+def _parse_cors_origins(raw: str) -> List[str]:
+    """Parse CORS origins from comma-separated string or JSON array."""
+    if not raw:
+        return []
+    raw = raw.strip()
+    # Handle JSON array format: ["http://...", "https://..."]
+    if raw.startswith("["):
+        import json
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            pass
+    # Handle comma-separated format: http://...,https://...
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+# Read CORS origins directly to avoid pydantic-settings JSON parsing issues
+_DEFAULT_CORS = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"
+_CORS_ORIGINS = _parse_cors_origins(_env("BACKEND_CORS_ORIGINS", default=_DEFAULT_CORS))
+
+def _normalize_base_url(url: str) -> str:
+    """Ensure BASE_URL has a proper scheme (https:// in prod, http:// in dev)."""
+    url = url.strip().rstrip("/")
+    if not url:
+        return "http://localhost:8000"
+    # If no scheme, add https:// for production domains, http:// for localhost
+    if not url.startswith(("http://", "https://")):
+        if "localhost" in url or "127.0.0.1" in url:
+            url = f"http://{url}"
+        else:
+            url = f"https://{url}"
+    return url
+
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+    )
+    
     PROJECT_NAME: str = "EventiFy"
     API_V1_STR: str = "/api/v1"
     # Selected environment (dev, prod, etc.)
@@ -51,22 +86,8 @@ class Settings(BaseSettings):
     # Echo SQL (debug) - enabled by default in dev
     ECHO_SQL: bool = _bool_env("ECHO_SQL", default=("1" if _ENV_NAME == "dev" else "0"))
     
-    # CORS
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ]
-    
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    @classmethod
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    # CORS - ClassVar excludes it from pydantic field processing, avoiding JSON parse issues
+    BACKEND_CORS_ORIGINS: ClassVar[List[str]] = _CORS_ORIGINS
     
     # JWT
     # Secrets: MUST be provided via env in production.
@@ -98,7 +119,13 @@ class Settings(BaseSettings):
     LOGIN_RATE_LIMIT_PER_MINUTE: int = int(_env("LOGIN_RATE_LIMIT_PER_MINUTE", default=5))
 
     # Base URL for building absolute links (e.g., http://localhost:8000)
-    BASE_URL: str = _env("BASE_URL", default="http://localhost:8000")
+    # Read raw value first, will be normalized
+    _BASE_URL_RAW: str = _env("BASE_URL", default="http://localhost:8000")
+
+    @property
+    def BASE_URL(self) -> str:
+        """Normalized BASE_URL with proper scheme."""
+        return _normalize_base_url(self._BASE_URL_RAW)
 
     # Static directory (absolute); defaults to backend/app/../static
     STATIC_DIR: str = _env(
@@ -107,7 +134,5 @@ class Settings(BaseSettings):
         default=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "static"))
     )
 
-    class Config:
-        case_sensitive = True
 
 settings = Settings()
