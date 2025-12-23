@@ -41,8 +41,12 @@ export default function Footer() {
   } catch {}
 
   return (
-    <footer className="bg-gradient-hero text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-4 py-12">
+    <footer className="relative text-white mt-auto overflow-hidden">
+      {/* Base gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-500 to-orange-400"></div>
+      {/* Soft overlay for glass effect */}
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="md:col-span-2">

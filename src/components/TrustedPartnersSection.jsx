@@ -1,5 +1,14 @@
 import React from 'react'
-import { ArrowRightIcon } from '@heroicons/react/24/outline'
+
+// Direct imports for partner logos
+import DrinkClap from '../../assets/Drink_clap_updated.png'
+import University from '../../assets/University.png'
+import Crawlers from '../../assets/Crawlers_updated.png'
+import Art from '../../assets/Art.png'
+import FitnessClub from '../../assets/Fitness_club.png'
+import Counsel from '../../assets/Counsel.png'
+import Photography from '../../assets/Photography_updated.png'
+import CookingClub from '../../assets/Cooking_club.png'
 
 /**
  * TrustedPartnersSection
@@ -13,26 +22,17 @@ export default function TrustedPartnersSection({ className = '', titleVariant = 
     ? 'FEATURED EVENT PARTNERS'
     : 'ORGANIZERS THAT TRUST US'
 
-  // Resolve asset URLs robustly (spaces and special characters supported by new URL)
-  const safeUrl = (relPath) => {
-    try {
-      return new URL(relPath, import.meta.url).href
-    } catch {
-      return null
-    }
-  }
-
   // Local representative images from assets
   const items = [
-    { name: 'Drink & Clap', src: safeUrl('../../assets/Drink_clap_updated.png') },
-    { name: 'University', src: safeUrl('../../assets/University.png') },
-    { name: 'Crawlers', src: safeUrl('../../assets/Crawlers_updated.png') },
-    { name: 'Art', src: safeUrl('../../assets/Art.png') },
-    { name: 'Fitness Club', src: safeUrl('../../assets/Fitness_club.png') },
-    { name: 'Counsel', src: safeUrl('../../assets/Counsel.png') },
-    { name: 'Photography', src: safeUrl('../../assets/Photography_updated.png') },
-    { name: 'Cooking Club', src: safeUrl('../../assets/Cooking_club.png') },
-  ].filter(Boolean)
+    { name: 'Drink & Clap', src: DrinkClap },
+    { name: 'University', src: University },
+    { name: 'Crawlers', src: Crawlers },
+    { name: 'Art', src: Art },
+    { name: 'Fitness Club', src: FitnessClub },
+    { name: 'Counsel', src: Counsel },
+    { name: 'Photography', src: Photography },
+    { name: 'Cooking Club', src: CookingClub },
+  ]
 
   // Show 8 logos (2 rows × 4 columns)
   const itemsToShow = items.slice(0, 8)

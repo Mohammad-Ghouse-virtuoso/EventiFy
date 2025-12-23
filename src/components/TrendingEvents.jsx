@@ -5,9 +5,74 @@ import { format } from 'date-fns'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '/api/v1'
 
+// Evergreen events that auto-populate when real events are insufficient
+const EVERGREEN_EVENTS = [
+  {
+    id: 'evergreen-1',
+    title: 'Summer Music Festival',
+    category: 'Music',
+    location: 'Central Park Amphitheater',
+    event_start: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    thumbnail: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400',
+    attendees_count: 342,
+    npc_attendees: ['Sarah M.', 'Hugo C.', 'Maya P.', 'Alex R.'],
+  },
+  {
+    id: 'evergreen-2',
+    title: 'Golden Anniversary Gala',
+    category: 'Celebration',
+    location: 'Grand Ballroom',
+    event_start: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    thumbnail: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400',
+    attendees_count: 156,
+    npc_attendees: ['Emma W.', 'David K.', 'Olivia B.'],
+  },
+  {
+    id: 'evergreen-3',
+    title: 'Tech Innovators Meetup',
+    category: 'Technology',
+    location: 'Innovation Hub',
+    event_start: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+    thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400',
+    attendees_count: 98,
+    npc_attendees: ['John D.', 'Raj S.', 'Aleena K.'],
+  },
+  {
+    id: 'evergreen-4',
+    title: 'Sunset Yoga Retreat',
+    category: 'Wellness',
+    location: 'Oceanview Beach',
+    event_start: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400',
+    attendees_count: 45,
+    npc_attendees: ['Sofia D.', 'Aisha K.'],
+  },
+  {
+    id: 'evergreen-5',
+    title: 'Artisan Food & Wine Festival',
+    category: 'Food & Drink',
+    location: 'Vineyard Estate',
+    event_start: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+    thumbnail: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400',
+    attendees_count: 215,
+    npc_attendees: ['Maruf K.', 'Mateo G.', 'Rita M.'],
+  },
+  {
+    id: 'evergreen-6',
+    title: 'Photography Workshop',
+    category: 'Art',
+    location: 'Creative Studio',
+    event_start: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
+    thumbnail: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=400',
+    attendees_count: 52,
+    npc_attendees: ['Chen L.', 'Priya N.'],
+  },
+]
+
 /**
  * TrendingEvents - Shows top events by attendee count
  * Compact cards with attendee count badges
+ * Falls back to evergreen events if fewer than required real events exist
  */
 export default function TrendingEvents({ className = '', limit = 4 }) {
   const [events, setEvents] = useState([])
@@ -22,10 +87,24 @@ export default function TrendingEvents({ className = '', limit = 4 }) {
       const res = await fetch(`${API_BASE}/stats/trending?limit=${limit}`)
       if (res.ok) {
         const data = await res.json()
-        setEvents(data)
+        // If we have fewer real events than limit, supplement with evergreen
+        if (data.length < limit) {
+          const needed = limit - data.length
+          const realIds = new Set(data.map(e => e.id))
+          const supplemental = EVERGREEN_EVENTS
+            .filter(e => !realIds.has(e.id))
+            .slice(0, needed)
+          setEvents([...data, ...supplemental])
+        } else {
+          setEvents(data)
+        }
+      } else {
+        // Fallback to evergreen events on error
+        setEvents(EVERGREEN_EVENTS.slice(0, limit))
       }
     } catch (err) {
       console.error('Failed to fetch trending events:', err)
+      setEvents(EVERGREEN_EVENTS.slice(0, limit))
     } finally {
       setLoading(false)
     }

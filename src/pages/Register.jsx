@@ -52,12 +52,16 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Base gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-500 to-orange-400"></div>
+      {/* Soft overlay for glass effect */}
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 right-10 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/3 left-1/2 w-72 h-72 bg-primary-400/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-20 right-10 w-80 h-80 bg-white/15 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-orange-300/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/3 left-1/2 w-72 h-72 bg-blue-300/20 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
       <div className="relative z-10 min-h-screen flex">
