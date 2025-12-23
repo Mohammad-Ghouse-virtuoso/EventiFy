@@ -6,12 +6,15 @@ from sqlmodel import Session
 from app.db.database import get_session
 from app.services.huggingface_service import get_hf_service
 from app.models import Event, User
+from app.models.user import UserRole
+from app.core.auth import get_password_hash
 from datetime import datetime
 import logging
 from typing import List
 import io
 from PIL import Image
 import os
+from sqlmodel import select
 
 router = APIRouter(prefix="/generate", tags=["ai"])
 logger = logging.getLogger(__name__)
@@ -27,6 +30,64 @@ CATEGORIES = [
     "music", "sports", "tech", "food", "art", "business",
     "education", "wellness", "entertainment", "networking"
 ]
+
+
+def _parse_datetime(value: str) -> datetime:
+    """Parse ISO string to datetime with safe fallback."""
+    if not value:
+        return datetime.utcnow()
+    try:
+        return datetime.fromisoformat(value)
+    except Exception:
+        return datetime.utcnow()
+
+
+def _build_event_model(event_data: dict, city: str, category: str, organizer_id: int) -> Event:
+    """Create an Event model instance from generated data with sane defaults."""
+    start_dt = _parse_datetime(event_data.get("start_time"))
+    end_dt_raw = event_data.get("end_time")
+    end_dt = _parse_datetime(end_dt_raw) if end_dt_raw else None
+
+    return Event(
+        title=event_data.get("title", "Unnamed Event"),
+        description=event_data.get(
+            "description",
+            f"AI-generated {category} event in {city}."
+        ),
+        category=event_data.get("category", category),
+        location=event_data.get("location", city),
+        event_start=start_dt,
+        event_end=end_dt,
+        max_attendees=int(event_data.get("expected_attendees", 100)),
+        price=float(event_data.get("price", 0.0) or 0.0),
+        organizer_id=organizer_id,
+        requires_approval=bool(event_data.get("requires_approval", False)),
+        is_active=True,
+    )
+
+
+def _resolve_organizer_id(session: Session) -> int:
+    """Pick an existing organizer or fallback to any user for FK integrity."""
+    organizer = session.exec(select(User.id).where(User.role == UserRole.ORGANIZER)).first()
+    if organizer:
+        return organizer
+    fallback_user = session.exec(select(User.id)).first()
+    if fallback_user:
+        return fallback_user
+
+    # Create a placeholder organizer to satisfy FK constraints in test or empty DB setups
+    temp_user = User(
+        email="ai-generator@example.com",
+        full_name="AI Generator",
+        role=UserRole.ORGANIZER,
+        hashed_password=get_password_hash("ai-generator-temp"),
+        is_active=True,
+    )
+    session.add(temp_user)
+    session.commit()
+    session.refresh(temp_user)
+    return temp_user.id
+
 
 @router.post("/event")
 async def generate_event(
@@ -69,18 +130,10 @@ async def generate_event(
         logger.info(f"Generating event for {city} in {category}")
         event_data = hf_service.generate_event_content(city, category)
         
+        organizer_id = _resolve_organizer_id(session)
+
         # Create event in database
-        event = Event(
-            title=event_data.get("title", "Unnamed Event"),
-            description=event_data.get("description", ""),
-            category=event_data.get("category", category),
-            location=event_data.get("location", city),
-            start_time=datetime.fromisoformat(event_data.get("start_time")),
-            end_time=datetime.fromisoformat(event_data.get("end_time")),
-            organizer_id=1,  # System-generated events (update if needed)
-            is_published=True,
-            image_url=None  # Will be updated with generated image
-        )
+        event = _build_event_model(event_data, city, category, organizer_id)
         
         # Generate event image using Stable Diffusion
         logger.info(f"Generating image for event: {event.title}")
@@ -95,7 +148,7 @@ async def generate_event(
                 
                 os.makedirs(os.path.dirname(image_path), exist_ok=True)
                 image.save(image_path)
-                event.image_url = f"/static/event_images/{image_filename}"
+                event.image = f"/static/event_images/{image_filename}"
                 
                 logger.info(f"Image saved: {image_path}")
             except Exception as e:
@@ -111,9 +164,9 @@ async def generate_event(
             "description": event.description,
             "category": event.category,
             "location": event.location,
-            "start_time": event.start_time.isoformat(),
-            "end_time": event.end_time.isoformat(),
-            "image_url": event.image_url,
+            "event_start": event.event_start.isoformat(),
+            "event_end": event.event_end.isoformat() if event.event_end else None,
+            "image": event.image,
             "city": city,
             "status": "created"
         }
@@ -148,6 +201,7 @@ async def generate_events_batch(
         )
     
     generated_events = []
+    organizer_id = _resolve_organizer_id(session)
     
     for i in range(count):
         # Cycle through categories
@@ -160,24 +214,14 @@ async def generate_events_batch(
             
             event_data = hf_service.generate_event_content(city, category)
             
-            event = Event(
-                title=event_data.get("title", "Unnamed Event"),
-                description=event_data.get("description", ""),
-                category=event_data.get("category", category),
-                location=event_data.get("location", city),
-                start_time=datetime.fromisoformat(event_data.get("start_time")),
-                end_time=datetime.fromisoformat(event_data.get("end_time")),
-                organizer_id=1,
-                is_published=True,
-                image_url=None
-            )
+            event = _build_event_model(event_data, city, category, organizer_id)
             
             session.add(event)
             generated_events.append({
                 "title": event.title,
                 "category": event.category,
                 "location": event.location,
-                "start_time": event.start_time.isoformat(),
+                "event_start": event.event_start.isoformat(),
             })
             
         except Exception as e:
