@@ -47,6 +47,7 @@ async def update_current_user(
     }
 
 @router.get("/", response_model=List[User])
+@router.get("", response_model=List[User])
 async def get_all_users(
     session: Session = Depends(get_session),
     current_user: User = Depends(require_admin),
