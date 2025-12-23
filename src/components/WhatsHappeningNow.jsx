@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, Users, Sparkles } from 'lucide-react';
+import { MapPinIcon, CalendarIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+
+// Sparkles icon as a simple inline SVG since heroicons doesn't have it
+const SparklesIcon = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 2L4 8v8l8 6 8-6V8l-8-6zm0 2l6 4v6l-6 4.5-6-4.5V8l6-4z"/>
+  </svg>
+);
 
 const CITIES = [
   "New York", "Los Angeles", "Chicago", "San Francisco", "Austin",
@@ -72,7 +79,7 @@ export default function WhatsHappeningNow() {
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center space-x-3 mb-3">
-            <Sparkles className="h-6 w-6 text-blue-600" />
+            <SparklesIcon className="h-6 w-6 text-blue-600" />
             <h2 className="text-3xl font-bold text-gray-900">What's Happening Now</h2>
           </div>
           <p className="text-gray-500">Discover AI-powered events tailored to your interests</p>
@@ -121,7 +128,7 @@ export default function WhatsHappeningNow() {
           disabled={generating}
           className="mb-8 flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Sparkles className="h-5 w-5" />
+          <SparklesIcon className="h-5 w-5" />
           <span>{generating ? 'Generating...' : 'Generate AI Events'}</span>
         </button>
 
@@ -173,7 +180,7 @@ export default function WhatsHappeningNow() {
                     <div className="space-y-2 border-t border-gray-100 pt-4">
                       {event.start_time && (
                         <div className="flex items-center space-x-2 text-gray-600 text-sm">
-                          <Calendar className="h-4 w-4 text-gray-400" />
+                          <CalendarIcon className="h-4 w-4 text-gray-400" />
                           <span>
                             {new Date(event.start_time).toLocaleDateString()} at{' '}
                             {new Date(event.start_time).toLocaleTimeString([], {
@@ -185,13 +192,13 @@ export default function WhatsHappeningNow() {
                       )}
                       {event.location && (
                         <div className="flex items-center space-x-2 text-gray-600 text-sm">
-                          <MapPin className="h-4 w-4 text-gray-400" />
+                          <MapPinIcon className="h-4 w-4 text-gray-400" />
                           <span>{event.location}</span>
                         </div>
                       )}
                       {event.attendees_count && (
                         <div className="flex items-center space-x-2 text-gray-600 text-sm">
-                          <Users className="h-4 w-4 text-gray-400" />
+                          <UserGroupIcon className="h-4 w-4 text-gray-400" />
                           <span>{event.attendees_count} attending</span>
                         </div>
                       )}

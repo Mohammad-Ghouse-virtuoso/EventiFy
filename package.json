@@ -28,6 +28,7 @@
     "date-fns": "^2.29.0",
     "flatpickr": "^4.6.13",
     "jsqr": "^1.4.0",
+      "lucide-react": "^0.263.1",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-clock": "^4.0.1",
