@@ -181,11 +181,11 @@ class TestEventCreation:
             status.HTTP_403_FORBIDDEN
         ]
     
-    def test_create_event_attendee_forbidden(self, client, auth_headers):
-        """POST /api/v1/events - attendee cannot create event"""
+    def test_create_event_any_authenticated_user(self, client, auth_headers):
+        """POST /api/v1/events - any authenticated user can create event (unified account model)"""
         event_data = {
-            "title": "Attendee Event",
-            "description": "Should be forbidden",
+            "title": "User Created Event",
+            "description": "Any user can create events now",
             "category": "Test",
             "event_start": (datetime.now() + timedelta(days=1)).isoformat(),
             "location": "Test",
@@ -198,8 +198,8 @@ class TestEventCreation:
             headers=auth_headers
         )
         
-        # May return 403 Forbidden or redirect based on implementation
-        assert response.status_code in [status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED]
+        # Unified account model: any authenticated user can create events
+        assert response.status_code in [status.HTTP_200_OK, status.HTTP_201_CREATED]
     
     def test_create_event_missing_fields(self, client, organizer_headers):
         """POST /api/v1/events with missing required fields returns 422"""

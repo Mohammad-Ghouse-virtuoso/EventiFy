@@ -176,14 +176,14 @@ class TestUserRoles:
         
         assert response.status_code in [status.HTTP_200_OK, status.HTTP_201_CREATED]
     
-    def test_attendee_cannot_create_events(self, client, auth_headers):
-        """Attendee role cannot create events"""
+    def test_any_user_can_create_events(self, client, auth_headers):
+        """Any authenticated user can create events (unified account model)"""
         from datetime import datetime, timedelta
         
         future_date = (datetime.now() + timedelta(days=7)).isoformat()
         event_data = {
-            "title": "Attendee Event",
-            "description": "Event by attendee",
+            "title": "User Created Event",
+            "description": "Event by any user",
             "category": "Test",
             "event_start": future_date,
             "location": "Test Location",
@@ -196,7 +196,8 @@ class TestUserRoles:
             headers=auth_headers
         )
         
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        # Unified account model: any authenticated user can create events
+        assert response.status_code in [status.HTTP_200_OK, status.HTTP_201_CREATED]
     
     def test_admin_has_all_permissions(self, client, admin_headers):
         """Admin role can access admin-only endpoints"""
