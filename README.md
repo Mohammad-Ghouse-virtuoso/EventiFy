@@ -48,6 +48,6 @@ Organizers can create events, attendees can RSVP, and everyone gets a QR code fo
 ## 🛠️ Setup & Installation
 
 ### 1️⃣ Clone the repo
-```bash
+```bas
 git clone https://github.com/your-username/eventify.git
 cd eventify
