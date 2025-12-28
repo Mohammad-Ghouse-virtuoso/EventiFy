@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { MapPinIcon, CalendarIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, CalendarIcon, UserGroupIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
-
-// Sparkles icon as a simple inline SVG since heroicons doesn't have it
-const SparklesIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12 2L4 8v8l8 6 8-6V8l-8-6zm0 2l6 4v6l-6 4.5-6-4.5V8l6-4z"/>
-  </svg>
-);
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '/api/v1';
 
@@ -17,28 +10,64 @@ const CITIES = [
 ];
 
 const CATEGORIES = [
-  "music", "sports", "tech", "food", "art", "business"
+  { value: "", label: "All Categories", color: "bg-gradient-to-br from-purple-50 to-pink-50" },
+  { value: "music", label: "Music", color: "bg-gradient-to-br from-rose-50 to-orange-50" },
+  { value: "sports", label: "Sports", color: "bg-gradient-to-br from-blue-50 to-cyan-50" },
+  { value: "tech", label: "Tech", color: "bg-gradient-to-br from-violet-50 to-purple-50" },
+  { value: "food", label: "Food & Drink", color: "bg-gradient-to-br from-amber-50 to-yellow-50" },
+  { value: "art", label: "Art & Culture", color: "bg-gradient-to-br from-pink-50 to-rose-50" },
+  { value: "business", label: "Business", color: "bg-gradient-to-br from-slate-50 to-gray-50" }
 ];
 
 export default function WhatsHappeningNow() {
   const [selectedCity, setSelectedCity] = useState("New York");
-  const [selectedCategory, setSelectedCategory] = useState("music");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Fetch existing events for selected city
+  // Fetch existing events for selected city and category
   useEffect(() => {
     fetchEvents();
-  }, [selectedCity]);
+  }, [selectedCity, selectedCategory]);
 
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/events?location=${selectedCity}&limit=6`);
+      const params = new URLSearchParams({
+        location: selectedCity,
+        limit: '9',
+        include_past: 'false'
+      });
+      if (selectedCategory) {
+        params.append('category', selectedCategory);
+      }
+      const response = await fetch(`${API_BASE}/events?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setEvents(data.events || []);
+        const rawEvents = Array.isArray(data) ? data : data?.events || [];
+
+        // Normalize backend field names and de-duplicate by id
+        const normalized = rawEvents.map((ev) => ({
+          ...ev,
+          image_url: ev.image_url || ev.image,
+          start_time: ev.start_time || ev.event_start,
+          attendees_count: ev.attendees_count ?? ev.attendees?.length ?? ev.attendee_count ?? 0,
+        }));
+
+        const seen = new Set();
+        const uniqueEvents = [];
+        for (const ev of normalized) {
+          if (!ev?.id || seen.has(ev.id)) continue;
+          seen.add(ev.id);
+          uniqueEvents.push(ev);
+        }
+
+        // Keep a tight grid; prefer most recent first
+        uniqueEvents.sort((a, b) => new Date(a.start_time || a.event_start || 0) - new Date(b.start_time || b.event_start || 0));
+        setEvents(uniqueEvents.slice(0, 12));
+      } else {
+        setEvents([]);
       }
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -47,104 +76,88 @@ export default function WhatsHappeningNow() {
     }
   };
 
-  const handleGenerateEvents = async () => {
-    try {
-      setGenerating(true);
-      
-      // Generate batch of events
-      const response = await fetch(
-        `${API_BASE}/ai/generate/events-batch?city=${selectedCity}&count=3`,
-        { method: 'POST' }
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`Generated ${data.generated_count} events for ${selectedCity}`);
-        
-        // Refresh events list
-        await fetchEvents();
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.detail || 'Failed to generate events'}`);
-      }
-    } catch (error) {
-      console.error('Error generating events:', error);
-      alert('Failed to generate events. Please try again.');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
   return (
-    <section className="bg-[#FAFAFA] py-16 px-4 md:px-6">
+    <section className="bg-gradient-to-b from-white via-purple-50/20 to-white py-16 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-10">
-          <div className="flex items-center space-x-3 mb-3">
-            <SparklesIcon className="h-6 w-6 text-blue-600" />
-            <h2 className="text-3xl font-bold text-gray-900">What's Happening Now</h2>
+        {/* Header with Filter Toggle */}
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 bg-clip-text text-transparent mb-2">
+              What's Happening Now
+            </h2>
+            <p className="text-gray-600">Discover exciting events in your area</p>
           </div>
-          <p className="text-gray-500">Discover AI-powered events tailored to your interests</p>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-purple-300 hover:shadow-md transition-all duration-200"
+          >
+            <FunnelIcon className="h-5 w-5 text-purple-600" />
+            <span className="text-sm font-medium text-gray-700">Filters</span>
+          </button>
         </div>
 
-        {/* Filters */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          {/* City Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select City
-            </label>
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            >
-              {CITIES.map((city) => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
-          </div>
+        {/* Unified Filter Panel */}
+        {showFilters && (
+          <div className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* City Filter */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                  <MapPinIcon className="h-4 w-4 text-purple-500" />
+                  Location
+                </label>
+                <select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="w-full px-4 py-3 bg-gradient-to-br from-purple-50/50 to-pink-50/50 border-0 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-purple-400/30 transition-all"
+                >
+                  {CITIES.map((city) => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Category Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Event Category
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                </option>
-              ))}
-            </select>
+              {/* Category Pills */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                  <FunnelIcon className="h-4 w-4 text-purple-500" />
+                  Category
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.value}
+                      onClick={() => setSelectedCategory(cat.value)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                        selectedCategory === cat.value
+                          ? `${cat.color} border-2 border-purple-400 shadow-sm`
+                          : 'bg-gray-50 border border-gray-200 text-gray-600 hover:border-purple-300'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Generate Button */}
-        <button
-          onClick={handleGenerateEvents}
-          disabled={generating}
-          className="mb-8 flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <SparklesIcon className="h-5 w-5" />
-          <span>{generating ? 'Generating...' : 'Generate AI Events'}</span>
-        </button>
+        )}
 
         {/* Events Grid */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin">
-              <SparklesIcon className="h-8 w-8 text-blue-600" />
+          <div className="flex justify-center py-20">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+              <p className="text-sm text-gray-500">Finding events for you...</p>
             </div>
           </div>
         ) : events.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-            <p className="text-gray-500 mb-4">No events found in {selectedCity}</p>
-            <p className="text-sm text-gray-400">Generate AI-powered events to get started</p>
+          <div className="text-center py-20 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-3xl border border-purple-100">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
+              <CalendarIcon className="h-8 w-8 text-purple-600" />
+            </div>
+            <p className="text-lg font-medium text-gray-700 mb-2">No events found</p>
+            <p className="text-sm text-gray-500">Try adjusting your filters or check back later</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

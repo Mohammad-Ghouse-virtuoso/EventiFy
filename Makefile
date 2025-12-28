@@ -61,9 +61,9 @@ test:
 run:
 	@echo "Starting backend with ENV=$(ENV)"
 	@if [ "$(ENV)" = "dev" ]; then \
-		cd $(BACKEND_DIR) && ENVIRONMENT=$(ENV) $(PYTHON) -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload; \
+		cd $(BACKEND_DIR) && ENVIRONMENT=$(ENV) $(PYTHON) -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload; \
 	else \
-		cd $(BACKEND_DIR) && ENVIRONMENT=$(ENV) $(PYTHON) -m uvicorn app.main:app --host 0.0.0.0 --port 8001; \
+		cd $(BACKEND_DIR) && ENVIRONMENT=$(ENV) $(PYTHON) -m uvicorn app.main:app --host 0.0.0.0 --port 8000; \
 	fi
 
 .PHONY: dev

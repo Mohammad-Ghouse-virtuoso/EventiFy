@@ -6,11 +6,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_DIR="$ROOT_DIR/backend"
 UVICORN_HOST="127.0.0.1"
-UVICORN_PORT="8001"
+UVICORN_PORT="8000"
 FRONTEND_PORT="3000"
 ENVIRONMENT="dev"
 
-BACKEND_LOG="$ROOT_DIR/uvicorn_8001.log"
+BACKEND_LOG="$ROOT_DIR/uvicorn_8000.log"
 FRONTEND_LOG="$ROOT_DIR/vite.log"
 BACKEND_PID_FILE="$ROOT_DIR/uvicorn.pid"
 FRONTEND_PID_FILE="$ROOT_DIR/vite.pid"

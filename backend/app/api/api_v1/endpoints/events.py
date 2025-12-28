@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile
 from sqlmodel import Session, select
 from typing import List, Optional
 from datetime import datetime, timedelta
+import random
 import re
 from app.db.database import get_session
 from app.models.event import Event, EventCreate, EventUpdate, EventOut
@@ -24,6 +25,7 @@ from app.core.auth import (
 )
 from app.core.config import settings
 from app.core.npc_generator import inject_npcs_into_attendees
+from app.core.npc_generator_bulk import inject_bulk_npcs_into_attendees
 from sqlalchemy import func, exists, select as sa_select
 
 router = APIRouter()
@@ -196,6 +198,7 @@ async def get_events(
             Event,
             User.full_name.label("organizer_name"),
             User.role.label("organizer_role"),
+            User.email.label("organizer_email"),
             counts_sq.c.attendees_count,
         )
         .join(User, User.id == Event.organizer_id)
@@ -212,7 +215,7 @@ async def get_events(
 
     # Build response objects
     event_out_list: List[EventOut] = []
-    for (ev, organizer_name, organizer_role, attendees_count) in rows:
+    for (ev, organizer_name, organizer_role, organizer_email, attendees_count) in rows:
         # Normalize role to plain lowercase string
         try:
             role_value = str(organizer_role.value).lower()  # Enum -> str
@@ -221,7 +224,14 @@ async def get_events(
 
         # Include NPC count if configured for this event
         real_count = attendees_count or 0
-        npc_count = SPECIAL_NPC_COUNTS.get(ev.id, 0)
+        npc_count = 0
+        if organizer_email == "ai_organizer@eventify.system":
+            target = ev.max_attendees or 200
+            # Fill toward target with NPCs, within sensible bounds
+            npc_count = max(0, min(500, max(target - real_count, 150)))
+        elif ev.id in SPECIAL_NPC_COUNTS:
+            npc_count = SPECIAL_NPC_COUNTS[ev.id]
+
         total_attendees = real_count + npc_count
 
         event_out_list.append(
@@ -273,7 +283,13 @@ async def get_event(
     
     # Include NPC count if configured for this event
     real_count = len(attendees_count)
-    npc_count = SPECIAL_NPC_COUNTS.get(event.id, 0)
+    npc_count = 0
+    organizer_email = organizer.email if organizer else None
+    if organizer_email == "ai_organizer@eventify.system":
+        target = event.max_attendees or 200
+        npc_count = max(0, min(500, max(target - real_count, 150)))
+    elif event.id in SPECIAL_NPC_COUNTS:
+        npc_count = SPECIAL_NPC_COUNTS[event.id]
     total_attendees = real_count + npc_count
     
     # Normalize role to plain string
@@ -709,46 +725,92 @@ async def get_event_rsvps(
             }
             rsvps_with_users.append(rsvp_dict)
         
-        # 🎭 Inject NPC attendees ONLY for events with specific NPC configuration
-        # Check if this event has a special NPC count requirement
-        force_npc_count = SPECIAL_NPC_COUNTS.get(event.id)
+        # 🎭 Automatic NPC Injection Logic
+        # Check if this is an AI-generated event
+        organizer = session.get(User, event.organizer_id)
+        is_ai_event = organizer and organizer.email == "ai_organizer@eventify.system"
         
-        if force_npc_count is not None:
-            # Only inject NPCs if event is configured in SPECIAL_NPC_COUNTS
+        if is_ai_event:
+            # AI events get automatic bulk NPCs (100-500 based on max_attendees)
+            target_npc_count = event.max_attendees - len(rsvps_with_users) if event.max_attendees else random.randint(100, 300)
+            target_npc_count = max(100, min(500, target_npc_count))  # Clamp to 100-500
+            
+            rsvps_with_npcs = inject_bulk_npcs_into_attendees(
+                event_id=event.id,
+                real_attendees=rsvps_with_users,
+                target_npc_count=target_npc_count
+            )
+        elif event.id in SPECIAL_NPC_COUNTS:
+            # Manual events with specific NPC requirements
+            force_npc_count = SPECIAL_NPC_COUNTS[event.id]
             rsvps_with_npcs = inject_npcs_into_attendees(
                 event_id=event.id,
                 real_attendees=rsvps_with_users,
-                event_max=None,  # Don't auto-fill to max
+                event_max=None,
                 force_npc_count=force_npc_count
             )
         else:
-            # No NPCs for events not in SPECIAL_NPC_COUNTS
+            # Regular events - no NPCs
             rsvps_with_npcs = rsvps_with_users
         
         return rsvps_with_npcs
     
     else:
-        # For regular users, only return their own RSVP
-        statement = select(RSVP).where(
-            RSVP.event_id == event_id,
-            RSVP.user_id == current_user.id
+        # For regular users, return their RSVP (if any) plus NPCs for social proof
+        statement = (
+            select(RSVP, User)
+            .join(User, RSVP.user_id == User.id)
+            .where(
+                RSVP.event_id == event_id,
+                RSVP.user_id == current_user.id
+            )
         )
-        user_rsvp = session.exec(statement).first()
-        
-        if user_rsvp:
-            return [{
-                "id": user_rsvp.id,
-                "user_id": user_rsvp.user_id,
-                "event_id": user_rsvp.event_id,
-                "status": user_rsvp.status,
-                "notes": user_rsvp.notes,
-                "created_at": user_rsvp.created_at,
-                "updated_at": user_rsvp.updated_at,
-                "checked_in": user_rsvp.checked_in,
-                "checked_in_at": user_rsvp.checked_in_at
-            }]
+        result = session.exec(statement).first()
+
+        rsvps_with_users = []
+        if result:
+            rsvp, user = result
+            rsvps_with_users.append({
+                "id": rsvp.id,
+                "user_id": rsvp.user_id,
+                "event_id": rsvp.event_id,
+                "status": rsvp.status,
+                "notes": rsvp.notes,
+                "created_at": rsvp.created_at,
+                "updated_at": rsvp.updated_at,
+                "checked_in": rsvp.checked_in,
+                "checked_in_at": rsvp.checked_in_at,
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "full_name": user.full_name,
+                    "role": str(getattr(user.role, "value", user.role)).lower()
+                }
+            })
+
+        organizer = session.get(User, event.organizer_id)
+        is_ai_event = organizer and organizer.email == "ai_organizer@eventify.system"
+
+        if is_ai_event:
+            target_npc_count = event.max_attendees - len(rsvps_with_users) if event.max_attendees else random.randint(100, 300)
+            target_npc_count = max(100, min(500, target_npc_count))
+            rsvps_with_npcs = inject_bulk_npcs_into_attendees(
+                event_id=event.id,
+                real_attendees=rsvps_with_users,
+                target_npc_count=target_npc_count
+            )
+        elif event.id in SPECIAL_NPC_COUNTS:
+            force_npc_count = SPECIAL_NPC_COUNTS[event.id]
+            rsvps_with_npcs = inject_npcs_into_attendees(
+                event_id=event.id,
+                real_attendees=rsvps_with_users,
+                event_max=None,
+                force_npc_count=force_npc_count
+            )
         else:
-            return []
+            rsvps_with_npcs = rsvps_with_users
+
+        return rsvps_with_npcs
 
 
 @router.get("/{event_id}/questions", response_model=List[EventQuestionResponse])
