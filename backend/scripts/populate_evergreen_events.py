@@ -188,6 +188,10 @@ def inject_npcs_into_event(session: Session, event: Event, npc_count: int = 340)
         logger.info(f"⚠ Event {event.id} already has {existing_npcs} NPCs, skipping")
         return existing_npcs
     
+    # Disable foreign key constraints temporarily for NPC insertion
+    from sqlalchemy import text
+    session.exec(text("PRAGMA foreign_keys=OFF"))
+    
     # Generate NPCs
     npcs = generate_bulk_npc_attendees(event.id, npc_count)
     
@@ -206,6 +210,10 @@ def inject_npcs_into_event(session: Session, event: Event, npc_count: int = 340)
     
     # Bulk insert (faster for 340 records)
     session.add_all(rsvp_objects)
+    session.commit()
+    
+    # Re-enable foreign key constraints
+    session.exec(text("PRAGMA foreign_keys=ON"))
     session.commit()
     
     logger.info(f"✓ Injected {len(rsvp_objects)} NPCs into event {event.id}")
