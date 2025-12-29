@@ -132,45 +132,45 @@ def create_evergreen_event(
     """Create a single evergreen event from template."""
     
     # Generate event times
-    start_time = generate_event_times(template["recurrence"])
+    event_start = generate_event_times(template["recurrence"])
     
     # Set specific time from template
     if template["start_time"]:
-        start_time = start_time.replace(
+        event_start = event_start.replace(
             hour=template["start_time"].hour,
             minute=template["start_time"].minute,
             second=0,
             microsecond=0
         )
     
-    end_time = start_time + timedelta(hours=template["duration_hours"])
+    event_end = event_start + timedelta(hours=template["duration_hours"])
     
     # Create event
     event = Event(
         title=f"{template['title']} - {city}",
         description=template["description"],
         category=template["category"],
-        start_time=start_time,
-        end_time=end_time,
+        event_start=event_start,
+        event_end=event_end,
         location=f"{template['organizer_name']}, {city}",
         organizer_id=organizer_id,
         organizer_email=template["organizer_email"],
         max_attendees=template["max_attendees"],
-        is_published=True,
+        is_active=True,
         is_evergreen=True,  # Mark as evergreen
-        tags=[
+        tags=",".join([
             template["category"],
             "evergreen",
             template["organizer_name"].lower().replace(" ", "_"),
             city.lower().replace(" ", "_")
-        ],
+        ]),
     )
     
     session.add(event)
     session.commit()
     session.refresh(event)
     
-    logger.info(f"✓ Created event: {event.title} (ID: {event.id}, {start_time.strftime('%Y-%m-%d %H:%M')})")
+    logger.info(f"✓ Created event: {event.title} (ID: {event.id}, {event_start.strftime('%Y-%m-%d %H:%M')})")
     return event
 
 
@@ -221,7 +221,7 @@ def populate_evergreen_events(maintenance_mode=False):
         existing_count = session.exec(
             select(func.count(Event.id))
             .where(Event.is_evergreen == True)
-            .where(Event.start_time > datetime.utcnow())  # Only future events
+            .where(Event.event_start > datetime.utcnow())  # Only future events
         ).one()
         
         logger.info(f"📊 Current evergreen events: {existing_count}")
@@ -281,7 +281,7 @@ def populate_evergreen_events(maintenance_mode=False):
         final_count = session.exec(
             select(func.count(Event.id))
             .where(Event.is_evergreen == True)
-            .where(Event.start_time > datetime.utcnow())
+            .where(Event.event_start > datetime.utcnow())
         ).one()
         
         logger.info(f"✅ Evergreen events population complete!")
@@ -297,7 +297,7 @@ def cleanup_expired_events():
         expired = session.exec(
             select(Event)
             .where(Event.is_evergreen == True)
-            .where(Event.end_time < datetime.utcnow())
+            .where(Event.event_end < datetime.utcnow())
         ).all()
         
         if not expired:

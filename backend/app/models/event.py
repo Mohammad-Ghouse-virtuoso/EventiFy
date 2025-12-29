@@ -21,8 +21,11 @@ class EventBase(SQLModel):
 class Event(EventBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     organizer_id: int = Field(foreign_key="user.id")
+    organizer_email: Optional[str] = None  # Denormalized for quick filtering
     created_at: datetime = Field(default_factory=datetime.utcnow)
     is_active: bool = True
+    is_evergreen: bool = False  # True for auto-populated recurring events
+    tags: Optional[str] = None  # JSON array or comma-separated tags
 
 class EventCreate(EventBase):
     pass
@@ -50,8 +53,11 @@ class EventOut(EventBase):
     organizer_id: int
     organizer_name: str
     organizer_role: str
+    organizer_email: Optional[str] = None
     created_at: datetime
     is_active: bool
+    is_evergreen: bool = False
+    tags: Optional[str] = None
     # Optional convenience field used by UI; backend may leave it unset
     attendees_count: Optional[int] = 0
     terms_and_conditions: Optional[str] = None
