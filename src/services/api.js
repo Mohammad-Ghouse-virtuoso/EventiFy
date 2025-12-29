@@ -272,3 +272,32 @@ export const questionsAPI = {
 }
 
 export default api
+
+// Testimonials API
+export const testimonialsAPI = {
+  list: async ({ limit = 6, sort = 'rating' } = {}) => {
+    const { data } = await api.get('/testimonials', { params: { limit, sort } })
+    return Array.isArray(data) ? data : []
+  },
+  featured: async ({ limit = 6 } = {}) => {
+    const { data } = await api.get('/testimonials/featured', { params: { limit } })
+    return Array.isArray(data) ? data : []
+  },
+  create: async ({ quote, rating, eventId, avatarUrl }) => {
+    const payload = { quote, rating, event_id: eventId, avatar_url: avatarUrl }
+    const { data } = await api.post('/testimonials', payload)
+    return data
+  },
+  adminList: async ({ limit = 50, includeUnapproved = true } = {}) => {
+    const { data } = await api.get('/testimonials/admin', { params: { limit, include_unapproved: includeUnapproved } })
+    return Array.isArray(data) ? data : []
+  },
+  adminUpdate: async (id, updates) => {
+    const { data } = await api.put(`/testimonials/admin/${id}`, updates)
+    return data
+  },
+  adminDelete: async (id) => {
+    const { data } = await api.delete(`/testimonials/admin/${id}`)
+    return data
+  },
+}

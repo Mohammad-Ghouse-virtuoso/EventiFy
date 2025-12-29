@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { StarIcon } from '@heroicons/react/24/solid'
+import { testimonialsAPI } from '../services/api'
 
 // Direct imports for avatars
 import aleenaImg from '../../assets/Aleena.jpg'
@@ -9,57 +10,25 @@ import rajImg from '../../assets/Raj Sharma.jpg'
 import sofiaImageImg from '../../assets/Sofia_image.jpg'
 import maroofImg from '../../assets/Maroof K..jpg'
 
-/**
- * TestimonialsSection - Fast, static grid layout
- * No carousel animations - instant render for speed
- * Clean 2x3 or 3x2 grid on different screens
- */
-const TESTIMONIALS = [
-  {
-    quote: "I discover relevant events in minutes, and the feed keeps getting smarter.",
-    name: "Aleena",
-    title: "Community Manager",
-    avatar: aleenaImg,
-    rating: 5,
-  },
-  {
-    quote: "RSVP is literally one tap—no forms, no fuss.",
-    name: "Mateo G.",
-    title: "Data Engineer",
-    avatar: mateoImg,
-    rating: 5,
-  },
-  {
-    quote: "I've met collaborators at every meetup since switching to EventiFy.",
-    name: "Aisha K.",
-    title: "Product Designer",
-    avatar: sofiaImg,
-    rating: 5,
-  },
-  {
-    quote: "Finding niche meetups used to be hard—now it's part of my weekly routine.",
-    name: "Raj Sharma",
-    title: "Full-stack Developer",
-    avatar: rajImg,
-    rating: 4,
-  },
-  {
-    quote: "Check-ins are smooth and fast—more time for real conversations.",
-    name: "Sofia D.",
-    title: "Growth Marketer",
-    avatar: sofiaImageImg,
-    rating: 5,
-  },
-  {
-    quote: "The community vibes are unmatched—I actually look forward to events again.",
-    name: "Maruf K.",
-    title: "Startup Founder",
-    avatar: maroofImg,
-    rating: 5,
-  },
+// Legacy static testimonials used as fallback when API returns empty
+const STATIC_TESTIMONIALS = [
+  { quote: "I discover relevant events in minutes, and the feed keeps getting smarter.", name: "Aleena", title: "Community Manager", avatar: aleenaImg, rating: 5 },
+  { quote: "RSVP is literally one tap—no forms, no fuss.", name: "Mateo G.", title: "Data Engineer", avatar: mateoImg, rating: 5 },
+  { quote: "I've met collaborators at every meetup since switching to EventiFy.", name: "Aisha K.", title: "Product Designer", avatar: sofiaImg, rating: 5 },
+  { quote: "Finding niche meetups used to be hard—now it's part of my weekly routine.", name: "Raj Sharma", title: "Full-stack Developer", avatar: rajImg, rating: 4 },
+  { quote: "Check-ins are smooth and fast—more time for real conversations.", name: "Sofia D.", title: "Growth Marketer", avatar: sofiaImageImg, rating: 5 },
+  { quote: "The community vibes are unmatched—I actually look forward to events again.", name: "Maruf K.", title: "Startup Founder", avatar: maroofImg, rating: 5 },
 ]
 
 function TestimonialCard({ testimonial }) {
+  const initials = useMemo(() => (testimonial?.name || testimonial?.user_name || 'U')
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase(), [testimonial?.name, testimonial?.user_name])
+  const avatarSrc = testimonial.avatar || testimonial.avatar_url || null
+  const displayName = testimonial.name || testimonial.user_name || 'User'
   return (
     <article className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Stars */}
@@ -80,22 +49,22 @@ function TestimonialCard({ testimonial }) {
       {/* Author */}
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
-          {testimonial.avatar ? (
+          {avatarSrc ? (
             <img 
-              src={testimonial.avatar} 
-              alt={testimonial.name} 
+              src={avatarSrc} 
+              alt={displayName} 
               className="h-full w-full object-cover"
               loading="lazy"
             />
           ) : (
             <span className="h-full w-full flex items-center justify-center text-sm font-semibold text-gray-500 dark:text-gray-400">
-              {testimonial.name.charAt(0)}
+              {initials}
             </span>
           )}
         </div>
         <div>
-          <p className="font-medium text-gray-900 dark:text-white text-sm">{testimonial.name}</p>
-          <p className="text-gray-500 dark:text-gray-400 text-xs">{testimonial.title}</p>
+          <p className="font-medium text-gray-900 dark:text-white text-sm">{displayName}</p>
+          {testimonial.title && <p className="text-gray-500 dark:text-gray-400 text-xs">{testimonial.title}</p>}
         </div>
       </div>
     </article>
@@ -103,6 +72,31 @@ function TestimonialCard({ testimonial }) {
 }
 
 export default function TestimonialsSection({ className = '' }) {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        setLoading(true)
+        const featured = await testimonialsAPI.featured({ limit: 6 })
+        if (!mounted) return
+        if (Array.isArray(featured) && featured.length > 0) {
+          setItems(featured)
+        } else {
+          setItems(STATIC_TESTIMONIALS)
+        }
+      } catch (e) {
+        console.error('Testimonials load failed, using fallback:', e)
+        setItems(STATIC_TESTIMONIALS)
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
+
   return (
     <section className={`w-full py-14 sm:py-16 ${className}`} aria-labelledby="testimonials-title">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -116,12 +110,20 @@ export default function TestimonialsSection({ className = '' }) {
           </p>
         </div>
 
-        {/* Grid of testimonials - fast static render */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-          {TESTIMONIALS.map((testimonial, idx) => (
-            <TestimonialCard key={idx} testimonial={testimonial} />
-          ))}
-        </div>
+        {/* Grid of testimonials - dynamic with static fallback */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-40 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {items.map((testimonial, idx) => (
+              <TestimonialCard key={idx} testimonial={testimonial} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

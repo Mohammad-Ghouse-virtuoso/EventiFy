@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.api_v1.endpoints import events, users, auth, comments, bookmarks, stats, ai_events
+from app.api.api_v1.endpoints import events, users, auth, comments, bookmarks, stats, ai_events, testimonials
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -9,3 +9,4 @@ api_router.include_router(comments.router, prefix="/events", tags=["comments"])
 api_router.include_router(bookmarks.router, tags=["bookmarks"])
 api_router.include_router(stats.router, tags=["stats"])
 api_router.include_router(ai_events.router, prefix="/ai", tags=["ai"])
+api_router.include_router(testimonials.router, prefix="/testimonials", tags=["testimonials"])
