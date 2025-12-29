@@ -60,6 +60,9 @@ class EventOut(EventBase):
     tags: Optional[str] = None
     # Optional convenience field used by UI; backend may leave it unset
     attendees_count: Optional[int] = 0
+    # Real-time convenience fields for "What's Happening Now"
+    time_until_start_seconds: Optional[int] = None
+    urgency_level: Optional[str] = None
     terms_and_conditions: Optional[str] = None
     organizer_bio: Optional[str] = None
     organizer_contact: Optional[str] = None

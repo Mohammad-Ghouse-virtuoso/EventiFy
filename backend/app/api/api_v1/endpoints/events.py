@@ -261,6 +261,136 @@ async def get_events(
         )
     return event_out_list
 
+@router.get("/happening-now", response_model=List[EventOut])
+async def get_happening_now(
+    session: Session = Depends(get_session),
+    location: Optional[str] = None,
+    category: Optional[str] = None,
+    limit: int = Query(12, ge=1, le=50),
+):
+    """
+    Return events that are currently happening or starting within the next 48 hours,
+    sorted by urgency (happening_now -> <1h -> <24h -> <48h).
+    """
+    now = datetime.utcnow()
+    window_end = now + timedelta(hours=48)
+
+    # Build base filters
+    conditions = [Event.is_active == True]
+    # Include events happening now (end >= now) or starting soon (start between now and window_end)
+    conditions.append(
+        (
+            ((Event.event_end != None) & (Event.event_end >= now))
+            | ((Event.event_end == None) & (Event.event_start >= now))
+        )
+        & (Event.event_start <= window_end)
+    )
+
+    if location:
+        conditions.append(Event.location.ilike(f"%{location}%"))
+    if category:
+        conditions.append(Event.category.ilike(f"%{category}%"))
+
+    # Subquery for attendees count per event (confirmed only)
+    counts_sq = (
+        sa_select(
+            RSVP.event_id.label("eid"),
+            func.count(1).label("attendees_count"),
+        )
+        .where(RSVP.status.in_([RSVPStatus.GOING, RSVPStatus.APPROVED]))
+        .group_by(RSVP.event_id)
+        .subquery()
+    )
+
+    query = (
+        sa_select(
+            Event,
+            User.full_name.label("organizer_name"),
+            User.role.label("organizer_role"),
+            User.email.label("organizer_email"),
+            counts_sq.c.attendees_count,
+        )
+        .join(User, User.id == Event.organizer_id)
+        .outerjoin(counts_sq, counts_sq.c.eid == Event.id)
+        .where(*conditions)
+        .order_by(Event.event_start.asc())
+        .limit(limit)
+    )
+
+    rows = session.exec(query).all()
+    if not rows:
+        return []
+
+    event_out_list: List[EventOut] = []
+    for (ev, organizer_name, organizer_role, organizer_email, attendees_count) in rows:
+        # Compute urgency & countdown
+        happening_now = (ev.event_start <= now) and (
+            (ev.event_end is None) or (ev.event_end >= now)
+        )
+        if happening_now:
+            urgency = "happening_now"
+            seconds_until = 0
+        else:
+            delta = ev.event_start - now
+            seconds_until = max(0, int(delta.total_seconds()))
+            if seconds_until <= 3600:
+                urgency = "urgent"
+            elif seconds_until <= 86400:
+                urgency = "soon"
+            else:
+                urgency = "upcoming_48h"
+
+        # Normalize role
+        try:
+            role_value = str(organizer_role.value).lower()
+        except AttributeError:
+            role_value = str(organizer_role).lower() if organizer_role is not None else "attendee"
+
+        # Include NPC count when applicable
+        real_count = attendees_count or 0
+        npc_count = 0
+        if organizer_email == "ai_organizer@eventify.system":
+            target = ev.max_attendees or 200
+            npc_count = max(0, min(500, max(target - real_count, 150)))
+        elif ev.id in SPECIAL_NPC_COUNTS:
+            npc_count = SPECIAL_NPC_COUNTS[ev.id]
+        total_attendees = real_count + npc_count
+
+        event_out_list.append(
+            EventOut(
+                id=ev.id,
+                title=ev.title,
+                description=ev.description,
+                category=ev.category,
+                event_start=ev.event_start,
+                event_end=ev.event_end,
+                location=ev.location,
+                max_attendees=ev.max_attendees,
+                price=ev.price,
+                image=ev.image,
+                thumbnail=ev.thumbnail,
+                requires_approval=ev.requires_approval,
+                organizer_id=ev.organizer_id,
+                organizer_name=organizer_name or "Unknown",
+                organizer_role=role_value or "attendee",
+                created_at=ev.created_at,
+                is_active=ev.is_active,
+                attendees_count=total_attendees,
+                terms_and_conditions=ev.terms_and_conditions,
+                organizer_bio=ev.organizer_bio,
+                organizer_contact=ev.organizer_contact,
+                # Real-time extras
+                time_until_start_seconds=seconds_until,
+                urgency_level=urgency,
+            )
+        )
+
+    # Sort by urgency explicitly: happening_now -> urgent -> soon -> upcoming_48h
+    priority = {"happening_now": 0, "urgent": 1, "soon": 2, "upcoming_48h": 3}
+    event_out_list.sort(key=lambda e: (priority.get(e.urgency_level or "upcoming_48h", 99), e.time_until_start_seconds or 0))
+
+    return event_out_list
+
 @router.get("/{event_id}", response_model=EventOut)
 async def get_event(
     event_id: int,

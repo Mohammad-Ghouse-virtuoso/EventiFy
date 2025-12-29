@@ -77,6 +77,16 @@ export const eventsAPI = {
       throw error
     }
   },
+  getHappeningNow: async (filters = {}) => {
+    try {
+      if (import.meta.env?.DEV) console.log('Fetching happening-now with filters:', filters)
+      const { data } = await api.get('/events/happening-now', { params: filters })
+      return Array.isArray(data) ? data : data?.events || []
+    } catch (error) {
+      console.error('Happening-now fetch error:', error.response?.data || error.message)
+      throw error
+    }
+  },
   getById: async (id) => {
     const { data } = await api.get(`/events/${id}`)
     return data

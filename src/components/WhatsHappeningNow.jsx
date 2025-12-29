@@ -26,9 +26,11 @@ export default function WhatsHappeningNow() {
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Fetch existing events for selected city and category
+  // Fetch events and auto-refresh every 30s
   useEffect(() => {
     fetchEvents();
+    const interval = setInterval(fetchEvents, 30000);
+    return () => clearInterval(interval);
   }, [selectedCity, selectedCategory]);
 
   const fetchEvents = async () => {
@@ -36,13 +38,12 @@ export default function WhatsHappeningNow() {
       setLoading(true);
       const params = new URLSearchParams({
         location: selectedCity,
-        limit: '9',
-        include_past: 'false'
+        limit: '12'
       });
       if (selectedCategory) {
         params.append('category', selectedCategory);
       }
-      const response = await fetch(`${API_BASE}/events?${params}`);
+      const response = await fetch(`${API_BASE}/events/happening-now?${params}`);
       if (response.ok) {
         const data = await response.json();
         const rawEvents = Array.isArray(data) ? data : data?.events || [];
@@ -52,6 +53,8 @@ export default function WhatsHappeningNow() {
           ...ev,
           image_url: ev.image_url || ev.image,
           start_time: ev.start_time || ev.event_start,
+          time_until_start_seconds: ev.time_until_start_seconds ?? null,
+          urgency_level: ev.urgency_level ?? null,
           attendees_count: ev.attendees_count ?? ev.attendees?.length ?? ev.attendee_count ?? 0,
         }));
 
@@ -64,7 +67,14 @@ export default function WhatsHappeningNow() {
         }
 
         // Keep a tight grid; prefer most recent first
-        uniqueEvents.sort((a, b) => new Date(a.start_time || a.event_start || 0) - new Date(b.start_time || b.event_start || 0));
+        // Sort by urgency then nearest start time
+        const priority = { happening_now: 0, urgent: 1, soon: 2, upcoming_48h: 3 };
+        uniqueEvents.sort((a, b) => {
+          const pa = priority[a.urgency_level] ?? 99;
+          const pb = priority[b.urgency_level] ?? 99;
+          if (pa !== pb) return pa - pb;
+          return new Date(a.start_time || a.event_start || 0) - new Date(b.start_time || b.event_start || 0);
+        });
         setEvents(uniqueEvents.slice(0, 12));
       } else {
         setEvents([]);
@@ -177,6 +187,11 @@ export default function WhatsHappeningNow() {
                           {event.category}
                         </div>
                       )}
+                      {event.urgency_level === 'happening_now' && (
+                        <div className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold animate-pulse">
+                          Happening Now
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -205,6 +220,19 @@ export default function WhatsHappeningNow() {
                           </span>
                         </div>
                       )}
+                      {event.time_until_start_seconds != null && event.urgency_level !== 'happening_now' && (
+                        <div className="flex items-center space-x-2 text-sm font-medium">
+                          <span className={
+                            event.urgency_level === 'urgent'
+                              ? 'text-red-600'
+                              : event.urgency_level === 'soon'
+                              ? 'text-orange-600'
+                              : 'text-blue-600'
+                          }>
+                            Starts in {formatCountdown(event.time_until_start_seconds)}
+                          </span>
+                        </div>
+                      )}
                       {event.location && (
                         <div className="flex items-center space-x-2 text-gray-600 text-sm">
                           <MapPinIcon className="h-4 w-4 text-gray-400" />
@@ -227,4 +255,12 @@ export default function WhatsHappeningNow() {
       </div>
     </section>
   );
+}
+
+function formatCountdown(totalSeconds) {
+  const s = Math.max(0, Number(totalSeconds || 0));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
