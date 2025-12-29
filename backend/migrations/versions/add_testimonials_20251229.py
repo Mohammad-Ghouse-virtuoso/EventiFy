@@ -24,8 +24,8 @@ def upgrade():
         sa.Column('rating', sa.Integer(), nullable=False),
         sa.Column('event_id', sa.Integer(), sa.ForeignKey('event.id'), nullable=True),
         sa.Column('avatar_url', sa.String(length=512), nullable=True),
-        sa.Column('is_approved', sa.Boolean(), nullable=False, server_default=sa.text('0')),
-        sa.Column('is_featured', sa.Boolean(), nullable=False, server_default=sa.text('0')),
+        sa.Column('is_approved', sa.Boolean(), nullable=False, server_default=sa.text('false')),
+        sa.Column('is_featured', sa.Boolean(), nullable=False, server_default=sa.text('false')),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
     )
