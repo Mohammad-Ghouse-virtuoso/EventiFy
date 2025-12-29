@@ -95,8 +95,12 @@ function EventCard({ event, onRSVP, userRSVP }) {
     return user && event.organizer_id === user.id
   }
 
-  // Determine created-by label
+  // Determine created-by label (NEVER show AI-created for evergreen events)
   const createdByLabel = () => {
+    // Never label evergreen events as AI-created
+    if (event.is_evergreen) {
+      return `Presented by ${event.organizer_name || 'Organizer'}`
+    }
     if (event.organizer_role === 'admin' || event.organizer_role === 'UserRole.ADMIN') {
       return 'Created by Admin'
     }
@@ -112,6 +116,30 @@ function EventCard({ event, onRSVP, userRSVP }) {
       return 'Admin'
     }
     return event.organizer_name || 'Organizer'
+  }
+
+  // Get organizer branding emoji for evergreen events
+  const getOrganizerEmoji = () => {
+    const name = event.organizer_name || ''
+    const emojiMap = {
+      'Remo Martinez': '🍉',
+      'Elena Artfolk': '🦋',
+      'Chef Marco Cookingg': '🍳',
+      'Dr. Sarah Giggling': '🎓',
+      'Mike Daytona': '🏍️',
+    }
+    return emojiMap[name] || null
+  }
+
+  // Check if event is full
+  const isEventFull = () => {
+    return event.attendees_count >= event.max_attendees
+  }
+
+  // Check if event has been organized by branded organizer (evergreen)
+  const isBrandedEvent = () => {
+    const brandedOrganizers = ['Remo Martinez', 'Elena Artfolk', 'Chef Marco Cookingg', 'Dr. Sarah Giggling', 'Mike Daytona']
+    return brandedOrganizers.includes(event.organizer_name)
   }
 
   // Helper function to get RSVP status display info
@@ -231,20 +259,44 @@ function EventCard({ event, onRSVP, userRSVP }) {
           </div>
         </div>
 
-        {/* Info card: Made by [organizer]; no admin link (display-only) */}
+        {/* Info card: Made by [organizer]; with branding for trusted partners */}
         <div className="mb-4">
-          <div className="flex items-start gap-3 rounded-md border border-blue-200 bg-blue-50/70 p-3">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-blue-500 mt-0.5">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM9 7a1 1 0 102 0 1 1 0 00-2 0zm-1 4a1 1 0 011-1h2a1 1 0 110 2v2a1 1 0 11-2 0v-2H8a1 1 0 01-1-1z" clipRule="evenodd" />
-            </svg>
-            <div className="text-sm">
-              <p className="text-blue-800"><span className="font-medium">Made by</span> {organizerDisplayName()}</p>
-              {(event?.organizer_role === 'admin' || event?.organizer_role === 'UserRole.ADMIN') && (
-                <p className="text-blue-700">This event was created by an admin.</p>
-              )}
+          {isBrandedEvent() ? (
+            // Branded organizer card
+            <div className="flex items-start gap-3 rounded-md border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-3 shadow-sm">
+              <div className="text-xl mt-0.5">{getOrganizerEmoji()}</div>
+              <div className="text-sm flex-1">
+                <p className="text-amber-900"><span className="font-bold">Trusted Partner</span></p>
+                <p className="text-amber-800 font-semibold">{organizerDisplayName()}</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            // Regular organizer card
+            <div className="flex items-start gap-3 rounded-md border border-blue-200 bg-blue-50/70 p-3">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-blue-500 mt-0.5">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM9 7a1 1 0 102 0 1 1 0 00-2 0zm-1 4a1 1 0 011-1h2a1 1 0 110 2v2a1 1 0 11-2 0v-2H8a1 1 0 01-1-1z" clipRule="evenodd" />
+              </svg>
+              <div className="text-sm">
+                <p className="text-blue-800"><span className="font-medium">Made by</span> {organizerDisplayName()}</p>
+                {(event?.organizer_role === 'admin' || event?.organizer_role === 'UserRole.ADMIN') && (
+                  <p className="text-blue-700">This event was created by an admin.</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Full event notification */}
+        {isEventFull() && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm font-semibold text-red-700">
+              🚫 Ouch! You missed the spot — this event is completely full.
+            </p>
+            <p className="text-xs text-red-600 mt-1">
+              Check back later or explore other exciting events!
+            </p>
+          </div>
+        )}
 
         {/* Show owner message if the viewer created this event */}
         {isOrganizer() ? (
