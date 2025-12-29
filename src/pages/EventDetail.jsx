@@ -134,8 +134,14 @@ export default function EventDetail() {
       }
       return true
     } catch (err) {
+      const statusCode = err?.response?.status
       const detail = err?.response?.data?.detail || 'Failed to update RSVP'
-      showError(detail)
+      const isFull = statusCode === 409 || /event is full/i.test(String(detail))
+      if (isFull) {
+        showError("Ouch! You missed the spot, it's full.")
+      } else {
+        showError(detail)
+      }
       return false
     }
   }

@@ -401,7 +401,6 @@ export default function AdminPanel() {
                                 </span>
                                 <span className="text-gray-900 dark:text-white font-medium">
                                   {a.name}
-                                  {a.is_npc && <span className="ml-1.5 text-xs text-gray-400 dark:text-gray-500 italic">(virtual)</span>}
                                 </span>
                               </div>
                               {revealEmailsByEvent[event.id] && (
