@@ -11,7 +11,6 @@ import ClosingCTA from '../components/ClosingCTA'
 import TrustedPartnersSection from '../components/TrustedPartnersSection'
 import LiveStats from '../components/LiveStats'
 import RecentActivity from '../components/RecentActivity'
-import TrendingEvents from '../components/TrendingEvents'
 import WhatsHappeningNow from '../components/WhatsHappeningNow'
 
 // Custom sparkles star icon component (same as Navbar)
@@ -164,19 +163,10 @@ export default function Home() {
         <EventifyAudienceGrid />
       )}
 
-      {/* Trending Events & Recent Activity - Social Proof */}
+      {/* Recent Activity - Social Proof */}
       <div className="py-12 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Trending Events - Takes 2/3 */}
-            <div className="lg:col-span-2">
-              <TrendingEvents />
-            </div>
-            {/* Recent Activity - Takes 1/3 */}
-            <div className="lg:col-span-1">
-              <RecentActivity />
-            </div>
-          </div>
+          <RecentActivity />
         </div>
       </div>
 
