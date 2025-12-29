@@ -21,6 +21,7 @@
 - Highlights events <1 hour away with visual urgency (red/pulsing)
 - Displays events happening NOW with special badge
 - Updates attendee counts in real-time from database
+> Great, implement this.
 
 ### Issue 2: Testimonials - Static to Dynamic
 **Current State**: Hardcoded testimonials in `TestimonialsSection.jsx`
@@ -35,6 +36,7 @@
 - Auto-refresh periodically (every 5 minutes)
 - Admin panel to manage/moderate testimonials
 - Highlight top-rated testimonials
+> Pulling from db requires to add a pfp (avatar) & it can be cumbersome, try to work on with a new design which navigates smoothly.. 
 
 ---
 
