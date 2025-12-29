@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { eventsAPI, adminAPI } from '../services/api'
+import { eventsAPI, adminAPI, testimonialsAPI } from '../services/api'
 import { computeRsvpStats } from '../utils/rsvpCounts'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfile } from '../contexts/ProfileContext'
@@ -14,8 +14,10 @@ import {
   XCircleIcon,
   QuestionMarkCircleIcon,
   CameraIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  StarIcon as StarIconOutline,
 } from '@heroicons/react/24/outline'
+import { StarIcon } from '@heroicons/react/24/solid'
 
 export default function AdminPanel() {
   const { user } = useAuth()
@@ -30,12 +32,68 @@ export default function AdminPanel() {
   const [showPendingRSVPs, setShowPendingRSVPs] = useState(false)
   const [showWhoIsGoing, setShowWhoIsGoing] = useState(true)
   const [revealEmailsByEvent, setRevealEmailsByEvent] = useState({})
+  const [activeTab, setActiveTab] = useState('events')
+  const [testimonials, setTestimonials] = useState([])
+  const [testimonialLoading, setTestimonialLoading] = useState(false)
 
   useEffect(() => {
     if (user?.role === 'admin') {
       loadAdminData()
     }
   }, [user])
+
+  useEffect(() => {
+    if (activeTab === 'testimonials') {
+      loadTestimonials()
+    }
+  }, [activeTab])
+
+  const loadTestimonials = async () => {
+    try {
+      setTestimonialLoading(true)
+      const data = await testimonialsAPI.adminList({ limit: 100 })
+      setTestimonials(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Failed to load testimonials:', error)
+      showError('Failed to load testimonials')
+    } finally {
+      setTestimonialLoading(false)
+    }
+  }
+
+  const handleApproveTestimonial = async (id) => {
+    try {
+      await testimonialsAPI.adminUpdate(id, { is_approved: true })
+      await loadTestimonials()
+      showSuccess('Testimonial approved!')
+    } catch (error) {
+      console.error('Failed to approve:', error)
+      showError('Failed to approve testimonial')
+    }
+  }
+
+  const handleFeatureTestimonial = async (id) => {
+    try {
+      await testimonialsAPI.adminUpdate(id, { is_featured: true })
+      await loadTestimonials()
+      showSuccess('Testimonial featured!')
+    } catch (error) {
+      console.error('Failed to feature:', error)
+      showError('Failed to feature testimonial')
+    }
+  }
+
+  const handleDeleteTestimonial = async (id) => {
+    if (!window.confirm('Delete this testimonial? This cannot be undone.')) return
+    try {
+      await testimonialsAPI.adminDelete(id)
+      await loadTestimonials()
+      showSuccess('Testimonial deleted!')
+    } catch (error) {
+      console.error('Failed to delete:', error)
+      showError('Failed to delete testimonial')
+    }
+  }
 
   const loadAdminData = async () => {
     try {
@@ -206,6 +264,35 @@ export default function AdminPanel() {
           </button>
         </div>
       </div>
+
+      {/* Tabs */}
+      <div className="flex space-x-1 border-b border-gray-200 mb-8">
+        <button
+          onClick={() => setActiveTab('events')}
+          className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'events'
+              ? 'border-primary-600 text-primary-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Events & RSVPs
+        </button>
+        <button
+          onClick={() => setActiveTab('testimonials')}
+          className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'testimonials'
+              ? 'border-primary-600 text-primary-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Testimonials Moderation
+        </button>
+      </div>
+
+      {/* Events Tab */}
+      {activeTab === 'events' && (
+        <>
+
 
       {/* Stats Cards */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -430,9 +517,81 @@ export default function AdminPanel() {
         )}
       </div>
 
-      {/* Event Analytics removed; use /dashboard ➜ Event Analytics page instead */}
+      )}
 
-      {/* Avatar Selector Modal */}
+      {/* Testimonials Tab */}
+      {activeTab === 'testimonials' && (
+        <div className="card p-6">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Testimonials Moderation</h2>
+            <p className="text-sm text-gray-600 mt-1">Review and manage user testimonials</p>
+          </div>
+
+          {testimonialLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading testimonials...</p>
+            </div>
+          ) : testimonials.length === 0 ? (
+            <p className="text-center py-8 text-gray-500">No testimonials yet</p>
+          ) : (
+            <div className="space-y-4">
+              {testimonials.map((t) => (
+                <div key={t.id} className={`border rounded-lg p-4 ${t.is_approved ? 'bg-white border-gray-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h3 className="font-medium text-gray-900">{t.user_name || 'Unknown User'}</h3>
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <StarIcon
+                              key={i}
+                              className={`h-4 w-4 ${i < t.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                            />
+                          ))}
+                        </div>
+                        {!t.is_approved && <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">Pending</span>}
+                        {t.is_featured && <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">Featured</span>}
+                      </div>
+                      <p className="text-gray-700 text-sm italic mb-2">"{t.quote}"</p>
+                      <p className="text-xs text-gray-500">Submitted {new Date(t.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    {!t.is_approved && (
+                      <button
+                        onClick={() => handleApproveTestimonial(t.id)}
+                        className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors flex items-center gap-1"
+                      >
+                        <CheckCircleIcon className="h-4 w-4" />
+                        Approve
+                      </button>
+                    )}
+                    {t.is_approved && !t.is_featured && (
+                      <button
+                        onClick={() => handleFeatureTestimonial(t.id)}
+                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center gap-1"
+                      >
+                        <StarIconOutline className="h-4 w-4" />
+                        Feature
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteTestimonial(t.id)}
+                      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors flex items-center gap-1"
+                    >
+                      <XCircleIcon className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <AvatarSelector
         userRole="admin"
         currentAvatar={currentAvatar}
