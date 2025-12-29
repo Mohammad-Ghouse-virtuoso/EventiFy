@@ -1,7 +1,7 @@
 """Create testimonials table
 
 Revision ID: add_testimonials_20251229
-Revises: add_event_meta_20251219
+Revises: add_evergreen_20251229
 Create Date: 2025-12-29
 """
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'add_testimonials_20251229'
-down_revision = 'add_event_meta_20251219'
+down_revision = 'add_evergreen_20251229'
 branch_labels = None
 depends_on = None
 
