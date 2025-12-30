@@ -1,7 +1,6 @@
 """
 Database migration script: Add timezone and last_refreshed_at to Event model
-For SQLite: uses ALTER TABLE (limited support, but works for adding columns)
-For PostgreSQL: full ALTER TABLE support
+Compatible with both SQLite and PostgreSQL
 
 Run: python backend/scripts/migrate_event_scheduler_fields.py
 """
@@ -11,19 +10,23 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from sqlmodel import Session, text
 from app.db.database import engine
+from sqlalchemy import inspect
 
 def migrate():
     """Add timezone and last_refreshed_at columns to event table."""
     with Session(engine) as session:
         try:
-            # Check if columns already exist
-            result = session.exec(text("PRAGMA table_info(event)")).all()
-            columns = [row[1] for row in result]
+            # Get database inspector (works with both SQLite and PostgreSQL)
+            inspector = inspect(engine)
+            columns = [col['name'] for col in inspector.get_columns('event')]
+            
+            print(f"Existing columns in 'event' table: {columns}")
             
             if "timezone" not in columns:
                 print("Adding timezone column...")
+                # PostgreSQL and SQLite compatible syntax
                 session.exec(text(
-                    "ALTER TABLE event ADD COLUMN timezone VARCHAR DEFAULT 'UTC'"
+                    "ALTER TABLE event ADD COLUMN timezone VARCHAR(255) DEFAULT 'UTC'"
                 ))
                 session.commit()
                 print("✅ Added timezone column")
@@ -32,8 +35,9 @@ def migrate():
             
             if "last_refreshed_at" not in columns:
                 print("Adding last_refreshed_at column...")
+                # Use TIMESTAMP for PostgreSQL, works in SQLite too
                 session.exec(text(
-                    "ALTER TABLE event ADD COLUMN last_refreshed_at DATETIME"
+                    "ALTER TABLE event ADD COLUMN last_refreshed_at TIMESTAMP"
                 ))
                 session.commit()
                 print("✅ Added last_refreshed_at column")

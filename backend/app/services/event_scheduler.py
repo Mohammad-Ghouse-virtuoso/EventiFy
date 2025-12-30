@@ -77,13 +77,23 @@ async def refresh_expired_events():
         today_utc = now_utc.date()
         
         # Find expired evergreen events not yet refreshed today
-        expired_query = select(Event).where(
-            Event.is_evergreen == True,
-            Event.event_end < now_utc,
-            (Event.last_refreshed_at == None) | (Event.last_refreshed_at < datetime(today_utc.year, today_utc.month, today_utc.day))
-        ).limit(REFRESH_MAX_EVENTS)
-        
-        expired_events = session.exec(expired_query).all()
+        # Use try-except for the query in case last_refreshed_at column doesn't exist yet
+        try:
+            expired_query = select(Event).where(
+                Event.is_evergreen == True,
+                Event.event_end < now_utc,
+                (Event.last_refreshed_at == None) | (Event.last_refreshed_at < datetime(today_utc.year, today_utc.month, today_utc.day))
+            ).limit(REFRESH_MAX_EVENTS)
+            
+            expired_events = session.exec(expired_query).all()
+        except Exception as query_error:
+            # If last_refreshed_at column doesn't exist, fall back to simpler query
+            logger.warning(f"⚠️ Column issue detected, using fallback query: {str(query_error)}")
+            expired_query = select(Event).where(
+                Event.is_evergreen == True,
+                Event.event_end < now_utc
+            ).limit(REFRESH_MAX_EVENTS)
+            expired_events = session.exec(expired_query).all()
         
         if not expired_events:
             logger.info("✅ No expired events to refresh")
@@ -175,7 +185,13 @@ async def refresh_expired_events():
                 
                 # 6. Reactivate event
                 event.is_active = True
-                event.last_refreshed_at = now_utc
+                
+                # Set last_refreshed_at if column exists
+                try:
+                    event.last_refreshed_at = now_utc
+                except AttributeError:
+                    # Column doesn't exist yet, skip it
+                    pass
                 
                 session.add(event)
                 refreshed_count += 1

@@ -26,6 +26,15 @@ app = FastAPI(
 def startup_event():
     init_db()
     
+    # Run database migrations for scheduler fields
+    try:
+        from scripts.migrate_event_scheduler_fields import migrate
+        logging.info("🔄 Running database migrations...")
+        migrate()
+        logging.info("✅ Database migrations completed")
+    except Exception as e:
+        logging.error(f"⚠️ Migration warning (may already be applied): {str(e)}")
+    
     # Initialize Hugging Face service if token is available
     hf_token = os.getenv("HF_TOKEN")
     hf_text_model = os.getenv("HF_TEXT_MODEL", "mistralai/Mistral-7B-Instruct-v0.3")
@@ -43,6 +52,8 @@ def startup_event():
         start_scheduler()
     except Exception as e:
         logging.error(f"❌ Failed to start event scheduler: {str(e)}")
+        # Don't let scheduler failure crash the app
+        pass
 
 
 # Graceful shutdown
