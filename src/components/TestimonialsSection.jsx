@@ -71,7 +71,7 @@ export default function TestimonialsSection({ className = '' }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const scrollContainerRef = useRef(null)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollLeft, setCanScrollLeft] = useState(true)
   const [canScrollRight, setCanScrollRight] = useState(true)
 
   useEffect(() => {

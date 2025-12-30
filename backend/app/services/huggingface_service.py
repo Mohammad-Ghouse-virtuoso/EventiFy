@@ -99,6 +99,13 @@ Return ONLY valid JSON with no markdown or extra text, in this exact format:
                 json={"inputs": prompt},
                 timeout=60
             )
+            
+            # Check for 410 Gone error (deprecated model)
+            if response.status_code == 410:
+                logger.error(f"Model {self.image_model} is no longer available (410 Gone). Please update HF_IMAGE_MODEL in .env.dev")
+                logger.error(f"Suggested models: stabilityai/stable-diffusion-xl-base-1.0, black-forest-labs/FLUX.1-schnell")
+                return None
+            
             response.raise_for_status()
             
             # Response should be image bytes

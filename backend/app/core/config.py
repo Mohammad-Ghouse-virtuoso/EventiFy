@@ -137,7 +137,7 @@ class Settings(BaseSettings):
     # Hugging Face API configuration
     HF_TOKEN: str | None = _env("HF_TOKEN", default=None)
     HF_TEXT_MODEL: str = _env("HF_TEXT_MODEL", default="mistralai/Mistral-7B-Instruct-v0.3")
-    HF_IMAGE_MODEL: str = _env("HF_IMAGE_MODEL", default="stabilityai/stable-diffusion-3-medium")
+    HF_IMAGE_MODEL: str = _env("HF_IMAGE_MODEL", default="stabilityai/stable-diffusion-xl-base-1.0")
 
 
 settings = Settings()

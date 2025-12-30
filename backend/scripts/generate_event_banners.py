@@ -21,18 +21,19 @@ DATABASE_URL = "sqlite:///./eventify.db"
 engine = create_engine(DATABASE_URL, echo=False)
 
 
-async def generate_banner_for_event(event: Event, hf_service: HFService, static_dir: Path):
+async def generate_banner_for_event(event: Event, hf_service: HFService, static_dir: Path, force: bool = False):
     """Generate and save banner image for an event"""
-    if event.image and event.image.startswith('http'):
-        print(f"  ✓ Event '{event.title}' already has external image: {event.image}")
-        return False
-    
-    if event.image and event.image.startswith('/static/'):
-        # Check if file exists
-        file_path = static_dir / event.image.replace('/static/', '')
-        if file_path.exists():
-            print(f"  ✓ Event '{event.title}' already has local image: {event.image}")
+    if not force:
+        if event.image and event.image.startswith('http'):
+            print(f"  ✓ Event '{event.title}' already has external image: {event.image}")
             return False
+        
+        if event.image and event.image.startswith('/static/'):
+            # Check if file exists
+            file_path = static_dir / event.image.replace('/static/', '')
+            if file_path.exists():
+                print(f"  ✓ Event '{event.title}' already has local image: {event.image}")
+                return False
     
     print(f"  🎨 Generating banner for '{event.title}'...")
     
@@ -67,9 +68,15 @@ async def generate_banner_for_event(event: Event, hf_service: HFService, static_
 
 async def main():
     """Main script to generate banners for all events without images"""
+    # Check for --force flag
+    force = '--force' in sys.argv
+    
     print("=" * 70)
     print("🎨 Event Banner Generation - Hugging Face Integration")
     print("=" * 70)
+    if force:
+        print("⚠️  FORCE MODE: Will regenerate ALL event banners")
+        print("=" * 70)
     
     # Check HF token
     hf_token = settings.HF_TOKEN if hasattr(settings, 'HF_TOKEN') else os.getenv('HF_TOKEN')
@@ -107,7 +114,10 @@ async def main():
         # Filter events without images
         events_without_images = []
         for event in events:
-            if not event.image or not event.image.startswith('http'):
+            # If force mode, add all events
+            if force:
+                events_without_images.append(event)
+            elif not event.image or not event.image.startswith('http'):
                 if not event.image or not event.image.startswith('/static/'):
                     events_without_images.append(event)
                 else:
@@ -129,7 +139,7 @@ async def main():
         for i, event in enumerate(events_without_images, 1):
             print(f"\n[{i}/{len(events_without_images)}] Processing Event ID: {event.id}")
             
-            success = await generate_banner_for_event(event, hf_service, static_dir)
+            success = await generate_banner_for_event(event, hf_service, static_dir, force=force)
             if success:
                 generated_count += 1
                 session.add(event)

@@ -13,6 +13,10 @@ __pycache__/
 backend/.venv/
 venv/
 .env
+.env.dev
+.env.prod
+backend/.env.dev
+backend/.env.prod
 
 # Testing
 .pytest_cache/
