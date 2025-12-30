@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import instagramPng from '../../assets/icons8-instagram-64.png'
-import xPng from '../../assets/icons8-x-50.png'
+import xPng from '../../assets/x-logo.svg'
 import linkedinPng from '../../assets/icons8-linkedin-48.png'
 import facebookPng from '../../assets/icons8-facebook-48.png'
 
@@ -26,16 +26,16 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-gray-900 text-white mt-auto border-t border-gray-800">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid md:grid-cols-4 gap-6">
+    <footer className="bg-gray-900 text-white mt-auto border-t border-gray-800 overflow-x-hidden">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Brand Section */}
           <div className="md:col-span-1">
             <h3 className="text-lg font-semibold">EventiFy</h3>
             <p className="text-gray-400 text-sm leading-relaxed mt-2">
               Real people. Real events. Built by humans.
             </p>
-            <div className="flex gap-3 mt-3 items-center">
+            <div className="flex gap-3 mt-3 items-center flex-wrap">
               {[
                 { key: 'facebook', label: 'Facebook', icon: socialIcons.facebook },
                 { key: 'x', label: 'X', icon: socialIcons.x },
@@ -46,10 +46,10 @@ export default function Footer() {
                   key={item.key}
                   type="button"
                   onClick={() => handleSocial(item.key)}
-                  className="w-8 h-8 rounded-md hover:bg-gray-800/60 transition-colors flex items-center justify-center"
+                  className="w-10 h-10 rounded-md hover:bg-gray-800/60 transition-colors flex items-center justify-center"
                   aria-label={item.label}
                 >
-                  <img src={item.icon} alt={item.label} className="h-4 w-4 object-contain" />
+                  <img src={item.icon} alt={item.label} className="h-6 w-6 object-contain" />
                 </button>
               ))}
             </div>
@@ -87,7 +87,7 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder="your@email.com"
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="flex-1 min-w-0 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
               <button className="px-4 py-2 bg-primary-600 hover:bg-primary-500 rounded-lg text-sm font-medium transition-colors">
                 Join
