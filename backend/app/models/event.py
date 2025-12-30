@@ -9,6 +9,7 @@ class EventBase(SQLModel):
     event_start: datetime
     event_end: Optional[datetime] = None
     location: str
+    timezone: Optional[str] = "UTC"  # IANA timezone (e.g., America/Chicago)
     max_attendees: int
     price: float = 0.0
     image: Optional[str] = None  # URL for event banner/image
@@ -26,6 +27,7 @@ class Event(EventBase, table=True):
     is_active: bool = True
     is_evergreen: bool = False  # True for auto-populated recurring events
     tags: Optional[str] = None  # JSON array or comma-separated tags
+    last_refreshed_at: Optional[datetime] = None  # Last time banners/NPCs were auto-refreshed
 
 class EventCreate(EventBase):
     pass
@@ -37,6 +39,7 @@ class EventUpdate(SQLModel):
     event_start: Optional[datetime] = None
     event_end: Optional[datetime] = None
     location: Optional[str] = None
+    timezone: Optional[str] = None
     max_attendees: Optional[int] = None
     price: Optional[float] = None
     image: Optional[str] = None  # URL for event banner/image
@@ -58,6 +61,7 @@ class EventOut(EventBase):
     is_active: bool
     is_evergreen: bool = False
     tags: Optional[str] = None
+    last_refreshed_at: Optional[datetime] = None
     # Optional convenience field used by UI; backend may leave it unset
     attendees_count: Optional[int] = 0
     # Real-time convenience fields for "What's Happening Now"

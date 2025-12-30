@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.db.init_db import init_db
 from app.db.database import engine
 from app.services.huggingface_service import init_hf_service
+from app.services.event_scheduler import start_scheduler, stop_scheduler
 import os
 import secrets
 from fastapi.responses import JSONResponse
@@ -36,6 +37,21 @@ def startup_event():
             logging.info("✅ Hugging Face service initialized successfully")
         except Exception as e:
             logging.error(f"❌ Failed to initialize Hugging Face service: {str(e)}")
+    
+    # Start event repopulation scheduler
+    try:
+        start_scheduler()
+    except Exception as e:
+        logging.error(f"❌ Failed to start event scheduler: {str(e)}")
+
+
+# Graceful shutdown
+@app.on_event("shutdown")
+def shutdown_event():
+    try:
+        stop_scheduler()
+    except Exception as e:
+        logging.error(f"❌ Error stopping scheduler: {str(e)}")
 
 # Set all CORS enabled origins via settings
 # Ensure origins are plain strings (not AnyHttpUrl objects) so Starlette matches correctly

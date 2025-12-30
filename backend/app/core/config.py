@@ -140,5 +140,11 @@ class Settings(BaseSettings):
     HF_IMAGE_MODEL: str = _env("HF_IMAGE_MODEL", default="black-forest-labs/FLUX.1-dev")
     HF_INFERENCE_BASE_URL: str | None = _env("HF_INFERENCE_BASE_URL", default=None)
 
+    # Event Repopulation Scheduler
+    REFRESH_JOB_ENABLED: bool = _bool_env("REFRESH_JOB_ENABLED", default="1")  # Enabled by default
+    REFRESH_CRON_HOUR: int = int(_env("REFRESH_CRON_HOUR", default="0"))  # 00:00
+    REFRESH_CRON_MINUTE: int = int(_env("REFRESH_CRON_MINUTE", default="15"))  # 00:15
+    REFRESH_MAX_EVENTS: int = int(_env("REFRESH_MAX_EVENTS", default="100"))  # Safety limit
+
 
 settings = Settings()

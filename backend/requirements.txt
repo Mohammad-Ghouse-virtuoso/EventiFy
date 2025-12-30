@@ -19,3 +19,5 @@ pytest-mock>=3.12.0
 pydantic-settings>=2.0.0
 huggingface-hub>=0.20.0
 requests>=2.31.0
+apscheduler>=3.10.4
+pytz>=2024.1
