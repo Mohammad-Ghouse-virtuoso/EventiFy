@@ -12,67 +12,23 @@ import CookingClub from '../../assets/Cooking_club.png'
 
 /**
  * TrustedPartnersSection
- * Displays our branded organizer partners with themed colors and emojis
- * - Remo's Bar (🍉)
- * - Artfolk Gallery (🦋)
- * - Cookingg Collective (🍳)
- * - Giggling University (🎓)
- * - Daytona Racing Club (🏍️)
+ * Displays partner logos and organizations that trust EventiFy
  */
 export default function TrustedPartnersSection({ className = '', titleVariant = 'organizers' }) {
   const title = titleVariant === 'partners'
     ? 'FEATURED EVENT PARTNERS'
     : 'ORGANIZERS THAT TRUST US'
 
-  // Branded organizers with colors and emojis
-  const brandedPartners = [
-    {
-      name: "Remo's Bar",
-      emoji: "🍉",
-      theme: "Watermelon Nights",
-      bgGradient: "from-orange-50 to-red-50",
-      borderColor: "border-orange-200",
-      textColor: "text-orange-900"
-    },
-    {
-      name: "Artfolk Gallery",
-      emoji: "🦋",
-      theme: "Butterfly Dreams",
-      bgGradient: "from-pink-50 to-purple-50",
-      borderColor: "border-pink-200",
-      textColor: "text-pink-900"
-    },
-    {
-      name: "Cookingg Collective",
-      emoji: "🍳",
-      theme: "Pan & Fire",
-      bgGradient: "from-yellow-50 to-orange-50",
-      borderColor: "border-yellow-200",
-      textColor: "text-yellow-900"
-    },
-    {
-      name: "Giggling University",
-      emoji: "🎓",
-      theme: "Book & Grad Hat",
-      bgGradient: "from-blue-50 to-indigo-50",
-      borderColor: "border-blue-200",
-      textColor: "text-blue-900"
-    },
-    {
-      name: "Daytona Racing Club",
-      emoji: "🏍️",
-      theme: "Motorcycle & Racing",
-      bgGradient: "from-gray-50 to-slate-50",
-      borderColor: "border-gray-300",
-      textColor: "text-gray-900"
-    },
-  ]
-
-  // Original logos as fallback for other items
+  // Original logos for display
   const items = [
     { name: 'Drink & Clap', src: DrinkClap },
+    { name: 'University', src: University },
     { name: 'Crawlers', src: Crawlers },
+    { name: 'Art', src: Art },
+    { name: 'Fitness Club', src: FitnessClub },
     { name: 'Counsel', src: Counsel },
+    { name: 'Photography', src: Photography },
+    { name: 'Cooking Club', src: CookingClub },
   ]
 
   return (
@@ -87,29 +43,21 @@ export default function TrustedPartnersSection({ className = '', titleVariant = 
           <div className="mx-auto mt-3 h-[2px] w-24 bg-gradient-to-r from-rose-500 via-red-400 to-amber-400 rounded-full" aria-hidden="true" />
         </div>
 
-        {/* Branded Partners Grid */}
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {brandedPartners.map((partner, idx) => (
-            <div
-              key={idx}
-              className={`bg-gradient-to-br ${partner.bgGradient} ${partner.borderColor} border rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-200`}
-            >
-              <div className="text-4xl mb-3">{partner.emoji}</div>
-              <p className={`font-semibold text-sm ${partner.textColor} mb-1`}>{partner.name}</p>
-              <p className={`text-xs ${partner.textColor} opacity-75`}>{partner.theme}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Spacing and additional logos if needed */}
+        {/* Partner Logos Grid */}
         {items.length > 0 && (
-          <div className="mt-12 pt-8 border-t border-gray-200">
-            <p className="text-center text-sm text-gray-500 mb-6">Other Partners</p>
-            <div className="flex flex-wrap justify-center items-center gap-8">
-              {items.map((item, idx) => (
-                <img key={idx} src={item.src} alt={item.name} className="h-12 opacity-60 hover:opacity-100 transition-opacity" />
-              ))}
-            </div>
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-8 lg:gap-12">
+            {items.map((item, idx) => (
+              <div key={idx} className="flex flex-col items-center gap-2 group">
+                <img 
+                  src={item.src} 
+                  alt={item.name} 
+                  className="h-16 sm:h-20 opacity-70 hover:opacity-100 transition-opacity duration-300 group-hover:scale-110" 
+                />
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center font-medium group-hover:text-gray-900 dark:group-hover:text-gray-200">
+                  {item.name}
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </div>

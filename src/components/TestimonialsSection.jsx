@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { StarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import { testimonialsAPI } from '../services/api'
 
@@ -30,7 +30,7 @@ function TestimonialCard({ testimonial }) {
   const avatarSrc = testimonial.avatar || testimonial.avatar_url || null
   const displayName = testimonial.name || testimonial.user_name || 'User'
   return (
-    <div className="flex-shrink-0 w-full md:w-96 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-8 shadow-sm">
+    <div className="flex-shrink-0 w-full md:w-96 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-8 shadow-sm hover:shadow-md transition-shadow duration-300 will-change-transform">
       {/* Stars */}
       <div className="flex gap-1 mb-4">
         {[...Array(5)].map((_, i) => (
@@ -74,7 +74,9 @@ function TestimonialCard({ testimonial }) {
 export default function TestimonialsSection({ className = '' }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
-  const [scrollPosition, setScrollPosition] = useState(0)
+  const scrollContainerRef = useRef(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
 
   useEffect(() => {
     let mounted = true
@@ -98,16 +100,40 @@ export default function TestimonialsSection({ className = '' }) {
     return () => { mounted = false }
   }, [])
 
-  const scroll = (direction) => {
-    const container = document.getElementById('testimonials-scroll')
-    if (!container) return
-    const scrollAmount = 400
-    const newPosition = direction === 'left' 
-      ? scrollPosition - scrollAmount 
-      : scrollPosition + scrollAmount
-    container.scrollTo({ left: newPosition, behavior: 'smooth' })
-    setScrollPosition(newPosition)
-  }
+  const checkScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return
+    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
+    setCanScrollLeft(scrollLeft > 0)
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
+  }, [])
+
+  useEffect(() => {
+    checkScroll()
+    const container = scrollContainerRef.current
+    if (container) {
+      container.addEventListener('scroll', checkScroll, { passive: true })
+      window.addEventListener('resize', checkScroll, { passive: true })
+      return () => {
+        container.removeEventListener('scroll', checkScroll)
+        window.removeEventListener('resize', checkScroll)
+      }
+    }
+  }, [checkScroll])
+
+  const scroll = useCallback((direction) => {
+    if (!scrollContainerRef.current) return
+    const container = scrollContainerRef.current
+    const scrollAmount = 420 // card width (384px) + gap (36px)
+    
+    const targetScroll = direction === 'left' 
+      ? container.scrollLeft - scrollAmount
+      : container.scrollLeft + scrollAmount
+    
+    container.scrollTo({ 
+      left: targetScroll, 
+      behavior: 'smooth'
+    })
+  }, [])
 
   return (
     <section className={`w-full py-14 sm:py-16 ${className}`} aria-labelledby="testimonials-title">
@@ -130,32 +156,44 @@ export default function TestimonialsSection({ className = '' }) {
             ))}
           </div>
         ) : (
-          <div className="relative">
+          <div className="relative group">
+            {/* Scroll Container with GPU acceleration */}
             <div
-              id="testimonials-scroll"
-              className="flex gap-6 overflow-x-auto scroll-smooth pb-4"
-              style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              ref={scrollContainerRef}
+              className="flex gap-6 overflow-x-auto scroll-smooth pb-4 snap-x snap-mandatory will-change-transform"
+              style={{ 
+                scrollBehavior: 'smooth',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
+              }}
             >
               {items.map((testimonial, idx) => (
-                <TestimonialCard key={idx} testimonial={testimonial} />
+                <div key={idx} className="snap-center">
+                  <TestimonialCard testimonial={testimonial} />
+                </div>
               ))}
             </div>
 
-            {/* Navigation Arrows */}
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 md:-translate-x-12 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
-              aria-label="Scroll left"
-            >
-              <ChevronLeftIcon className="h-6 w-6 text-gray-900 dark:text-white" />
-            </button>
-            <button
-              onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 md:translate-x-12 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
-              aria-label="Scroll right"
-            >
-              <ChevronRightIcon className="h-6 w-6 text-gray-900 dark:text-white" />
-            </button>
+            {/* Navigation Arrows - Hidden/Visible based on scroll state */}
+            {canScrollLeft && (
+              <button
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 md:-translate-x-12 z-10 bg-white dark:bg-gray-800 rounded-full p-2.5 shadow-lg hover:shadow-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 will-change-transform"
+                aria-label="Scroll testimonials left"
+              >
+                <ChevronLeftIcon className="h-6 w-6 text-gray-900 dark:text-white" />
+              </button>
+            )}
+            {canScrollRight && (
+              <button
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 md:translate-x-12 z-10 bg-white dark:bg-gray-800 rounded-full p-2.5 shadow-lg hover:shadow-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 will-change-transform"
+                aria-label="Scroll testimonials right"
+              >
+                <ChevronRightIcon className="h-6 w-6 text-gray-900 dark:text-white" />
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -163,6 +201,15 @@ export default function TestimonialsSection({ className = '' }) {
       <style>{`
         #testimonials-scroll::-webkit-scrollbar {
           display: none;
+        }
+        /* GPU acceleration for smooth animations */
+        .will-change-transform {
+          will-change: transform;
+        }
+        /* Snap scroll points for better UX */
+        .snap-center {
+          scroll-snap-align: center;
+          scroll-snap-stop: always;
         }
       `}</style>
     </section>
