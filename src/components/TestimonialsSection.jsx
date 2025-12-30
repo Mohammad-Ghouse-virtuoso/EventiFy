@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { StarIcon } from '@heroicons/react/24/solid'
+import { StarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import { testimonialsAPI } from '../services/api'
 
 // Direct imports for avatars
@@ -30,25 +30,25 @@ function TestimonialCard({ testimonial }) {
   const avatarSrc = testimonial.avatar || testimonial.avatar_url || null
   const displayName = testimonial.name || testimonial.user_name || 'User'
   return (
-    <article className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="flex-shrink-0 w-full md:w-96 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-8 shadow-sm">
       {/* Stars */}
-      <div className="flex gap-0.5 mb-4">
+      <div className="flex gap-1 mb-4">
         {[...Array(5)].map((_, i) => (
           <StarIcon 
             key={i} 
-            className={`h-4 w-4 ${i < testimonial.rating ? 'text-yellow-400' : 'text-gray-200 dark:text-gray-600'}`} 
+            className={`h-5 w-5 ${i < testimonial.rating ? 'text-yellow-400' : 'text-gray-200 dark:text-gray-600'}`} 
           />
         ))}
       </div>
       
       {/* Quote */}
-      <p className="text-gray-700 dark:text-gray-200 text-sm sm:text-base leading-relaxed mb-5">
+      <p className="text-gray-700 dark:text-gray-200 text-lg leading-relaxed mb-6 font-medium">
         "{testimonial.quote}"
       </p>
       
       {/* Author */}
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+      <div className="flex items-center gap-4">
+        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 overflow-hidden flex-shrink-0">
           {avatarSrc ? (
             <img 
               src={avatarSrc} 
@@ -57,23 +57,24 @@ function TestimonialCard({ testimonial }) {
               loading="lazy"
             />
           ) : (
-            <span className="h-full w-full flex items-center justify-center text-sm font-semibold text-gray-500 dark:text-gray-400">
+            <span className="h-full w-full flex items-center justify-center text-sm font-bold text-white">
               {initials}
             </span>
           )}
         </div>
         <div>
-          <p className="font-medium text-gray-900 dark:text-white text-sm">{displayName}</p>
-          {testimonial.title && <p className="text-gray-500 dark:text-gray-400 text-xs">{testimonial.title}</p>}
+          <p className="font-semibold text-gray-900 dark:text-white text-base">{displayName}</p>
+          {testimonial.title && <p className="text-gray-500 dark:text-gray-400 text-sm">{testimonial.title}</p>}
         </div>
       </div>
-    </article>
+    </div>
   )
 }
 
 export default function TestimonialsSection({ className = '' }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [scrollPosition, setScrollPosition] = useState(0)
 
   useEffect(() => {
     let mounted = true
@@ -97,34 +98,73 @@ export default function TestimonialsSection({ className = '' }) {
     return () => { mounted = false }
   }, [])
 
+  const scroll = (direction) => {
+    const container = document.getElementById('testimonials-scroll')
+    if (!container) return
+    const scrollAmount = 400
+    const newPosition = direction === 'left' 
+      ? scrollPosition - scrollAmount 
+      : scrollPosition + scrollAmount
+    container.scrollTo({ left: newPosition, behavior: 'smooth' })
+    setScrollPosition(newPosition)
+  }
+
   return (
     <section className={`w-full py-14 sm:py-16 ${className}`} aria-labelledby="testimonials-title">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-10 sm:mb-12">
-          <h2 id="testimonials-title" className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            What people say?
+        <div className="mb-10 sm:mb-12">
+          <h2 id="testimonials-title" className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+            What people say
           </h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-300 text-sm sm:text-base">
-            Short, real, and to the point
+          <p className="text-gray-600 dark:text-gray-300 text-base">
+            Real stories from our community
           </p>
         </div>
 
-        {/* Grid of testimonials - dynamic with static fallback */}
+        {/* Carousel Container */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-40 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 animate-pulse" />
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex-shrink-0 w-96 h-48 bg-gray-100 dark:bg-gray-800/50 rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {items.map((testimonial, idx) => (
-              <TestimonialCard key={idx} testimonial={testimonial} />
-            ))}
+          <div className="relative">
+            <div
+              id="testimonials-scroll"
+              className="flex gap-6 overflow-x-auto scroll-smooth pb-4"
+              style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {items.map((testimonial, idx) => (
+                <TestimonialCard key={idx} testimonial={testimonial} />
+              ))}
+            </div>
+
+            {/* Navigation Arrows */}
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 md:-translate-x-12 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
+              aria-label="Scroll left"
+            >
+              <ChevronLeftIcon className="h-6 w-6 text-gray-900 dark:text-white" />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 md:translate-x-12 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
+              aria-label="Scroll right"
+            >
+              <ChevronRightIcon className="h-6 w-6 text-gray-900 dark:text-white" />
+            </button>
           </div>
         )}
       </div>
+
+      <style>{`
+        #testimonials-scroll::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </section>
   )
 }

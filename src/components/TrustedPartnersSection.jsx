@@ -12,30 +12,68 @@ import CookingClub from '../../assets/Cooking_club.png'
 
 /**
  * TrustedPartnersSection
- * Static, responsive grid of partner/organizer logos placed after the Hero.
- * - Title with subtle separator
- * - 6–8 grayscale logos from local assets with gentle hover accent
- * - No carousel or swipe; fixed grid
+ * Displays our branded organizer partners with themed colors and emojis
+ * - Remo's Bar (🍉)
+ * - Artfolk Gallery (🦋)
+ * - Cookingg Collective (🍳)
+ * - Giggling University (🎓)
+ * - Daytona Racing Club (🏍️)
  */
 export default function TrustedPartnersSection({ className = '', titleVariant = 'organizers' }) {
   const title = titleVariant === 'partners'
     ? 'FEATURED EVENT PARTNERS'
     : 'ORGANIZERS THAT TRUST US'
 
-  // Local representative images from assets
-  const items = [
-    { name: 'Drink & Clap', src: DrinkClap },
-    { name: 'University', src: University },
-    { name: 'Crawlers', src: Crawlers },
-    { name: 'Art', src: Art },
-    { name: 'Fitness Club', src: FitnessClub },
-    { name: 'Counsel', src: Counsel },
-    { name: 'Photography', src: Photography },
-    { name: 'Cooking Club', src: CookingClub },
+  // Branded organizers with colors and emojis
+  const brandedPartners = [
+    {
+      name: "Remo's Bar",
+      emoji: "🍉",
+      theme: "Watermelon Nights",
+      bgGradient: "from-orange-50 to-red-50",
+      borderColor: "border-orange-200",
+      textColor: "text-orange-900"
+    },
+    {
+      name: "Artfolk Gallery",
+      emoji: "🦋",
+      theme: "Butterfly Dreams",
+      bgGradient: "from-pink-50 to-purple-50",
+      borderColor: "border-pink-200",
+      textColor: "text-pink-900"
+    },
+    {
+      name: "Cookingg Collective",
+      emoji: "🍳",
+      theme: "Pan & Fire",
+      bgGradient: "from-yellow-50 to-orange-50",
+      borderColor: "border-yellow-200",
+      textColor: "text-yellow-900"
+    },
+    {
+      name: "Giggling University",
+      emoji: "🎓",
+      theme: "Book & Grad Hat",
+      bgGradient: "from-blue-50 to-indigo-50",
+      borderColor: "border-blue-200",
+      textColor: "text-blue-900"
+    },
+    {
+      name: "Daytona Racing Club",
+      emoji: "🏍️",
+      theme: "Motorcycle & Racing",
+      bgGradient: "from-gray-50 to-slate-50",
+      borderColor: "border-gray-300",
+      textColor: "text-gray-900"
+    },
   ]
 
-  // Show 8 logos (2 rows × 4 columns)
-  const itemsToShow = items.slice(0, 8)
+  // Original logos as fallback for other items
+  const items = [
+    { name: 'Drink & Clap', src: DrinkClap },
+    { name: 'Crawlers', src: Crawlers },
+    { name: 'Counsel', src: Counsel },
+  ]
 
   return (
     <section className={`w-full py-10 sm:py-12 ${className}`} aria-labelledby="trusted-partners-heading">
@@ -49,28 +87,31 @@ export default function TrustedPartnersSection({ className = '', titleVariant = 
           <div className="mx-auto mt-3 h-[2px] w-24 bg-gradient-to-r from-rose-500 via-red-400 to-amber-400 rounded-full" aria-hidden="true" />
         </div>
 
-        {/* Static Grid */}
-  <div className="mt-6 sm:mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {itemsToShow.map((item, idx) => {
-            return (
-            <div key={idx} className={`flex items-center justify-center rounded-xl bg-transparent p-3 sm:p-4 md:p-5`}>
-              {item.src ? (
-                <img
-                  src={item.src}
-                  alt={`${item.name} logo`}
-                  className="max-h-20 sm:max-h-24 md:max-h-28 object-contain opacity-95 transition-transform duration-200 will-change-transform hover:opacity-100 hover:-translate-y-0.5 hover:scale-[1.06] hover:saturate-110"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="h-12 w-full rounded-lg border border-dashed border-gray-300 text-gray-400 text-xs flex items-center justify-center">
-                  /static/logos/logo{idx + 1}.png
-                </div>
-              )}
+        {/* Branded Partners Grid */}
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {brandedPartners.map((partner, idx) => (
+            <div
+              key={idx}
+              className={`bg-gradient-to-br ${partner.bgGradient} ${partner.borderColor} border rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-200`}
+            >
+              <div className="text-4xl mb-3">{partner.emoji}</div>
+              <p className={`font-semibold text-sm ${partner.textColor} mb-1`}>{partner.name}</p>
+              <p className={`text-xs ${partner.textColor} opacity-75`}>{partner.theme}</p>
             </div>
-            )
-          })}
+          ))}
         </div>
+
+        {/* Spacing and additional logos if needed */}
+        {items.length > 0 && (
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-500 mb-6">Other Partners</p>
+            <div className="flex flex-wrap justify-center items-center gap-8">
+              {items.map((item, idx) => (
+                <img key={idx} src={item.src} alt={item.name} className="h-12 opacity-60 hover:opacity-100 transition-opacity" />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
