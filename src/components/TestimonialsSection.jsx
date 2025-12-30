@@ -175,7 +175,7 @@ export default function TestimonialsSection({ className = '' }) {
             {canScrollLeft && (
               <button
                 onClick={() => scroll('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
                 aria-label="Scroll left"
               >
                 <ChevronLeftIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
@@ -184,7 +184,7 @@ export default function TestimonialsSection({ className = '' }) {
             {canScrollRight && (
               <button
                 onClick={() => scroll('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
                 aria-label="Scroll right"
               >
                 <ChevronRightIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
