@@ -96,7 +96,8 @@ async def main():
     hf_service = HFService(
         hf_token=hf_token,
         text_model=text_model,
-        image_model=image_model
+        image_model=image_model,
+        inference_base_url=getattr(settings, 'HF_INFERENCE_BASE_URL', None),
     )
     
     # Get static directory

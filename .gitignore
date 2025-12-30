@@ -17,6 +17,7 @@ venv/
 .env.prod
 backend/.env.dev
 backend/.env.prod
+backend/test_hf_models.py
 
 # Testing
 .pytest_cache/

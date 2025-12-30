@@ -12,11 +12,18 @@ import random
 logger = logging.getLogger(__name__)
 
 class HFService:
-    def __init__(self, hf_token: str, text_model: str, image_model: str):
+    def __init__(
+        self,
+        hf_token: str,
+        text_model: str,
+        image_model: str,
+        inference_base_url: Optional[str] = None,
+    ):
         self.hf_token = hf_token
         self.text_model = text_model
         self.image_model = image_model
-        self.api_url = "https://api-inference.huggingface.co/models"
+        # Allow custom inference base URL (e.g., HF Inference Endpoint or Replicate proxy)
+        self.api_url = inference_base_url or "https://api-inference.huggingface.co/models"
         self.headers = {"Authorization": f"Bearer {hf_token}"}
 
     def generate_event_content(self, city: str, category: str) -> dict:
