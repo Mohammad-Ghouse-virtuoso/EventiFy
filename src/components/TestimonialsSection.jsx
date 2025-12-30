@@ -32,14 +32,14 @@ function TestimonialCard({ testimonial }) {
   const rating = testimonial.rating || 5
   
   return (
-    <div className="flex-shrink-0 w-full sm:w-96 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 will-change-transform flex flex-col h-[280px]">
+    <div className="flex-shrink-0 w-full sm:w-80 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm hover:shadow-md transition-shadow duration-200 will-change-transform flex flex-col h-[220px]">
       
       {/* Star Rating */}
-      <div className="flex gap-0.5 mb-4">
+      <div className="flex gap-0.5 mb-3">
         {[...Array(5)].map((_, i) => (
           <StarIcon
             key={i}
-            className={`h-5 w-5 ${
+            className={`h-4 w-4 ${
               i < rating
                 ? 'text-yellow-400'
                 : 'text-gray-300 dark:text-gray-600'
@@ -49,15 +49,15 @@ function TestimonialCard({ testimonial }) {
       </div>
       
       {/* Quote */}
-      <blockquote className="flex-1 mb-6">
-        <p className="text-gray-700 dark:text-gray-200 text-base leading-relaxed line-clamp-4">
+      <blockquote className="flex-1 mb-3">
+        <p className="text-gray-700 dark:text-gray-200 text-sm leading-snug line-clamp-3">
           {testimonial.quote}
         </p>
       </blockquote>
       
       {/* Author section */}
-      <div className="flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-        <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
+      <div className="flex items-center gap-2.5 pt-3 border-t border-gray-100 dark:border-gray-700">
+        <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
           {avatarSrc ? (
             <img 
               src={avatarSrc} 
@@ -66,15 +66,15 @@ function TestimonialCard({ testimonial }) {
               loading="lazy"
             />
           ) : (
-            <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+            <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">
               {initials}
             </span>
           )}
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{displayName}</p>
+          <p className="font-semibold text-gray-900 dark:text-white text-xs truncate">{displayName}</p>
           {testimonial.title && (
-            <p className="text-gray-500 dark:text-gray-400 text-xs truncate">{testimonial.title}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-[11px] truncate">{testimonial.title}</p>
           )}
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function TestimonialsSection({ className = '' }) {
   const scroll = useCallback((direction) => {
     if (!scrollContainerRef.current) return
     const container = scrollContainerRef.current
-    const scrollAmount = 420 // card width (384px) + gap (36px)
+    const scrollAmount = 336 // card width (320px) + gap (16px)
     
     const targetScroll = direction === 'left' 
       ? container.scrollLeft - scrollAmount

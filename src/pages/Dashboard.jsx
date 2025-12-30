@@ -73,6 +73,10 @@ export default function Dashboard() {
   }, [user])
 
   const loadDashboardData = async () => {
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       const [created, rsvps] = await Promise.all([
