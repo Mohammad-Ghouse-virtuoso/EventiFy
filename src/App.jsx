@@ -20,6 +20,7 @@ import HelpCenter from './pages/HelpCenter'
 import ContactUs from './pages/ContactUs'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
+import Socials from './pages/Socials'
 
 // Simple role-based route guard
 function RequireRole({ allowed, children }) {
@@ -91,6 +92,7 @@ function App() {
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/socials" element={<Socials />} />
           </Routes>
         </main>
         {/* Hide footer on register page */}
