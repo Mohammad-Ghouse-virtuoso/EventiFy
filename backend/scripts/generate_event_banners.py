@@ -11,11 +11,14 @@ import asyncio
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from sqlmodel import Session, select
-from app.db.session import engine
+from sqlmodel import Session, select, create_engine
 from app.models.event import Event
 from app.services.huggingface_service import HFService
 from app.core.config import settings
+
+# Create engine
+DATABASE_URL = "sqlite:///./eventify.db"
+engine = create_engine(DATABASE_URL, echo=False)
 
 
 async def generate_banner_for_event(event: Event, hf_service: HFService, static_dir: Path):
