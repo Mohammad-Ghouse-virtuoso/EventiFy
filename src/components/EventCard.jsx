@@ -130,8 +130,20 @@ function EventCard({ event, onRSVP, userRSVP }) {
 
   // Check if event has been organized by branded organizer (evergreen)
   const isBrandedEvent = () => {
-    const brandedOrganizers = ['Remo Martinez', 'Elena Artfolk', 'Chef Marco Cookingg', 'Dr. Sarah Giggling', 'Mike Daytona']
+    const brandedOrganizers = ['Jordan Martinez', 'Avery Chen', 'Riley Foster', 'Morgan Brooks', 'Cameron Torres']
     return brandedOrganizers.includes(event.organizer_name)
+  }
+
+  // Get brand label for branded events
+  const getBrandLabel = () => {
+    const brandMap = {
+      'Jordan Martinez': 'Remo',
+      'Avery Chen': 'Artfolk',
+      'Riley Foster': 'Cookingg',
+      'Morgan Brooks': 'Giggling',
+      'Cameron Torres': 'Daytona',
+    }
+    return brandMap[event.organizer_name] || null
   }
 
   // Helper function to get RSVP status display info
@@ -251,16 +263,23 @@ function EventCard({ event, onRSVP, userRSVP }) {
           </div>
         </div>
 
-        {/* Info card: Made by [organizer] */}
+        {/* Info card: Organized by [organizer] with optional brand label */}
         <div className="mb-4">
           <div className="flex items-start gap-3 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-3">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM9 7a1 1 0 102 0 1 1 0 00-2 0zm-1 4a1 1 0 011-1h2a1 1 0 110 2v2a1 1 0 11-2 0v-2H8a1 1 0 01-1-1z" clipRule="evenodd" />
             </svg>
             <div className="text-sm flex-1">
-              <p className="text-gray-700 dark:text-gray-300">
-                <span className="font-medium">Organized by:</span> <span className="font-semibold">{organizerDisplayName()}</span>
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">Organized by:</span> <span className="font-semibold">{organizerDisplayName()}</span>
+                </p>
+                {isBrandedEvent() && getBrandLabel() && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
+                    {getBrandLabel()} event
+                  </span>
+                )}
+              </div>
               {(event?.organizer_role === 'admin' || event?.organizer_role === 'UserRole.ADMIN') && (
                 <p className="text-gray-600 dark:text-gray-400 text-xs mt-1">This event was created by an admin.</p>
               )}

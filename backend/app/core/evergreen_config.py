@@ -10,7 +10,8 @@ EVERGREEN_ORGANIZERS = {
     "remos_bar": {
         "name": "Remo's Bar",
         "email": "events@remosbar.eventify",
-        "full_name": "Remo Martinez",
+        "full_name": "Jordan Martinez",  # Random name instead of "Remo Martinez"
+        "brand_label": "Remo",
         "banner_emoji": "🍉",
         "banner_theme": "Watermelon Nights",
         "description": "New Year celebrations, Friday night vibes, and unforgettable parties",
@@ -47,7 +48,8 @@ EVERGREEN_ORGANIZERS = {
     "artfolk": {
         "name": "Artfolk Gallery",
         "email": "curator@artfolk.eventify",
-        "full_name": "Elena Artfolk",
+        "full_name": "Avery Chen",  # Random name instead of "Elena Artfolk"
+        "brand_label": "Artfolk",
         "banner_emoji": "🦋",
         "banner_theme": "Butterfly Dreams",
         "description": "Contemporary art shows, gallery openings, and cultural exhibitions",
@@ -84,7 +86,8 @@ EVERGREEN_ORGANIZERS = {
     "cookingg": {
         "name": "Cookingg Collective",
         "email": "hello@cookingg.eventify",
-        "full_name": "Chef Marco Cookingg",
+        "full_name": "Riley Foster",  # Random name instead of "Chef Marco Cookingg"
+        "brand_label": "Cookingg",
         "banner_emoji": "🍳",
         "banner_theme": "Pan & Fire",
         "description": "Food stalls, live cooking demos, and music-filled culinary experiences",
@@ -121,7 +124,8 @@ EVERGREEN_ORGANIZERS = {
     "giggling_university": {
         "name": "Giggling University",
         "email": "admin@gigglinguniversity.eventify",
-        "full_name": "Dr. Sarah Giggling",
+        "full_name": "Morgan Brooks",  # Random name instead of "Dr. Sarah Giggling"
+        "brand_label": "Giggling",
         "banner_emoji": "🎓",
         "banner_theme": "Book & Grad Hat",
         "description": "Workshops, talks, study groups, and all things learning",
@@ -158,7 +162,8 @@ EVERGREEN_ORGANIZERS = {
     "daytona": {
         "name": "Daytona Racing Club",
         "email": "tickets@daytonaracing.eventify",
-        "full_name": "Mike Daytona",
+        "full_name": "Cameron Torres",  # Random name instead of "Mike Daytona"
+        "brand_label": "Daytona",
         "banner_emoji": "🏍️",
         "banner_theme": "Speed & Adrenaline",
         "description": "Racing events, spectator experiences, and motorsport community",
