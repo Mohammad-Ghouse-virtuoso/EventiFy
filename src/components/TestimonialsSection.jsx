@@ -29,13 +29,28 @@ function TestimonialCard({ testimonial }) {
     .toUpperCase(), [testimonial?.name, testimonial?.user_name])
   const avatarSrc = testimonial.avatar || testimonial.avatar_url || null
   const displayName = testimonial.name || testimonial.user_name || 'User'
+  const rating = testimonial.rating || 5
   
   return (
-    <div className="flex-shrink-0 w-full sm:w-96 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 will-change-transform flex flex-col">
+    <div className="flex-shrink-0 w-full sm:w-96 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 will-change-transform flex flex-col h-[280px]">
+      
+      {/* Star Rating */}
+      <div className="flex gap-0.5 mb-4">
+        {[...Array(5)].map((_, i) => (
+          <StarIcon
+            key={i}
+            className={`h-5 w-5 ${
+              i < rating
+                ? 'text-yellow-400'
+                : 'text-gray-300 dark:text-gray-600'
+            }`}
+          />
+        ))}
+      </div>
       
       {/* Quote */}
       <blockquote className="flex-1 mb-6">
-        <p className="text-gray-700 dark:text-gray-200 text-base leading-relaxed">
+        <p className="text-gray-700 dark:text-gray-200 text-base leading-relaxed line-clamp-4">
           {testimonial.quote}
         </p>
       </blockquote>

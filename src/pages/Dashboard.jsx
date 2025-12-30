@@ -20,6 +20,35 @@ const formatTime = (time) => {
   return `${displayHour}:${minutes} ${ampm}`
 }
 
+// Helper function to get time until event with color coding
+const getEventReminder = (eventStartTime) => {
+  const now = new Date()
+  const eventStart = new Date(eventStartTime)
+  const diffMs = eventStart - now
+  const diffHours = diffMs / (1000 * 60 * 60)
+  const diffDays = Math.floor(diffHours / 24)
+  const remainingHours = Math.floor(diffHours % 24)
+
+  if (diffHours <= 0) return null // Event already started or passed
+  
+  let color = ''
+  let text = ''
+  
+  if (diffHours <= 24) {
+    // Red for events within 24 hours
+    color = 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-700'
+    text = diffHours < 1 ? '<1h' : `${Math.floor(diffHours)}h`
+  } else if (diffHours <= 48) {
+    // Yellow for events within 48 hours
+    color = 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700'
+    text = diffDays === 1 ? `1d/${remainingHours}h` : `${diffDays}d/${remainingHours}h`
+  } else {
+    return null // No reminder needed for events more than 48 hours away
+  }
+  
+  return { color, text }
+}
+
 export default function Dashboard() {
   const { user } = useAuth()
   const { currentAvatar, userBanner, updateAvatar, updateBanner } = useProfile()
@@ -557,19 +586,27 @@ export default function Dashboard() {
               {/* Events List */}
               <div className="space-y-4">
                 {filteredEvents.length > 0 ? (
-                  filteredEvents.map((event) => (
-                    <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 relative">
-                      <div className="absolute top-4 right-4">
-                        <EventTimer eventStartTime={event.event_start} />
+                  filteredEvents.map((event) => {
+                    const reminder = getEventReminder(event.event_start)
+                    return (
+                      <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 relative">
+                        <div className="absolute top-4 right-4 flex items-center gap-2">
+                          {reminder && (
+                            <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${reminder.color}`}>
+                              {reminder.text}
+                            </span>
+                          )}
+                          <EventTimer eventStartTime={event.event_start} />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white pr-32">{event.title}</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mt-1">{event.description}</p>
+                        <div className="flex items-center mt-2 text-sm text-gray-500">
+                          <CalendarIcon className="h-4 w-4 mr-1" />
+                          {format(new Date(event.event_start), 'PPP')} at {formatTime(new Date(event.event_start).toISOString().split('T')[1]?.slice(0,5))}
+                        </div>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white pr-20">{event.title}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mt-1">{event.description}</p>
-                      <div className="flex items-center mt-2 text-sm text-gray-500">
-                        <CalendarIcon className="h-4 w-4 mr-1" />
-                        {format(new Date(event.event_start), 'PPP')} at {formatTime(new Date(event.event_start).toISOString().split('T')[1]?.slice(0,5))}
-                      </div>
-                    </div>
-                  ))
+                    )
+                  })
                 ) : (
                   <div className="text-center py-8">
                     <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
