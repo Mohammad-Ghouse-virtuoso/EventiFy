@@ -171,25 +171,23 @@ export default function TestimonialsSection({ className = '' }) {
               ))}
             </div>
 
-            {/* Navigation Arrows - Simple and minimal */}
-            {canScrollLeft && (
-              <button
-                onClick={() => scroll('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
-                aria-label="Scroll left"
-              >
-                <ChevronLeftIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-              </button>
-            )}
-            {canScrollRight && (
-              <button
-                onClick={() => scroll('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
-                aria-label="Scroll right"
-              >
-                <ChevronRightIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-              </button>
-            )}
+            {/* Navigation Arrows - Always visible, positioned closer */}
+            <button
+              onClick={() => scroll('left')}
+              disabled={!canScrollLeft}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Scroll left"
+            >
+              <ChevronLeftIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              disabled={!canScrollRight}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Scroll right"
+            >
+              <ChevronRightIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+            </button>
           </div>
         )}
       </div>
