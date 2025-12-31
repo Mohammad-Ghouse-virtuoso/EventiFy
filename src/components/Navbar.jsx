@@ -6,34 +6,6 @@ import { Bars3Icon, XMarkIcon, CalendarDaysIcon, PlusIcon, UserCircleIcon } from
 import { HeartIcon } from '@heroicons/react/24/outline'
 import ThemeSwitch from './ThemeSwitch'
 
-// Custom sparkles star icon component
-const CustomSparklesIcon = ({ className }) => (
-  <svg 
-    className={className} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M12 2L14.09 8.26L20 10L14.09 11.74L12 18L9.91 11.74L4 10L9.91 8.26L12 2Z"
-      fill="url(#sparkleGradient)"
-      stroke="url(#sparkleStroke)"
-      strokeWidth="0.5"
-    />
-    <defs>
-      <linearGradient id="sparkleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FF6B9D" />
-        <stop offset="50%" stopColor="#FF8FB3" />
-        <stop offset="100%" stopColor="#FFB3D1" />
-      </linearGradient>
-      <linearGradient id="sparkleStroke" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FF1493" />
-        <stop offset="100%" stopColor="#FF69B4" />
-      </linearGradient>
-    </defs>
-  </svg>
-)
-
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { user, logout } = useAuth()
@@ -52,13 +24,10 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link
               to="/"
-              className="flex items-center space-x-2 text-2xl font-bold text-gray-800 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 hover:scale-105"
+              className="flex items-center space-x-2 text-2xl font-bold text-gray-800 dark:text-white hover:text-blue-500 dark:hover:text-blue-400 transition-all duration-300 hover:scale-105"
             >
-              <div className="relative">
-                <CustomSparklesIcon className="h-8 w-8 drop-shadow-md" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
-              </div>
-              <span className="text-gradient">EventiFy</span>
+              <span className="text-3xl">🎉</span>
+              <span className="bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500 text-transparent bg-clip-text font-bold">EventiFy</span>
             </Link>
           </div>
 
