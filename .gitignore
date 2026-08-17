@@ -39,3 +39,14 @@ Thumbs.db
 dist/
 build/
 .venv/
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+credentials.json
+service-account*.json
+GCP.json
+node_modules/
+.next/
+coverage/
